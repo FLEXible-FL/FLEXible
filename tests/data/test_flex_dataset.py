@@ -47,6 +47,14 @@ class TestFlexClientDataset(unittest.TestCase):
         assert y_names == fcd.y_names
         assert X_data.shape[0] == y_data.shape[0]
 
+    def test_client_id_property(self):
+        X_data = np.random.rand(100).reshape([20,5])
+        y_data = np.random.choice(2, 20)
+        client_id = 'client_1'
+        fcd = FlexClientDataset(X_data=X_data, y_data=y_data, client_id=client_id)
+        assert X_data.shape[0] == y_data.shape[0]
+        assert client_id == fcd.client_id
+
 
 class TestFlexDataset(unittest.TestCase):
     def test_get_method(self):
