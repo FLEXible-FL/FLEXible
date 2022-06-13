@@ -1,5 +1,5 @@
 from collections import UserDict
-from typing import _KT, _VT, Optional, List, Sequence, Any
+from typing import Optional, List, Sequence, Any
 
 import numpy as np
 import numpy.typing as npt
@@ -35,7 +35,7 @@ class FlexClientDataset:
 
         if y_names and y_data and (np.unique(y_data) == np.unique(y_names)):
             self.__y_names = y_names
-        elif y_data and not y_names:
+        elif not y_names and y_data is not None:
             self.__y_names = [f"class_{c}" for c in np.unique(y_data)]
         else:
             self.__y_names = ["Not available"] # Must keep the typing
@@ -78,7 +78,7 @@ class FlexDataset(UserDict):
             raise KeyError
         return self[key]
 
-    def __setitem__(self, key: _KT, item: _VT) -> None:
+    def __setitem__(self, key: str, item: FlexClientDataset) -> None:
         self.data[key] = item
 
     def get(self, key, default=None):
