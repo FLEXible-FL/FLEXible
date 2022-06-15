@@ -1,20 +1,30 @@
 from collections import UserDict
-from typing import Any, List, Optional, Sequence
+from collections.abc import Sized
+from typing import Any, List, Optional
 
 import numpy as np
 import numpy.typing as npt
 
 
-class FlexClientDataset:
+def same_length_check(obj1: Sized, obj2: Sized):
+    if len(obj1) != len(obj2):
+        raise ValueError(
+            "Provided arguments must have the same length, but length={} and length={} were given.".format(
+                len(obj1), len(obj2)
+            )
+        )
+
+
+class FlexDataObject:
     """Class used to represent the dataset from a client in a Federated Learning enviroment.
 
     Attributes
     ----------
-    X_data: numpy.typing.NDArray
+    X_data: numpy.typing.ArrayLike
         A numpy.array containing the data for the client.
-    y_data: Optional[Sequence[numpy.typing._SupportsArray[numpy.dtype[Any]]]]
+    y_data: numpy.typing.ArrayLike
         A numpy.array containing the labels for the training data. Can be None if working
-        on unsupervised learning problem. Default None.
+        on an unsupervised learning task. Default None.
     X_names: Optional[List[str]]
         A list of strings containing the names of the features set. Default None.
     y_names: Optional[List[str]]
@@ -25,60 +35,53 @@ class FlexClientDataset:
 
     def __init__(
         self,
-        X_data: npt.NDArray,
-        y_data: Optional[Sequence[npt._SupportsArray[np.dtype[Any]]]] = None,
+        X_data: npt.ArrayLike,
+        y_data: Optional[npt.ArrayLike] = None,
         X_names: Optional[List[str]] = None,
         y_names: Optional[List[str]] = None,
     ) -> None:
 
         self.__X_data = X_data
         self.__y_data = y_data
+        self.__X_names = X_names
+        self.__y_names = y_names
 
-        self.__X_names = (
-            X_names if (X_names and len(X_names) == X_data.shape[1]) else None
-        )
-        self.__y_names = (
-            y_names
-            if y_names
-            and y_data is not None
-            and (len(np.unique(y_data)) == len(np.unique(y_names)))
-            else None
-        )
+        if X_names is not None:
+            same_length_check(X_data[0], X_names)
+
+        if y_names is not None and y_data is not None:
+            same_length_check(np.unique(y_data, axis=0), y_names)
 
     @property
     def X_data(self):
         return self.__X_data
 
-    @X_data.setter
-    def X_data(self, X_data):
+    @property
+    def X_names(self):
+        return self.__X_names
+
+    def setX(self, X_data: npt.ArrayLike, X_names: Optional[List[str]] = None) -> None:
+        if X_names is not None:
+            same_length_check(X_data[0], X_names)
         self.__X_data = X_data
+        self.__X_names = X_names
 
     @property
     def y_data(self):
         return self.__y_data
 
-    @y_data.setter
-    def y_data(self, y_data):
-        self.__y_data = y_data
-
-    @property
-    def X_names(self):
-        return self.__X_names
-
-    @X_names.setter
-    def X_names(self, X_names):
-        self.__X_names = X_names
-
     @property
     def y_names(self):
         return self.__y_names
 
-    @y_names.setter
-    def y_names(self, y_names):
+    def setY(self, y_data: npt.ArrayLike, y_names: Optional[List[str]] = None) -> None:
+        if y_names is not None:
+            same_length_check(np.unique(y_data, axis=0), y_names)
+        self.__y_data = y_data
         self.__y_names = y_names
 
 
-class FlexDataset(UserDict):
+class FederatedFlexDataObject(UserDict):
     """Class that represent a federated dataset for the Flex library.
     The dataset contains the ids of the clients and the dataset associated
     with each client.
@@ -89,7 +92,7 @@ class FlexDataset(UserDict):
         with the clients ids as keys and the dataset as value.
     """
 
-    def __setitem__(self, key: str, item: FlexClientDataset) -> None:
+    def __setitem__(self, key: str, item: FlexDataObject) -> None:
         self.data[key] = item
 
     def get(self, key: str, default: Optional[Any] = None) -> Any:
