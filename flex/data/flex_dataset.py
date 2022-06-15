@@ -9,9 +9,7 @@ import numpy.typing as npt
 def same_length_check(obj1: Sized, obj2: Sized):
     if len(obj1) != len(obj2):
         raise ValueError(
-            "Provided arguments must have the same length, but length={} and length={} were given.".format(
-                len(obj1), len(obj2)
-            )
+            f"Provided arguments must have the same length, but length={len(obj1)} and length={len(obj2)} were given."
         )
 
 
@@ -35,8 +33,8 @@ class FlexDataObject:
 
     def __init__(
         self,
-        X_data: npt.ArrayLike,
-        y_data: Optional[npt.ArrayLike] = None,
+        X_data: npt.NDArray,
+        y_data: Optional[npt.NDArray] = None,
         X_names: Optional[List[str]] = None,
         y_names: Optional[List[str]] = None,
     ) -> None:
@@ -52,6 +50,9 @@ class FlexDataObject:
         if y_names is not None and y_data is not None:
             same_length_check(np.unique(y_data, axis=0), y_names)
 
+        if y_names is not None:
+            same_length_check(X_data, y_data)
+
     @property
     def X_data(self):
         return self.__X_data
@@ -60,7 +61,7 @@ class FlexDataObject:
     def X_names(self):
         return self.__X_names
 
-    def setX(self, X_data: npt.ArrayLike, X_names: Optional[List[str]] = None) -> None:
+    def setX(self, X_data: npt.NDArray, X_names: Optional[List[str]] = None) -> None:
         if X_names is not None:
             same_length_check(X_data[0], X_names)
         self.__X_data = X_data
@@ -74,7 +75,7 @@ class FlexDataObject:
     def y_names(self):
         return self.__y_names
 
-    def setY(self, y_data: npt.ArrayLike, y_names: Optional[List[str]] = None) -> None:
+    def setY(self, y_data: npt.NDArray, y_names: Optional[List[str]] = None) -> None:
         if y_names is not None:
             same_length_check(np.unique(y_data, axis=0), y_names)
         self.__y_data = y_data

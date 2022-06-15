@@ -2,3 +2,8 @@
 [flake8]
 #extend-ignore = D1, D2, E1, E2, E3, E501, W1, W2, W3, W5
 extend-ignore = E501
+exclude =
+    flex/__init__.py,
+    flex/data/__init__.py,
+    test/data/__init__.py,
+    test/__init__.py
