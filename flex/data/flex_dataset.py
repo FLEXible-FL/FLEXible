@@ -35,7 +35,7 @@ class FlexDataObject:
 
     def __init__(
         self,
-        X_data: npt.ArrayLike,
+        X_data: npt.NDArray,
         y_data: Optional[npt.ArrayLike] = None,
         X_names: Optional[List[str]] = None,
         y_names: Optional[List[str]] = None,
@@ -51,6 +51,9 @@ class FlexDataObject:
 
         if y_names is not None and y_data is not None:
             same_length_check(np.unique(y_data, axis=0), y_names)
+
+        if y_names is not None:
+            same_length_check(X_data, y_data)
 
     @property
     def X_data(self):
