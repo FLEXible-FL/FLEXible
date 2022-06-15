@@ -10,7 +10,7 @@ def same_length_check(obj1: Sized, obj2: Sized):
     if len(obj1) != len(obj2):
         raise ValueError(
             f"Provided arguments must have the same length, but length={len(obj1)} and length={len(obj2)} were given."
-            )
+        )
 
 
 class FlexDataObject:
