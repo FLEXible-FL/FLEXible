@@ -7,3 +7,8 @@ lint:
     - flake8@4.0.1
     - gitleaks@8.8.7
     - isort@5.10.1
+  ignore:    
+    - linters: [ALL]      
+      paths:
+      - flex/**/__init__.py
+      - test/**/__init__.py
