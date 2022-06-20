@@ -9,12 +9,38 @@ from flex.data import FlexDataObject
 
 @dataclass
 class FlexDatasetConfig:
+    """Class used to represent a configuration to federate a centralized dataset.
+
+    Attributes
+    ----------
+    n_clients: int
+        Number of clients to split a centralized dataset. Default 2
+    weights: Optional[npt.NDArray]
+        A numpy.array which provides the proportion of data to give to each client. Default None.
+    replacement: bool
+        Whether the samping procedure used to split a centralized dataset is with replacement or not. Default True
+    classes_per_client: Optional[Union[int, npt.NDArray, Tuple[int]]]
+        Classes to assign to each client, if provided as an int, it is the number classes per client, if provided as a \
+        tuple of ints, it establishes a mininum and a maximum of number of classes per client, a random number sampled \
+        in such interval decides the number of classes of each client. If provided as a list, it establishes the classes \
+        assigned to each client.
+    features_per_client: Optional[Union[int, npt.NDArray, Tuple[int]]]
+        Features to assign to each client, it share the same interface as classes_per_client.
+    """
+
     n_clients: int = 2
     weights: Optional[npt.NDArray] = None
     replacement: bool = True
     classes_per_client: Optional[Union[int, npt.NDArray, Tuple[int]]] = None
     features_per_client: Optional[Union[int, npt.NDArray, Tuple[int]]] = None
 
+    """ This function checks whether the configuration to federate a dataset is correct and represents is compatible with\
+        a given centralized dataset.
+
+    Args:
+        ds (FlexDataObject): Centralized dataset represented as a FlexDataObject.
+
+    """
     def check(self, ds: FlexDataObject):
         if self.n_clients < 2:
             raise ValueError(
