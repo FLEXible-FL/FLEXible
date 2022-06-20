@@ -20,10 +20,10 @@ class FlexDataDistribution(object):
             state (FlexState): FlexState with the configuration to federate the dataset.
 
         Returns:
-            federated_dataset (FederatedFlexDataObject): The dataset federated.
+            federated_dataset (FlexDataset): The dataset federated.
         """
         # TODO: Once FlexState is finished, continue with the development of the class.
-        # return FederatedFlexDataObject()
+        # return FlexDataset()
 
     @classmethod
     def iid_distribution(cls, data: FlexDataObject, n_clients: int = 2):
@@ -38,4 +38,4 @@ class FlexDataDistribution(object):
         """
         # TODO: Once FlexState is finished, and other functions to create the FlexDataset
         # are finished too, continue with this class.
-        # return FederatedFlexDataObject()
+        # return FlexDataset()
