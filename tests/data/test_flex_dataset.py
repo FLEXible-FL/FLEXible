@@ -63,6 +63,24 @@ class TestFlexDataObject(unittest.TestCase):
         fcd.setY(y_data, y_names)
         assert np.array_equal(y_names, fcd.y_names)
 
+    def test_len_property(self):
+        X_data = np.random.rand(100).reshape([20, 5])
+        y_data = np.random.choice(2, 20)
+        fcd = FlexDataObject(X_data=X_data, y_data=y_data)
+        assert len(fcd) == len(X_data)
+
+    def test_getitem_property(self):
+        X_data = np.random.rand(100).reshape([20, 5])
+        y_data = np.random.choice(2, 20)
+        fcd = FlexDataObject(X_data=X_data, y_data=y_data)
+        for x, y, (x_bis, y_bis) in zip(X_data, y_data, fcd):
+            assert np.array_equal(x, x_bis)
+            assert y == y_bis
+        fcd = FlexDataObject(X_data=X_data, y_data=None)
+        for x, (x_bis, y_bis) in zip(X_data, fcd):
+            assert np.array_equal(x, x_bis)
+            assert y_bis is None
+
 
 class TestFederatedFlexDataObject(unittest.TestCase):
     def test_get_method(self):

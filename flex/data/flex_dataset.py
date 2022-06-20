@@ -53,6 +53,15 @@ class FlexDataObject:
         if y_names is not None:
             same_length_check(X_data, y_data)
 
+    def __len__(self):
+        return len(self.X_data)
+
+    def __getitem__(self, pos):
+        if self.__y_data is not None:
+            return (self.__X_data[pos], self.__y_data[pos])
+        else:
+            return (self.__X_data[pos], None)
+
     @property
     def X_data(self):
         return self.__X_data
