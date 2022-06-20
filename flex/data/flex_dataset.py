@@ -50,7 +50,7 @@ class FlexDataObject:
         if y_names is not None and y_data is not None:
             same_length_check(np.unique(y_data, axis=0), y_names)
 
-        if y_names is not None:
+        if y_data is not None:
             same_length_check(X_data, y_data)
 
     def __len__(self):
