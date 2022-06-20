@@ -11,7 +11,7 @@ class FlexDataDistribution(object):
         FlexDataDistribution.iid_distribution"""
 
     @classmethod
-    def from_state(cls, data: FlexDataObject = None, state=None):
+    def from_state(cls, data: FlexDataObject, state):
         """This function prepare the data from a centralized data structure to a federated one.
         It will run diffetent functions to federate the data.
 
@@ -26,7 +26,7 @@ class FlexDataDistribution(object):
         # return FederatedFlexDataObject()
 
     @classmethod
-    def iid_distribution(cls, data: FlexDataObject = None, n_clients: int = 2):
+    def iid_distribution(cls, data: FlexDataObject, n_clients: int = 2):
         """Function to create a FlexDataset for an IID experiment.
 
         Args:
