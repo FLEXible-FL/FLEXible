@@ -82,8 +82,8 @@ class FlexDataObject:
         self.__y_names = y_names
 
 
-class FederatedFlexDataObject(UserDict):
-    """Class that represent a federated dataset for the Flex library.
+class FlexDataset(UserDict):
+    """Class that represents a federated dataset for the Flex library.
     The dataset contains the ids of the clients and the dataset associated
     with each client.
 

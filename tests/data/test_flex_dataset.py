@@ -3,7 +3,7 @@ import unittest
 import numpy as np
 import pytest
 
-from flex.data.flex_dataset import FederatedFlexDataObject, FlexDataObject
+from flex.data.flex_dataset import FlexDataset, FlexDataObject
 
 
 class TestFlexDataObject(unittest.TestCase):
@@ -64,12 +64,12 @@ class TestFlexDataObject(unittest.TestCase):
         assert np.array_equal(y_names, fcd.y_names)
 
 
-class TestFederatedFlexDataObject(unittest.TestCase):
+class TestFlexDataset(unittest.TestCase):
     def test_get_method(self):
         X_data = np.random.rand(100).reshape([20, 5])
         y_data = np.random.choice(2, 20)
         fcd = FlexDataObject(X_data=X_data, y_data=y_data)
-        flex_data = FederatedFlexDataObject()
+        flex_data = FlexDataset()
         flex_data["client_1"] = fcd
         assert flex_data["client_1"] == fcd
         assert flex_data.get("client_2") is None
