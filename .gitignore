@@ -130,3 +130,6 @@ dmypy.json
 
 # Trunk linter
 .trunk/out
+
+# do not include coverage file
+pytest-coverage.txt
