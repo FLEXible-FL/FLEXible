@@ -24,7 +24,7 @@ jobs:
 
       - name: Build coverage file
         run: |
-          pytest --cov-report=term-missing:skip-covered --cov=app tests/ | tee pytest-coverage.txt
+          pytest --cov-report=term-missing:skip-covered --cov=flex tests/ | tee pytest-coverage.txt
           
       - name: Pytest coverage comment
         if: ${{ github.ref == 'refs/heads/main' }}
