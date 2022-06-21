@@ -1,5 +1,6 @@
 from collections import UserDict
 from collections.abc import Sized
+from dataclasses import dataclass
 from typing import Any, List, Optional
 
 import numpy as np
@@ -13,6 +14,7 @@ def same_length_check(obj1: Sized, obj2: Sized):
         )
 
 
+@dataclass
 class FlexDataObject:
     """Class used to represent the dataset from a client in a Federated Learning enviroment.
 
@@ -29,66 +31,31 @@ class FlexDataObject:
         A list of strings containing the class names. Default None.
     """
 
-    __slots__ = ("__X_data", "__y_data", "__X_names", "__y_names")
-
-    def __init__(
-        self,
-        X_data: npt.NDArray,
-        y_data: Optional[npt.NDArray] = None,
-        X_names: Optional[List[str]] = None,
-        y_names: Optional[List[str]] = None,
-    ) -> None:
-
-        self.__X_data = X_data
-        self.__y_data = y_data
-        self.__X_names = X_names
-        self.__y_names = y_names
-
-        if X_names is not None:
-            same_length_check(X_data[0], X_names)
-
-        if y_names is not None and y_data is not None:
-            same_length_check(np.unique(y_data, axis=0), y_names)
-
-        if y_data is not None:
-            same_length_check(X_data, y_data)
+    X_data: npt.NDArray
+    y_data: Optional[npt.NDArray] = None
+    X_names: Optional[List[str]] = None
+    y_names: Optional[List[str]] = None
 
     def __len__(self):
         return len(self.X_data)
 
     def __getitem__(self, pos):
-        if self.__y_data is not None:
-            return (self.__X_data[pos], self.__y_data[pos])
+        if self.y_data is not None:
+            return (self.X_data[pos], self.y_data[pos])
         else:
-            return (self.__X_data[pos], None)
-
-    @property
-    def X_data(self):
-        return self.__X_data
-
-    @property
-    def X_names(self):
-        return self.__X_names
+            return (self.X_data[pos], None)
 
     def setX(self, X_data: npt.NDArray, X_names: Optional[List[str]] = None) -> None:
         if X_names is not None:
             same_length_check(X_data[0], X_names)
-        self.__X_data = X_data
-        self.__X_names = X_names
-
-    @property
-    def y_data(self):
-        return self.__y_data
-
-    @property
-    def y_names(self):
-        return self.__y_names
+        self.X_data = X_data
+        self.X_names = X_names
 
     def setY(self, y_data: npt.NDArray, y_names: Optional[List[str]] = None) -> None:
         if y_names is not None:
             same_length_check(np.unique(y_data, axis=0), y_names)
-        self.__y_data = y_data
-        self.__y_names = y_names
+        self.y_data = y_data
+        self.y_names = y_names
 
 
 class FlexDataset(UserDict):

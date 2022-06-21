@@ -3,7 +3,7 @@ import unittest
 import numpy as np
 import pytest
 
-from flex.data.flex_dataset import FlexDataset, FlexDataObject
+from flex.data.flex_dataset import FlexDataObject, FlexDataset, same_length_check
 
 
 class TestFlexDataObject(unittest.TestCase):
@@ -32,7 +32,8 @@ class TestFlexDataObject(unittest.TestCase):
         y_data = np.random.choice(2, 20)
         X_names = [f"x{i}" for i in range(X_data.shape[1] + 4)]
         with pytest.raises(Exception):
-            FlexDataObject(X_data=X_data, y_data=y_data, X_names=X_names)
+            fdo = FlexDataObject(X_data=X_data, y_data=y_data, X_names=X_names)
+            same_length_check(fdo.X_data, fdo.X_names)
 
     def test_X_names_property_setter(self):
         X_data = np.random.rand(100).reshape([20, 5])
