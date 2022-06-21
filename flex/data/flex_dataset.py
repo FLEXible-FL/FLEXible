@@ -1,17 +1,9 @@
 from collections import UserDict
-from collections.abc import Sized
 from dataclasses import dataclass
 from typing import Any, List, Optional
 
 import numpy as np
 import numpy.typing as npt
-
-
-def same_length_check(obj1: Sized, obj2: Sized):
-    if len(obj1) != len(obj2):
-        raise ValueError(
-            f"Provided arguments must have the same length, but length={len(obj1)} and length={len(obj2)} were given."
-        )
 
 
 @dataclass
@@ -45,17 +37,24 @@ class FlexDataObject:
         else:
             return (self.X_data[pos], None)
 
-    def setX(self, X_data: npt.NDArray, X_names: Optional[List[str]] = None) -> None:
-        if X_names is not None:
-            same_length_check(X_data[0], X_names)
-        self.X_data = X_data
-        self.X_names = X_names
-
-    def setY(self, y_data: npt.NDArray, y_names: Optional[List[str]] = None) -> None:
-        if y_names is not None:
-            same_length_check(np.unique(y_data, axis=0), y_names)
-        self.y_data = y_data
-        self.y_names = y_names
+    def validate_data_object(self):
+        """Function that checks whether the object is correct or not."""
+        if self.y_data is not None and len(self.X_data) != len(self.y_data):
+            raise ValueError(
+                f"X_data and y_data must have equal lenght. X_data has {len(self.X_data)} elements and y_data has {len(self.y_data)} elements."
+            )
+        if self.X_names is not None and len(self.X_data[0]) != len(self.X_names):
+            raise ValueError(
+                f"X_data and X_names has different lenght and they must have the same. X_data has len {len(self.X_data[0])} and X_names has len {len(self.X_names)}."
+            )
+        if (
+            self.y_names is not None
+            and self.y_data is not None
+            and len(np.unique(self.y_data, axis=0)) != len(self.y_names)
+        ):
+            raise ValueError(
+                f"y_data has differents unique values that y_names values. y_data has {len(np.unique(self.y_data, axis=0))} unique values, and y_names has {len(self.y_names)}."
+            )
 
 
 class FlexDataset(UserDict):
