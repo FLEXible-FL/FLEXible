@@ -29,7 +29,7 @@ jobs:
       - name: Pytest coverage comment
         uses: MishaKav/pytest-coverage-comment@main
         with:
-          github-token: secrets.CI_GITHUB_TOKEN
+          github-token: ${{ secrets.CI_GITHUB_TOKEN }}
           report-only-changed-files: true
           pytest-coverage-path: ./pytest-coverage.txt
           junitxml-path: ./pytest.xml
