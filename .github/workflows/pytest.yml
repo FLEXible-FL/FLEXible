@@ -1,6 +1,6 @@
 # This workflow will install dependencies, create coverage tests and run Pytest Coverage Comment
 # For more information see: https://github.com/MishaKav/pytest-coverage-comment/
-name: run-test-on-pull-request
+name: run-tests-on-pull-request
 on:
   pull_request:
     branches:
@@ -29,7 +29,7 @@ jobs:
       - name: Pytest coverage comment
         uses: MishaKav/pytest-coverage-comment@main
         with:
-          #github-token: ${{ secrets.CI_GITHUB_TOKEN }}
-          report-only-changed-files: false
+          github-token: ${{ secrets.CI_GITHUB_TOKEN }}
+          report-only-changed-files: true
           pytest-coverage-path: ./pytest-coverage.txt
           junitxml-path: ./pytest.xml
