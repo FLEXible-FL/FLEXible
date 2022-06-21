@@ -41,6 +41,7 @@ class FlexDatasetConfig:
         ds (FlexDataObject): Centralized dataset represented as a FlexDataObject.
 
     """
+
     def check(self, ds: FlexDataObject):
         if self.n_clients < 2:
             raise ValueError(
@@ -71,12 +72,11 @@ class FlexDatasetConfig:
                     raise ValueError(
                         f"classes_per_client if provided as a tuple, it must have two elements, mininum number of features per client and maximum number of features per client, but features_per_client={self.features_per_client}."
                     )
-            else:
-                if self.n_clients != len(self.classes_per_client):
-                    raise ValueError(
-                        "classes_per_client if provided as a list o np.ndarray, its length and n_clients must equal."
-                    )
-        if self.features_per_client is not None:
+            elif self.n_clients != len(self.classes_per_client):
+                raise ValueError(
+                    "classes_per_client if provided as a list o np.ndarray, its length and n_clients must equal."
+                )
+        elif self.features_per_client is not None:
             if isinstance(self.features_per_client, int):
                 if (
                     self.features_per_client <= 0
@@ -94,8 +94,7 @@ class FlexDatasetConfig:
                     raise ValueError(
                         f"features_per_client if provided as a tuple, it must have two elements, mininum number of features per client and maximum number of features per client, but features_per_client={self.features_per_client}."
                     )
-            else:
-                if self.n_clients != len(self.features_per_client):
-                    raise ValueError(
-                        "features_per_client if provided as a list o np.ndarray, its length and n_clients must equal."
-                    )
+            elif self.n_clients != len(self.features_per_client):
+                raise ValueError(
+                    "features_per_client if provided as a list o np.ndarray, its length and n_clients must equal."
+                )
