@@ -4,7 +4,8 @@ name: run-tests-on-pull-request
 on:
   pull_request:
     branches:
-      - '*'
+      - 'main'
+    types: [synchronize, opened]
 jobs:
   build:
     runs-on: ubuntu-latest
