@@ -1,18 +1,12 @@
 from collections import UserDict
-from collections.abc import Sized
+from dataclasses import dataclass
 from typing import Any, List, Optional
 
 import numpy as np
 import numpy.typing as npt
 
 
-def same_length_check(obj1: Sized, obj2: Sized):
-    if len(obj1) != len(obj2):
-        raise ValueError(
-            f"Provided arguments must have the same length, but length={len(obj1)} and length={len(obj2)} were given."
-        )
-
-
+@dataclass
 class FlexDataObject:
     """Class used to represent the dataset from a client in a Federated Learning enviroment.
 
@@ -29,66 +23,42 @@ class FlexDataObject:
         A list of strings containing the class names. Default None.
     """
 
-    __slots__ = ("__X_data", "__y_data", "__X_names", "__y_names")
-
-    def __init__(
-        self,
-        X_data: npt.NDArray,
-        y_data: Optional[npt.NDArray] = None,
-        X_names: Optional[List[str]] = None,
-        y_names: Optional[List[str]] = None,
-    ) -> None:
-
-        self.__X_data = X_data
-        self.__y_data = y_data
-        self.__X_names = X_names
-        self.__y_names = y_names
-
-        if X_names is not None:
-            same_length_check(X_data[0], X_names)
-
-        if y_names is not None and y_data is not None:
-            same_length_check(np.unique(y_data, axis=0), y_names)
-
-        if y_data is not None:
-            same_length_check(X_data, y_data)
+    X_data: npt.NDArray
+    y_data: Optional[npt.NDArray] = None
+    X_names: Optional[List[str]] = None
+    y_names: Optional[List[str]] = None
 
     def __len__(self):
         return len(self.X_data)
 
     def __getitem__(self, pos):
-        if self.__y_data is not None:
-            return (self.__X_data[pos], self.__y_data[pos])
+        if self.y_data is not None:
+            return (self.X_data[pos], self.y_data[pos])
         else:
-            return (self.__X_data[pos], None)
+            return (self.X_data[pos], None)
 
-    @property
-    def X_data(self):
-        return self.__X_data
-
-    @property
-    def X_names(self):
-        return self.__X_names
-
-    def setX(self, X_data: npt.NDArray, X_names: Optional[List[str]] = None) -> None:
-        if X_names is not None:
-            same_length_check(X_data[0], X_names)
-        self.__X_data = X_data
-        self.__X_names = X_names
-
-    @property
-    def y_data(self):
-        return self.__y_data
-
-    @property
-    def y_names(self):
-        return self.__y_names
-
-    def setY(self, y_data: npt.NDArray, y_names: Optional[List[str]] = None) -> None:
-        if y_names is not None:
-            same_length_check(np.unique(y_data, axis=0), y_names)
-        self.__y_data = y_data
-        self.__y_names = y_names
+    def validate(self):
+        """Function that checks whether the object is correct or not."""
+        if self.y_data is not None and len(self.X_data) != len(self.y_data):
+            raise ValueError(
+                f"X_data and y_data must have equal lenght. X_data has {len(self.X_data)} elements and y_data has {len(self.y_data)} elements."
+            )
+        if self.X_names is not None and len(self.X_data[0]) != len(self.X_names):
+            raise ValueError(
+                f"X_data and X_names has different lenght and they must have the same. X_data has len {len(self.X_data[0])} and X_names has len {len(self.X_names)}."
+            )
+        if (
+            self.y_names is not None
+            and self.y_data is not None
+            and len(np.unique(self.y_data, axis=0)) != len(self.y_names)
+        ):
+            raise ValueError(
+                f"y_data has differents unique values that y_names values. y_data has {len(np.unique(self.y_data, axis=0))} unique values, and y_names has {len(self.y_names)}."
+            )
+        if self.y_data is not None and self.y_data.ndim > 1:
+            raise ValueError(
+                "y_data is multidimensional and we only support unidimensional labels."
+            )
 
 
 class FlexDataset(UserDict):
