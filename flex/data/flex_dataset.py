@@ -37,7 +37,7 @@ class FlexDataObject:
         else:
             return (self.X_data[pos], None)
 
-    def validate_data_object(self):
+    def validate(self):
         """Function that checks whether the object is correct or not."""
         if self.y_data is not None and len(self.X_data) != len(self.y_data):
             raise ValueError(

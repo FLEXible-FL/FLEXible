@@ -33,7 +33,7 @@ class TestFlexDataObject(unittest.TestCase):
         X_names = [f"x{i}" for i in range(X_data.shape[1] + 4)]
         with pytest.raises(Exception):
             fdo = FlexDataObject(X_data=X_data, y_data=y_data, X_names=X_names)
-            fdo.validate_data_object()
+            fdo.validate()
 
     def test_X_names_property_setter(self):
         X_data = np.random.rand(100).reshape([20, 5])
@@ -86,7 +86,7 @@ class TestFlexDataObject(unittest.TestCase):
         X_data = np.random.rand(100).reshape([20, 5])
         y_data = np.random.choice(2, 20)
         fcd = FlexDataObject(X_data=X_data, y_data=y_data)
-        fcd.validate_data_object()
+        fcd.validate()
 
     def test_validate_invalid_object(self):
         X_data = np.random.rand(100).reshape([20, 5])
@@ -94,24 +94,24 @@ class TestFlexDataObject(unittest.TestCase):
         X_names = [f"x{i}" for i in range(X_data.shape[1] - 1)]
         fcd = FlexDataObject(X_data=X_data, y_data=y_data, X_names=X_names)
         with pytest.raises(ValueError):
-            fcd.validate_data_object()
+            fcd.validate()
         X_names = [f"x{i}" for i in range(X_data.shape[1])]
         y_names = [f"class_{c}" for c in range(len(np.unique(y_data)) - 1)]
         fcd.X_names = X_names
         fcd.y_names = y_names
         with pytest.raises(ValueError):
-            fcd.validate_data_object()
+            fcd.validate()
 
     def test_len_X_data_differs_len_y_data(self):
         X_data = np.random.rand(100).reshape([20, 5])
         y_data = np.random.choice(2, 19)
         fcd = FlexDataObject(X_data=X_data, y_data=y_data)
         with pytest.raises(ValueError):
-            fcd.validate_data_object()
+            fcd.validate()
         y_data = np.random.choice(2, 30)
         fcd.y_data = y_data
         with pytest.raises(ValueError):
-            fcd.validate_data_object()
+            fcd.validate()
 
 
 class TestFlexDataset(unittest.TestCase):

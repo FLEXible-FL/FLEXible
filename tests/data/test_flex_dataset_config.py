@@ -13,7 +13,7 @@ class TestFlexDatasetConfig(unittest.TestCase):
         fcd = FlexDataObject(X_data=X_data, y_data=y_data)
         a = FlexDatasetConfig(n_clients=1)
         with pytest.raises(ValueError):
-            a.check(fcd)
+            a.validate(fcd)
 
     def test_weights(self):
         X_data = np.random.rand(100).reshape([20, 5])
@@ -21,7 +21,7 @@ class TestFlexDatasetConfig(unittest.TestCase):
         fcd = FlexDataObject(X_data=X_data, y_data=y_data)
         a = FlexDatasetConfig(n_clients=2, weights=[np.random.rand(3)])
         with pytest.raises(ValueError):
-            a.check(fcd)
+            a.validate(fcd)
 
     def test_mutually_exclusive_options(self):
         X_data = np.random.rand(100).reshape([20, 5])
@@ -29,7 +29,7 @@ class TestFlexDatasetConfig(unittest.TestCase):
         fcd = FlexDataObject(X_data=X_data, y_data=y_data)
         a = FlexDatasetConfig(classes_per_client=2, features_per_client=2)
         with pytest.raises(ValueError):
-            a.check(fcd)
+            a.validate(fcd)
 
     def test_classes_per_client_int(self):
         X_data = np.random.rand(100).reshape([20, 5])
@@ -37,10 +37,10 @@ class TestFlexDatasetConfig(unittest.TestCase):
         fcd = FlexDataObject(X_data=X_data, y_data=y_data)
         a = FlexDatasetConfig(classes_per_client=20)
         with pytest.raises(ValueError):
-            a.check(fcd)
+            a.validate(fcd)
         a.classes_per_client = 0
         with pytest.raises(ValueError):
-            a.check(fcd)
+            a.validate(fcd)
 
     def test_classes_per_client_tuple(self):
         X_data = np.random.rand(100).reshape([20, 5])
@@ -48,10 +48,10 @@ class TestFlexDatasetConfig(unittest.TestCase):
         fcd = FlexDataObject(X_data=X_data, y_data=y_data)
         a = FlexDatasetConfig(classes_per_client=(1, 2, 3))
         with pytest.raises(ValueError):
-            a.check(fcd)
+            a.validate(fcd)
         a.classes_per_client = (1,)
         with pytest.raises(ValueError):
-            a.check(fcd)
+            a.validate(fcd)
 
     def test_classes_per_client_tuple_bis(self):
         X_data = np.random.rand(100).reshape([20, 5])
@@ -59,7 +59,7 @@ class TestFlexDatasetConfig(unittest.TestCase):
         fcd = FlexDataObject(X_data=X_data, y_data=y_data)
         a = FlexDatasetConfig(classes_per_client=(3, 2))
         with pytest.raises(ValueError):
-            a.check(fcd)
+            a.validate(fcd)
 
     def test_classes_per_client_arr(self):
         X_data = np.random.rand(100).reshape([20, 5])
@@ -67,7 +67,7 @@ class TestFlexDatasetConfig(unittest.TestCase):
         fcd = FlexDataObject(X_data=X_data, y_data=y_data)
         a = FlexDatasetConfig(classes_per_client=[y_data[0], y_data[1], y_data])
         with pytest.raises(ValueError):
-            a.check(fcd)
+            a.validate(fcd)
 
     def test_features_per_client_int(self):
         X_data = np.random.rand(100).reshape([20, 5])
@@ -75,10 +75,10 @@ class TestFlexDatasetConfig(unittest.TestCase):
         fcd = FlexDataObject(X_data=X_data, y_data=y_data)
         a = FlexDatasetConfig(features_per_client=20)
         with pytest.raises(ValueError):
-            a.check(fcd)
+            a.validate(fcd)
         a.features_per_client = 0
         with pytest.raises(ValueError):
-            a.check(fcd)
+            a.validate(fcd)
 
     def test_features_per_client_tuple(self):
         X_data = np.random.rand(100).reshape([20, 5])
@@ -86,10 +86,10 @@ class TestFlexDatasetConfig(unittest.TestCase):
         fcd = FlexDataObject(X_data=X_data, y_data=y_data)
         a = FlexDatasetConfig(features_per_client=(1, 2, 3))
         with pytest.raises(ValueError):
-            a.check(fcd)
+            a.validate(fcd)
         a.features_per_client = (1,)
         with pytest.raises(ValueError):
-            a.check(fcd)
+            a.validate(fcd)
 
     def test_features_per_client_tuple_bis(self):
         X_data = np.random.rand(100).reshape([20, 5])
@@ -97,7 +97,7 @@ class TestFlexDatasetConfig(unittest.TestCase):
         fcd = FlexDataObject(X_data=X_data, y_data=y_data)
         a = FlexDatasetConfig(features_per_client=(3, 2))
         with pytest.raises(ValueError):
-            a.check(fcd)
+            a.validate(fcd)
 
     def test_features_per_client_arr(self):
         X_data = np.random.rand(100).reshape([20, 5])
@@ -105,4 +105,4 @@ class TestFlexDatasetConfig(unittest.TestCase):
         fcd = FlexDataObject(X_data=X_data, y_data=y_data)
         a = FlexDatasetConfig(features_per_client=[[0, 1], [2, 3], [4]])
         with pytest.raises(ValueError):
-            a.check(fcd)
+            a.validate(fcd)
