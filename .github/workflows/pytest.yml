@@ -4,7 +4,8 @@ name: run-tests-on-pull-request
 on:
   pull_request:
     branches:
-      - '*'
+      - 'main'
+    types: [synchronize, opened]
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -29,6 +30,6 @@ jobs:
       - name: Pytest coverage comment
         uses: MishaKav/pytest-coverage-comment@main
         with:
-          report-only-changed-files: true
+          report-only-changed-files: false
           pytest-coverage-path: ./pytest-coverage.txt
           junitxml-path: ./pytest.xml

@@ -42,7 +42,7 @@ class FlexDatasetConfig:
 
     """
 
-    def check(self, ds: FlexDataObject):
+    def validate(self, ds: FlexDataObject):
         if self.n_clients < 2:
             raise ValueError(
                 f"The number of clients must be greater or equal to 2, but n_clients={self.n_clients}"
