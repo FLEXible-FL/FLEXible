@@ -113,6 +113,13 @@ class TestFlexDataObject(unittest.TestCase):
         with pytest.raises(ValueError):
             fcd.validate()
 
+    def test_y_data_multidimensional(self):
+        X_data = np.random.rand(100).reshape([20, 5])
+        y_data = np.random.randint(0, 2, size=(20, 4))
+        fcd = FlexDataObject(X_data=X_data, y_data=y_data)
+        with pytest.raises(ValueError):
+            fcd.validate()
+
 
 class TestFlexDataset(unittest.TestCase):
     def test_get_method(self):

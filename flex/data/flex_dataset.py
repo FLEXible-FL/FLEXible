@@ -55,6 +55,10 @@ class FlexDataObject:
             raise ValueError(
                 f"y_data has differents unique values that y_names values. y_data has {len(np.unique(self.y_data, axis=0))} unique values, and y_names has {len(self.y_names)}."
             )
+        if self.y_data is not None and self.y_data.ndim > 1:
+            raise ValueError(
+                "y_data is multidimensional and we only support unidimensional labels."
+            )
 
 
 class FlexDataset(UserDict):
