@@ -42,7 +42,7 @@ class FlexDatasetConfig:
 
     """
 
-    def check(self, ds: FlexDataObject):
+    def validate(self, ds: FlexDataObject) -> None:
         if self.n_clients < 2:
             raise ValueError(
                 f"The number of clients must be greater or equal to 2, but n_clients={self.n_clients}"
@@ -50,6 +50,14 @@ class FlexDatasetConfig:
         if self.weights is not None and self.n_clients != len(self.weights):
             raise ValueError(
                 f"The number of weights must equal the number of clients, but n_clients={self.n_clients} and len(weights)={len(self.weights)}."
+            )
+        if self.weights is not None and max(self.weights) > 1:
+            raise ValueError(
+                "Provided weights contains an element greater than 1, we do not allow sampling more than one time the entire dataset."
+            )
+        if not self.replacement and self.features_per_client is not None:
+            raise ValueError(
+                "By setting replacement to False and specifying features_per_client, clients will not share any data instance."
             )
         if self.classes_per_client is not None and self.features_per_client is not None:
             raise ValueError(

@@ -3,7 +3,7 @@ import unittest
 import numpy as np
 import pytest
 
-from flex.data.flex_dataset import FlexDataset, FlexDataObject
+from flex.data.flex_dataset import FlexDataObject, FlexDataset
 
 
 class TestFlexDataObject(unittest.TestCase):

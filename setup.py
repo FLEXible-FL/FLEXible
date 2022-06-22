@@ -1,8 +1,6 @@
 from setuptools import find_packages, setup
 
-_deps = [
-    "numpy"
-]
+_deps = ["numpy"]
 
 install_requires = _deps
 
@@ -16,5 +14,5 @@ setup(
     url="https://github.com/FLEXible-FL/FLEX-framework",
     packages=find_packages(),
     install_requires=["numpy", "pytest"],
-    python_requires=">=3.9.0"
+    python_requires=">=3.9.0",
 )

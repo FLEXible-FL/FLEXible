@@ -1,6 +1,6 @@
 from collections import UserDict
 from collections.abc import Sized
-from typing import Any, List, Optional
+from typing import Any, Hashable, List, Optional
 
 import numpy as np
 import numpy.typing as npt
@@ -102,7 +102,7 @@ class FlexDataset(UserDict):
         with the clients ids as keys and the dataset as value.
     """
 
-    def __setitem__(self, key: str, item: FlexDataObject) -> None:
+    def __setitem__(self, key: Hashable, item: FlexDataObject) -> None:
         self.data[key] = item
 
     def get(self, key: str, default: Optional[Any] = None) -> Any:
