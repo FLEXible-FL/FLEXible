@@ -29,7 +29,7 @@ def one_hot_encoding(client, *args, **kwargs):
     Returns:
         FlexDataObject: Returns the client with the y_data property updated.
     """
-    if 'n_classes' not in kwargs:
+    if "n_classes" not in kwargs:
         raise ValueError(
             "No number of classes given. The parameter n_classes must be given through kwargs."
         )
