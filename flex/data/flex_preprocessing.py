@@ -1,4 +1,3 @@
-import multiprocessing
 from typing import Callable
 
 import numpy as np
@@ -6,23 +5,28 @@ import numpy as np
 from flex.data.flex_dataset import FlexDataset
 
 
-def normalize(client):
+def normalize(client, *args, **kwargs):
     """Function that normalizes the data
 
     Args:
-        X_data (_type_): _description_
+        client (FlexDataObject): client whether to normalize the data.
 
     Returns:
-        _type_: _description_
+        np.array: Returns data normalized
     """
     norm = np.linalg.norm(client.X_data, axis=0)
     if any(norm == 0):
         norm = np.finfo(client.X_data.dtype).eps
-    return client.X_data / norm
+    client.X_data = client.X_data / norm
+    return client
 
 
 def normalize_data_at_client(
-    fld: FlexDataset, clients_ids: list = None, processes: int = None
+    fld: FlexDataset,
+    clients_ids: list = None,
+    processes: int = None,
+    *args,
+    **kwargs,
 ):
     """Function that normalize the data over the clients.
 
@@ -35,33 +39,9 @@ def normalize_data_at_client(
     Returns:
         FlexDataset: The FlexDataset normalized.
     """
-    if processes is not None:
-        processes = min(processes, len(fld.keys()))
-    pool = multiprocessing.Pool(processes=processes)
-    if clients_ids is not None:
-        chosen_clients = FlexDataset(
-            {
-                client_id: fld[client_id]
-                for client_id in clients_ids
-                if client_id in fld.keys()
-            }
-        )
-    else:
-        chosen_clients = fld
-    # print(f"Client_1: {chosen_clients['client_1'].keys()}")
-    print(f"Client_1: {chosen_clients['client_1'].X_data.shape}")
-    processed_values = [
-        pool.apply(normalize, args=client)  #  , kwds={"axis": axis})
-        for _, client in chosen_clients.items()
-    ]
-
-    for (client_id, client_data), updated_X_data in zip(
-        chosen_clients.items(), processed_values
-    ):
-        chosen_clients[client_id].X_data = updated_X_data.get(timeout=1)
-    # chosen_clients = FlexDataset(dict(zip(chosen_clients.keys(), processed_values)))
-    fld.update(chosen_clients)
-    return fld
+    return preprocessing_custom_func(
+        fld, clients_ids, processes, normalize, *args, **kwargs
+    )
 
 
 def preprocessing_custom_func(
@@ -96,25 +76,10 @@ def preprocessing_custom_func(
         )
     if processes is not None:
         processes = min(processes, len(fld.keys()))
-    pool = multiprocessing.Pool(processes=processes)
-    if clients_ids is not None:
-        chosen_clients = FlexDataset(
-            {
-                client_id: fld[client_id]
-                for client_id in clients_ids
-                if client_id in fld.keys()
-            }
-        )
-    else:
-        chosen_clients = fld
-    processed_values = [
-        pool.apply(func=func, args=(client.X_data, args), kwds=kwargs)
-        for client_id, client in chosen_clients.items()
-    ]
-    for (client_id, client_data), updated_X_data in zip(
-        chosen_clients.items(), processed_values
-    ):
-        chosen_clients[client_id].X_data = updated_X_data
-    # chosen_clients = FlexDataset(dict(zip(chosen_clients.keys(), processed_values)))
+    if clients_ids is None:
+        clients_ids = list(fld.keys())
+    chosen_clients = FlexDataset(
+        {client_id: func(fld[client_id], *args, **kwargs) for client_id in clients_ids}
+    )
     fld.update(chosen_clients)
     return fld
