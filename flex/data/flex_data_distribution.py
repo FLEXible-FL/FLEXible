@@ -171,18 +171,30 @@ class FlexDataDistribution(object):
         sub_data_indices = data_indices[np.isin(y_data_available, sub_y_classes)]
         if config.weights is not None:
             len_all_data_available = len(sub_data_indices)
-            sub_data_indices = np.array([], dtype='int64')
+            sub_data_indices = np.array([], dtype="int64")
             if not isinstance(sub_y_classes, int):
-                for c in sub_y_classes:  # Ensure that each class is represented in the sample
+                for (
+                    c
+                ) in (
+                    sub_y_classes
+                ):  # Ensure that each class is represented in the sample
                     available_data_indices = data_indices[y_data_available == c]
-                    data_proportion = floor(len_all_data_available * config.weights[client_i] / len(sub_y_classes))
+                    data_proportion = floor(
+                        len_all_data_available
+                        * config.weights[client_i]
+                        / len(sub_y_classes)
+                    )
                     tmp_indices = rng.choice(
                         available_data_indices, data_proportion, replace=False
                     )
                     sub_data_indices = np.concatenate((sub_data_indices, tmp_indices))
             else:
-                sub_data_indices = data_indices[np.isin(y_data_available, sub_y_classes)]
-                data_proportion = floor(len(sub_data_indices) * config.weights[client_i])
+                sub_data_indices = data_indices[
+                    np.isin(y_data_available, sub_y_classes)
+                ]
+                data_proportion = floor(
+                    len(sub_data_indices) * config.weights[client_i]
+                )
                 sub_data_indices = rng.choice(
                     sub_data_indices, data_proportion, replace=False
                 )
