@@ -1,7 +1,8 @@
 import copy
-from typing import List
+from math import floor
 
 import numpy as np
+import numpy.typing as npt
 from numpy.random import default_rng
 
 from flex.data import FlexDataObject, FlexDataset, FlexDatasetConfig
@@ -30,27 +31,38 @@ class FlexDataDistribution(object):
         """
         cdata.validate()
         config.validate(cdata)
+        rng = default_rng(seed=config.seed)
 
         config_ = copy.copy(config)  # copy, because we might modify some components
-        if not config.replacement and sum(config.weights) > 1:  # normalize weights
+
+        if (  # normalize weights
+            config.weights is not None
+            and not config.replacement
+            and sum(config.weights) > 1
+        ):
             config_.weights = [w / sum(config.weights) for w in config.weights]
+        # elif config.weights is None and config.classes_per_client is None:
+        #    config_.weights = [1 / config.n_clients for _ in range(config.n_clients)]
 
         fed_dataset = FlexDataset()
         remaining_data_indices = np.arange(len(cdata))
-        for i in range(config.n_clients):
+        for i in range(config_.n_clients):
             (
                 sub_data_indices,
                 sub_features_indices,
                 remaining_data_indices,
-            ) = cls.__sample(remaining_data_indices, cdata, config_, i)
-            sub_dataset = FlexDataObject()
-            sub_dataset.X_data = cdata.X_data[
-                sub_data_indices, sub_features_indices, ...
-            ]
-            sub_dataset.y_data = cdata.y_data[sub_data_indices]
-            sub_dataset.X_names = cdata.X_names[sub_features_indices]
-            sub_dataset.y_names = cdata.y_names
-            fed_dataset[i] = sub_dataset
+            ) = cls.__sample(rng, remaining_data_indices, cdata, config_, i)
+
+            fed_dataset[i] = FlexDataObject(
+                X_data=cdata.X_data[sub_data_indices][:, sub_features_indices],
+                y_data=cdata.y_data[sub_data_indices]
+                if cdata.y_data is not None
+                else None,
+                X_names=cdata.X_names[sub_features_indices]
+                if cdata.X_names is not None
+                else None,
+                y_names=cdata.y_names,
+            )
 
         return fed_dataset
 
@@ -72,62 +84,135 @@ class FlexDataDistribution(object):
     @classmethod
     def __sample(
         cls,
-        data_indices: List[int],
+        rng,
+        data_indices: npt.NDArray[np.int_],
         data: FlexDataObject,
         config: FlexDatasetConfig,
         client_i: int,
     ):
-        y_classes = np.unique(data.y_data)
-        feature_indices = np.arange(data.y_data.shape[1])
-        rng = default_rng()
-        data_proportion = int(len(data) * config.weights[client_i])
-        if (  # Only weights affect to the sampling procedure
-            config.classes_per_client is None and config.features_per_client is None
-        ):
-            sub_features_indices = slice(None)
-            sub_data_indices = rng.choice(data_indices, data_proportion, replace=False)
+        if config.classes_per_client is None and config.features_per_client is None:
+            sub_data_indices, sub_features_indices = cls.__sample_only_with_weights(
+                rng, data_indices, data, config, client_i
+            )
         elif config.classes_per_client is not None:
-            if isinstance(  # We have a fixed number of classes per client
-                config.classes_per_client, int
-            ):
-                sub_y_classes = rng.choice(
-                    y_classes, config.classes_per_client, replace=False
-                )
-            elif isinstance(  # We have a maximum and a minimum of classes per client
-                config.classes_per_client, tuple
-            ):
-                sub_y_classes = rng.choice(
-                    y_classes,
-                    np.random.randint(*config.classes_per_client),
-                    replace=False,
-                )
-            else:  # We have classes assigned for each client
-                sub_y_classes = config.classes_per_client[client_i]
-            sub_data_indices = rng.choice(
-                data_indices[np.isin(data.y_data, sub_y_classes)],
-                data_proportion,
+            sub_data_indices, sub_features_indices = cls.__sample_with_classes(
+                rng, data_indices, data, config, client_i
+            )
+        else:  # elif config.features_per_client is not None
+            sub_data_indices, sub_features_indices = cls.__sample_with_features(
+                rng, data_indices, data, config, client_i
+            )
+
+        # Update remaning data indices
+        remaining_data_indices = (
+            data_indices
+            if config.replacement
+            else np.array(list(set(data_indices) - set(sub_data_indices)))
+        )
+
+        return sub_data_indices, sub_features_indices, remaining_data_indices
+
+    @classmethod
+    def __sample_only_with_weights(
+        cls,
+        rng,
+        data_indices: npt.NDArray[np.int_],
+        data: FlexDataObject,
+        config: FlexDatasetConfig,
+        client_i: int,
+    ):
+        # Sample data indices
+        if config.weights is None:  # No weights provided
+            data_proportion = floor(len(data) / config.n_clients)
+        else:
+            data_proportion = floor(len(data) * config.weights[client_i])
+
+        sub_data_indices = rng.choice(data_indices, data_proportion, replace=False)
+        # Sample feature indices
+        sub_features_indices = slice(
+            None
+        )  # Default slice for features, it includes all the features
+        return sub_data_indices, sub_features_indices
+
+    @classmethod
+    def __sample_with_classes(
+        cls,
+        rng,
+        data_indices: npt.NDArray[np.int_],
+        data: FlexDataObject,
+        config: FlexDatasetConfig,
+        client_i: int,
+    ):
+        # Sample data indices
+        y_data_available = data.y_data[data_indices]
+        y_classes_available = np.unique(y_data_available)
+
+        if isinstance(  # We have a fixed number of classes per client
+            config.classes_per_client, int
+        ):
+            sub_y_classes = rng.choice(
+                y_classes_available, config.classes_per_client, replace=False
+            )
+        elif isinstance(  # We have a maximum and a minimum of classes per client
+            config.classes_per_client, tuple
+        ):
+            sub_y_classes = rng.choice(
+                y_classes_available,
+                rng.integers(
+                    config.classes_per_client[0], config.classes_per_client[1] + 1
+                ),
                 replace=False,
             )
-            sub_features_indices = slice(None)
-        else:
-            if isinstance(
-                config.features_per_client, int
-            ):  # We have a fixed number of features per client
-                sub_features_indices = rng.choice(
-                    feature_indices, config.features_per_client, replace=False
-                )
-            elif isinstance(
-                config.features_per_client, tuple
-            ):  # We have a maximum and a minimum of classes per client
-                sub_features_indices = rng.choice(
-                    feature_indices,
-                    np.random.randint(*config.features_per_client),
-                    replace=False,
-                )
-            else:
-                sub_features_indices = config.features_per_client[client_i]
-            sub_data_indices = rng.choice(data_indices, data_proportion, replace=False)
-        remaining_data_indices = data_indices
-        if not config.replacement:
-            remaining_data_indices = list(set(data_indices) - set(sub_data_indices))
-        return sub_data_indices, sub_features_indices, remaining_data_indices
+        else:  # We have classes assigned for each client
+            sub_y_classes = config.classes_per_client[client_i]
+
+        sub_data_indices = data_indices[np.isin(y_data_available, sub_y_classes)]
+        if config.weights is not None:
+            data_proportion = floor(len(sub_data_indices) * config.weights[client_i])
+            sub_data_indices = rng.choice(
+                sub_data_indices, data_proportion, replace=False
+            )
+
+        # Sample feature indices
+        sub_features_indices = slice(
+            None
+        )  # Default slice for features, it includes all the features
+
+        return sub_data_indices, sub_features_indices
+
+    @classmethod
+    def __sample_with_features(
+        cls,
+        rng,
+        data_indices: npt.NDArray[np.int_],
+        data: FlexDataObject,
+        config: FlexDatasetConfig,
+        client_i: int,
+    ):
+        # Sample data indices
+        sub_data_indices, _ = cls.__sample_only_with_weights(
+            rng, data_indices, data, config, client_i
+        )
+
+        # Sample feature indices
+        feature_indices = np.arange(data.X_data.shape[1])
+        if isinstance(  # We have a fixed number of features per client
+            config.features_per_client, int
+        ):
+            sub_features_indices = rng.choice(
+                feature_indices, config.features_per_client, replace=False
+            )
+        elif isinstance(  # We have a maximum and a minimum of features per client
+            config.features_per_client, tuple
+        ):
+            sub_features_indices = rng.choice(
+                feature_indices,
+                rng.integers(
+                    config.features_per_client[0], config.features_per_client[1] + 1
+                ),
+                replace=False,
+            )
+        else:  # We have an array of features per client, that is, each client has an set of classes
+            sub_features_indices = config.features_per_client[client_i]
+
+        return sub_data_indices, sub_features_indices

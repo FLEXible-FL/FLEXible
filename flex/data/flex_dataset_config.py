@@ -1,3 +1,4 @@
+import warnings
 from dataclasses import dataclass
 from typing import Optional, Tuple, Union
 
@@ -13,6 +14,8 @@ class FlexDatasetConfig:
 
     Attributes
     ----------
+    seed: float
+        Seed used to make the federated dataset generated with this configuration reproducible
     n_clients: int
         Number of clients to split a centralized dataset. Default 2
     weights: Optional[npt.NDArray]
@@ -28,6 +31,7 @@ class FlexDatasetConfig:
         Features to assign to each client, it share the same interface as classes_per_client.
     """
 
+    seed: float = None
     n_clients: int = 2
     weights: Optional[npt.NDArray] = None
     replacement: bool = True
@@ -80,6 +84,14 @@ class FlexDatasetConfig:
                     raise ValueError(
                         f"classes_per_client if provided as a tuple, it must have two elements, mininum number of features per client and maximum number of features per client, but features_per_client={self.features_per_client}."
                     )
+                elif not self.replacement and self.classes_per_client[
+                    1
+                ] * self.n_clients > len(np.unique(ds.y_data)):
+                    warnings.warn(
+                        "The minimum number of classes_per_client migth not be enforced if each client has the maximum number of classes.",
+                        RuntimeWarning,
+                    )
+
             elif self.n_clients != len(self.classes_per_client):
                 raise ValueError(
                     "classes_per_client if provided as a list o np.ndarray, its length and n_clients must equal."
