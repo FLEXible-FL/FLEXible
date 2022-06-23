@@ -1,8 +1,4 @@
-from typing import Callable
-
 import numpy as np
-
-from flex.data.flex_dataset import FlexDataset
 
 
 def normalize(client, *args, **kwargs):
@@ -21,65 +17,24 @@ def normalize(client, *args, **kwargs):
     return client
 
 
-def normalize_data_at_client(
-    fld: FlexDataset,
-    clients_ids: list = None,
-    processes: int = None,
-    *args,
-    **kwargs,
-):
-    """Function that normalize the data over the clients.
+def one_hot_encoding(client, *args, **kwargs):
+    """Function that apply one hot encoding to the labels of a client.
 
     Args:
-        fld (FlexDataset): FlexDataset containing all the data from the clients.
-        clients_ids (list, optional): List containig the the clients id whether
-        to normalize the data or not. Defaults to None.
-        processes (int, optional): Number of processes to paralelize. Default to None (Use all).
-
-    Returns:
-        FlexDataset: The FlexDataset normalized.
-    """
-    return preprocessing_custom_func(
-        fld, clients_ids, processes, normalize, *args, **kwargs
-    )
-
-
-def preprocessing_custom_func(
-    fld: FlexDataset,
-    clients_ids: list = None,
-    processes: int = None,
-    func: Callable = None,
-    *args,
-    **kwargs,
-):
-    """This function applies a custom function to the FlexDataset in paralels.
-
-    The *args and the **kwargs provided to this function are all the args and kwargs
-    of the custom function provided by the client.
-
-    Args:
-        fld (FlexDataset): FlexDataset containing all the data from the clients.
-        clients_ids (list, optional): List containig the the clients id whether
-        to normalize the data or not. Defaults to None.
-        processes (int, optional): Number of processes to paralelize. Default to None (Use all).
-        func (Callable, optional): Function to apply to preprocess the data. Defaults to None.
-
-    Returns:
-        FlexDataset: The FlexDataset normalized.
+        client (FlexDataObject): client wheter to one hot encode his classes.
 
     Raises:
-        ValueError: If function is not given it raises an error.
+        ValueError: Raises value error if n_classes is not given in the kwargs argument.
+
+    Returns:
+        FlexDataObject: Returns the client with the y_data property updated.
     """
-    if func is None:
+    if 'n_classes' not in kwargs:
         raise ValueError(
-            "Function to apply can't be null. Please give a function to apply."
+            "No number of classes given. The parameter n_classes must be given through kwargs."
         )
-    if processes is not None:
-        processes = min(processes, len(fld.keys()))
-    if clients_ids is None:
-        clients_ids = list(fld.keys())
-    chosen_clients = FlexDataset(
-        {client_id: func(fld[client_id], *args, **kwargs) for client_id in clients_ids}
-    )
-    fld.update(chosen_clients)
-    return fld
+    n_classes = int(kwargs["n_classes"])
+    one_hot_classes = np.zeros((client.y_data.size, n_classes))
+    one_hot_classes[np.arange(client.y_data.size), client.y_data] = 1
+    client.y_data = one_hot_classes
+    return client
