@@ -122,3 +122,11 @@ class TestFlexDatasetConfig(unittest.TestCase):
         a = FlexDatasetConfig(features_per_client=[[0, 1], [2, 3], [4]])
         with pytest.raises(ValueError):
             a.validate(fcd)
+
+    def test_features_per_client_tuple_warning(self):
+        X_data = np.random.rand(100).reshape([20, 5])
+        y_data = np.random.choice(2, 20)
+        fcd = FlexDataObject(X_data=X_data, y_data=y_data)
+        a = FlexDatasetConfig(classes_per_client=(1, 2), replacement=False)
+        with pytest.warns(RuntimeWarning):
+            a.validate(fcd)
