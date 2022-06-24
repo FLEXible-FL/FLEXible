@@ -1,9 +1,12 @@
 from collections import UserDict
+from copy import deepcopy
 from dataclasses import dataclass
-from typing import Any, Hashable, List, Optional
+from typing import Any, Callable, Hashable, List, Optional
 
 import numpy as np
 import numpy.typing as npt
+
+from flex.data.flex_preprocessing import normalize, one_hot_encoding
 
 
 @dataclass
@@ -75,8 +78,92 @@ class FlexDataset(UserDict):
     def __setitem__(self, key: Hashable, item: FlexDataObject) -> None:
         self.data[key] = item
 
-    def get(self, key: str, default: Optional[Any] = None) -> Any:
+    def get(self, key: Hashable, default: Optional[Any] = None) -> Any:
         try:
             return self[key]
         except KeyError:
             return default
+
+    def map(
+        self,
+        clients_ids: List[Hashable] = None,
+        num_proc: int = None,
+        func: Callable = None,
+        *args,
+        **kwargs,
+    ):
+        """This function applies a custom function to the FlexDataset in paralels.
+
+        The *args and the **kwargs provided to this function are all the args and kwargs
+        of the custom function provided by the client.
+
+        Args:
+            fld (FlexDataset): FlexDataset containing all the data from the clients.
+            clients_ids (List[Hashtable], optional): List containig the the clients id where func will
+            be applied. Each element of the list must be hashable and part of the FlexDataset. Defaults to None.
+            num_proc (int, optional): Number of processes to paralelize. Default to None (Use all).
+            func (Callable, optional): Function to apply to preprocess the data. Defaults to None.
+
+        Returns:
+            FlexDataset: The FlexDataset modified.
+
+        Raises:
+            ValueError: If function is not given it raises an error.
+        """
+        if func is None:
+            raise ValueError(
+                "Function to apply can't be null. Please give a function to apply."
+            )
+        if num_proc is not None:
+            num_proc = min(num_proc, len(self.keys()))
+        if clients_ids is None:
+            clients_ids = list(self.keys())
+        chosen_clients = FlexDataset(
+            {
+                client_id: func(self[client_id], *args, **kwargs)
+                for client_id in clients_ids
+            }
+        )
+        new_fld = deepcopy(self)
+        new_fld.update(chosen_clients)
+        return new_fld
+
+    def normalize(
+        self,
+        clients_ids: List[Hashable] = None,
+        num_proc: int = None,
+        *args,
+        **kwargs,
+    ):
+        """Function that normalize the data over the clients.
+
+        Args:
+            fld (FlexDataset): FlexDataset containing all the data from the clients.
+            clients_ids (List[Hashtable], optional): List containig the clients id whether
+            to normalize the data or not. Each element of the list must be hashable. Defaults to None.
+            num_proc (int, optional): Number of processes to paralelize. Default to None (Use all).
+
+        Returns:
+            FlexDataset: The FlexDataset normalized.
+        """
+        return self.map(clients_ids, num_proc, normalize, *args, **kwargs)
+
+    def one_hot_encoding(
+        self,
+        clients_ids: List[Hashable] = None,
+        num_proc: int = None,
+        *args,
+        **kwargs,
+    ):
+        """Function that apply one hot encoding to the client classes.
+
+        Args:
+            fld (FlexDataset): FlexDataset containing all the data from the clients.
+            clients_ids (List[Hashtable], optional): List containig the the clients id whether
+            to normalize the data or not. Each element of the list must be hashable. Defaults to None.
+            num_proc (int, optional): Number of processes to paralelize. Default to None (Use all).
+
+        Returns:
+            FlexDataset: The FlexDataset normalized.
+        """
+        return self.map(clients_ids, num_proc, one_hot_encoding, *args, **kwargs)
