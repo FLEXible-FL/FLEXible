@@ -14,8 +14,8 @@ class FlexDatasetConfig:
 
     Attributes
     ----------
-    seed: float
-        Seed used to make the federated dataset generated with this configuration reproducible
+    seed: Optional[int]
+        Seed used to make the federated dataset generated with this configuration reproducible. Default None
     n_clients: int
         Number of clients to split a centralized dataset. Default 2
     weights: Optional[npt.NDArray]
@@ -33,7 +33,7 @@ class FlexDatasetConfig:
         Names to identifty each client, if not provided clients will be indexed using integers. Default None.
     """
 
-    seed: float = None
+    seed: Optional[int] = None
     n_clients: int = 2
     weights: Optional[npt.NDArray] = None
     replacement: bool = True

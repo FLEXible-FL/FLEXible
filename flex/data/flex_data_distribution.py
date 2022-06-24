@@ -1,5 +1,6 @@
 import copy
 from math import floor
+from typing import Tuple
 
 import numpy as np
 import numpy.typing as npt
@@ -14,11 +15,11 @@ class FlexDataDistribution(object):
     def __init__(self, create_key: object = None) -> None:
         assert (
             create_key == FlexDataDistribution.__create_key
-        ), """FlexDataDistribution objects must be created using FlexDataDistribution.from_state or
+        ), """FlexDataDistribution objects must be created using FlexDataDistribution.from_config or
         FlexDataDistribution.iid_distribution"""
 
     @classmethod
-    def from_state(cls, cdata: FlexDataObject, config: FlexDatasetConfig):
+    def from_config(cls, cdata: FlexDataObject, config: FlexDatasetConfig):
         """This function prepare the data from a centralized data structure to a federated one.
         It will run diffetent modifications to federate the data.
 
@@ -33,16 +34,20 @@ class FlexDataDistribution(object):
         config.validate(cdata)
         rng = default_rng(seed=config.seed)
 
-        config_ = copy.copy(config)  # copy, because we might modify some components
+        config_ = copy.deepcopy(config)  # copy, because we might modify some components
 
-        if (  # normalize weights
+        if (  # normalize weights if no replacement
             config.weights is not None
             and not config.replacement
             and sum(config.weights) > 1
         ):
-            config_.weights = [w / sum(config.weights) for w in config.weights]
-        # elif config.weights is None and config.classes_per_client is None:
-        #    config_.weights = [1 / config.n_clients for _ in range(config.n_clients)]
+            config_.weights = np.array(
+                [w / sum(config.weights) for w in config.weights]
+            )
+        if (  # If no client_names, then we index clients with integers
+            config_.client_names is None
+        ):
+            config_.client_names = list(range(config_.n_clients))
 
         fed_dataset = FlexDataset()
         remaining_data_indices = np.arange(len(cdata))
@@ -53,7 +58,7 @@ class FlexDataDistribution(object):
                 remaining_data_indices,
             ) = cls.__sample(rng, remaining_data_indices, cdata, config_, i)
 
-            fed_dataset[i] = FlexDataObject(
+            fed_dataset[config_.client_names[i]] = FlexDataObject(
                 X_data=cdata.X_data[sub_data_indices][:, sub_features_indices],
                 y_data=cdata.y_data[sub_data_indices]
                 if cdata.y_data is not None
@@ -75,7 +80,7 @@ class FlexDataDistribution(object):
             n_clients (int): Number of clients in the Federated Learning experiment. Default 2.
 
         Returns:
-            federated_dataset (FederatedFlexDatasetObject): Federated Dataset,
+            federated_dataset (FederatedFlexDatasetObject): Federated Dataset
         """
         # TODO: Once FlexState is finished, and other functions to create the FlexDataset
         # are finished too, continue with this class.
@@ -84,12 +89,27 @@ class FlexDataDistribution(object):
     @classmethod
     def __sample(
         cls,
-        rng,
+        rng: np.random.Generator,
         data_indices: npt.NDArray[np.int_],
         data: FlexDataObject,
         config: FlexDatasetConfig,
         client_i: int,
-    ):
+    ) -> Tuple[npt.NDArray[np.int_], npt.NDArray[np.int_], npt.NDArray[np.int_]]:
+        """Function to sample indices from a FlexDataObject as especified by a FlexDatasetConfig.
+
+        Args:
+            rng (np.random.Generator): Random number generator used to sample.
+            data_indices (npt.NDArray[np.int_]): Array of available data indices to sample from.
+            data (FlexDataObject): Centralizaed dataset represented as a FlexDataObject.
+            config (FlexDatasetConfig): Configuration used to federate a FlexDataObject.
+            client_i (int): Position of client which will be identified with the generated sample.
+
+        Returns:
+            sample_indices (Tuple[npt.NDArray[np.int_], npt.NDArray[np.int_], npt.NDArray[np.int_]]): it returns
+            the sampled data indices, the sampled feature indices and the data indices which were not used for
+            the sampled data indices. Note that, the latter are only used for the config.replacement option, otherwise
+            it contains all the provided data_indices.
+        """
         if config.classes_per_client is None and config.features_per_client is None:
             sub_data_indices, sub_features_indices = cls.__sample_only_with_weights(
                 rng, data_indices, data, config, client_i
@@ -115,12 +135,27 @@ class FlexDataDistribution(object):
     @classmethod
     def __sample_only_with_weights(
         cls,
-        rng,
+        rng: np.random.Generator,
         data_indices: npt.NDArray[np.int_],
         data: FlexDataObject,
         config: FlexDatasetConfig,
         client_i: int,
     ):
+        """Especialized function to sample indices from a FlexDataObject as especified by a FlexDatasetConfig.
+            It takes into consideration the config.weights option and applies it. If no config.weights are
+            provided, then we consider that the weights are the same for all the clients.
+
+        Args:
+            rng (np.random.Generator): Random number generator used to sample.
+            data_indices (npt.NDArray[np.int_]): Array of available data indices to sample from.
+            data (FlexDataObject): Centralizaed dataset represented as a FlexDataObject.
+            config (FlexDatasetConfig): Configuration used to federate a FlexDataObject.
+            client_i (int): Position of client which will be identified with the generated sample.
+
+        Returns:
+            sample_indices (Tuple[npt.NDArray[np.int_], npt.NDArray[np.int_]]): it returns
+            the sampled data indices and all the feature indices.
+        """
         # Sample data indices
         if config.weights is None:  # No weights provided
             data_proportion = floor(len(data) / config.n_clients)
@@ -137,12 +172,28 @@ class FlexDataDistribution(object):
     @classmethod
     def __sample_with_classes(
         cls,
-        rng,
+        rng: np.random.Generator,
         data_indices: npt.NDArray[np.int_],
         data: FlexDataObject,
         config: FlexDatasetConfig,
         client_i: int,
     ):
+        """Especialized function to sample indices from a FlexDataObject as especified by a FlexDatasetConfig.
+            It takes into consideration the config.classes_per_client option and applies it. If config.weights are
+            provided, then we consider the current weight is shared equally among the sampled classes. Otherwise,
+            we sample all the elements with the sampled classes.
+
+        Args:
+            rng (np.random.Generator): Random number generator used to sample.
+            data_indices (npt.NDArray[np.int_]): Array of available data indices to sample from.
+            data (FlexDataObject): Centralizaed dataset represented as a FlexDataObject.
+            config (FlexDatasetConfig): Configuration used to federate a FlexDataObject.
+            client_i (int): Position of client which will be identified with the generated sample.
+
+        Returns:
+            sample_indices (Tuple[npt.NDArray[np.int_], npt.NDArray[np.int_]): it returns the sampled data indices
+            and all the feature indices.
+        """
         # Sample data indices
         y_data_available = data.y_data[data_indices]
         y_classes_available = np.unique(y_data_available)
@@ -215,6 +266,21 @@ class FlexDataDistribution(object):
         config: FlexDatasetConfig,
         client_i: int,
     ):
+        """Especialized function to sample indices from a FlexDataObject as especified by a FlexDatasetConfig.
+            It takes into consideration the config.features_per_client option and applies it. Weights are applied
+            the same as in __sample_only_with_weights.
+
+        Args:
+            rng (np.random.Generator): Random number generator used to sample.
+            data_indices (npt.NDArray[np.int_]): Array of available data indices to sample from.
+            data (FlexDataObject): Centralizaed dataset represented as a FlexDataObject.
+            config (FlexDatasetConfig): Configuration used to federate a FlexDataObject.
+            client_i (int): Position of client which will be identified with the generated sample.
+
+        Returns:
+            sample_indices (Tuple[npt.NDArray[np.int_], npt.NDArray[np.int_]): it returns the sampled data indices
+            and the sampled feature indices.
+        """
         # Sample data indices
         sub_data_indices, _ = cls.__sample_only_with_weights(
             rng, data_indices, data, config, client_i

@@ -92,7 +92,7 @@ class FlexDataset(UserDict):
         *args,
         **kwargs,
     ):
-        """This function applies a custom function to the FlexDataset in paralels.
+        """This function applies a custom function to the FlexDataset in parallel.
 
         The *args and the **kwargs provided to this function are all the args and kwargs
         of the custom function provided by the client.
@@ -105,7 +105,7 @@ class FlexDataset(UserDict):
             func (Callable, optional): Function to apply to preprocess the data. Defaults to None.
 
         Returns:
-            FlexDataset: The FlexDataset modified.
+            FlexDataset: The modified FlexDataset.
 
         Raises:
             ValueError: If function is not given it raises an error.

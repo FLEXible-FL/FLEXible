@@ -12,13 +12,23 @@ class TestFlexDataDistribution(unittest.TestCase):
         with pytest.raises(AssertionError):
             FlexDataDistribution()
 
+    def test_client_names(self):
+        X_data = np.random.rand(100).reshape([20, 5])
+        y_data = np.random.choice(2, 20)
+        fcd = FlexDataObject(X_data=X_data, y_data=y_data)
+        config = FlexDatasetConfig(n_clients=3, client_names=["Juan", "Pepe", 2])
+        flex_dataset = FlexDataDistribution.from_config(fcd, config)
+        assert "Juan" in flex_dataset
+        assert "Pepe" in flex_dataset
+        assert 2 in flex_dataset
+
     def test_nclients(self):
         rng = default_rng()
         X_data = np.random.rand(100).reshape([20, 5])
         y_data = rng.choice(2, 20)
         fcd = FlexDataObject(X_data=X_data, y_data=y_data)
         config = FlexDatasetConfig(n_clients=2)
-        flex_dataset = FlexDataDistribution.from_state(fcd, config)
+        flex_dataset = FlexDataDistribution.from_config(fcd, config)
         assert len(flex_dataset) == config.n_clients
         assert len(flex_dataset[0]) == len(flex_dataset[1])
         assert len(flex_dataset[0]) + len(flex_dataset[1]) == len(fcd)
@@ -29,7 +39,7 @@ class TestFlexDataDistribution(unittest.TestCase):
         y_data = rng.choice(2, 20)
         fcd = FlexDataObject(X_data=X_data, y_data=y_data)
         config = FlexDatasetConfig(n_clients=2, weights=[1, 1], replacement=False)
-        flex_dataset = FlexDataDistribution.from_state(fcd, config)
+        flex_dataset = FlexDataDistribution.from_config(fcd, config)
         assert len(flex_dataset) == config.n_clients
         assert len(flex_dataset[0]) == len(flex_dataset[1])
         assert len(np.unique(flex_dataset[0].y_data)) == 2
@@ -41,7 +51,7 @@ class TestFlexDataDistribution(unittest.TestCase):
         y_data = rng.choice(2, 20)
         fcd = FlexDataObject(X_data=X_data, y_data=y_data)
         config = FlexDatasetConfig(n_clients=2, weights=None, replacement=False)
-        flex_dataset = FlexDataDistribution.from_state(fcd, config)
+        flex_dataset = FlexDataDistribution.from_config(fcd, config)
         assert len(flex_dataset) == config.n_clients
         assert len(flex_dataset[0]) == len(flex_dataset[1])
         assert len(np.unique(flex_dataset[0].y_data)) == 2
@@ -52,7 +62,7 @@ class TestFlexDataDistribution(unittest.TestCase):
         y_data = np.concatenate((np.zeros(10), np.ones(10)))
         fcd = FlexDataObject(X_data=X_data, y_data=y_data)
         config = FlexDatasetConfig(n_clients=2, classes_per_client=1, replacement=False)
-        flex_dataset = FlexDataDistribution.from_state(fcd, config)
+        flex_dataset = FlexDataDistribution.from_config(fcd, config)
         assert len(flex_dataset) == config.n_clients
         assert len(flex_dataset[0]) + len(flex_dataset[1]) == len(fcd)
         assert len(np.unique(flex_dataset[0].y_data)) == 1
@@ -63,7 +73,7 @@ class TestFlexDataDistribution(unittest.TestCase):
         y_data = np.concatenate((np.zeros(10), np.ones(10)))
         fcd = FlexDataObject(X_data=X_data, y_data=y_data)
         config = FlexDatasetConfig(n_clients=2, classes_per_client=1, replacement=True)
-        flex_dataset = FlexDataDistribution.from_state(fcd, config)
+        flex_dataset = FlexDataDistribution.from_config(fcd, config)
         assert len(flex_dataset) == config.n_clients
         assert len(flex_dataset[0]) + len(flex_dataset[1]) == len(fcd)
         assert len(np.unique(flex_dataset[0].y_data)) == 1
@@ -76,7 +86,7 @@ class TestFlexDataDistribution(unittest.TestCase):
         config = FlexDatasetConfig(
             n_clients=2, classes_per_client=1, weights=[0.25, 0.5], replacement=False
         )
-        flex_dataset = FlexDataDistribution.from_state(fcd, config)
+        flex_dataset = FlexDataDistribution.from_config(fcd, config)
         assert len(flex_dataset) == config.n_clients
         if np.unique(flex_dataset[0].y_data) == np.unique(flex_dataset[1].y_data):
             assert len(flex_dataset[0]) + len(flex_dataset[1]) == 6
@@ -96,7 +106,7 @@ class TestFlexDataDistribution(unittest.TestCase):
             weights=[0.25, 0.5],
             replacement=True,
         )
-        flex_dataset = FlexDataDistribution.from_state(fcd, config)
+        flex_dataset = FlexDataDistribution.from_config(fcd, config)
         assert len(flex_dataset) == config.n_clients
         assert len(flex_dataset[0]) + len(flex_dataset[1]) == int(
             sum(np.floor(np.array(config.weights) * 10))
@@ -125,7 +135,7 @@ class TestFlexDataDistribution(unittest.TestCase):
             replacement=False,
         )
 
-        flex_dataset = FlexDataDistribution.from_state(fcd, config)
+        flex_dataset = FlexDataDistribution.from_config(fcd, config)
         assert len(flex_dataset) == config.n_clients
         for k in flex_dataset:
             assert len(np.unique(flex_dataset[k].y_data)) <= 3
@@ -152,7 +162,7 @@ class TestFlexDataDistribution(unittest.TestCase):
             replacement=True,
         )
 
-        flex_dataset = FlexDataDistribution.from_state(fcd, config)
+        flex_dataset = FlexDataDistribution.from_config(fcd, config)
         assert len(flex_dataset) == config.n_clients
         for k in flex_dataset:
             assert len(np.unique(flex_dataset[k].y_data)) <= 3
@@ -169,7 +179,7 @@ class TestFlexDataDistribution(unittest.TestCase):
             weights=None,
             replacement=False,
         )
-        flex_dataset = FlexDataDistribution.from_state(fcd, config)
+        flex_dataset = FlexDataDistribution.from_config(fcd, config)
         assert np.unique(flex_dataset[0].y_data)[0] == 0
         assert np.unique(flex_dataset[1].y_data)[0] == 1
 
@@ -184,7 +194,7 @@ class TestFlexDataDistribution(unittest.TestCase):
             weights=None,
             replacement=True,
         )
-        flex_dataset = FlexDataDistribution.from_state(fcd, config)
+        flex_dataset = FlexDataDistribution.from_config(fcd, config)
         assert len(flex_dataset) == config.n_clients
         assert np.unique(flex_dataset[0].y_data)[0] == 0
         assert set(np.unique(flex_dataset[1].y_data)) == {0, 1}
@@ -200,7 +210,7 @@ class TestFlexDataDistribution(unittest.TestCase):
             weights=[0.25, 0.5],
             replacement=True,
         )
-        flex_dataset = FlexDataDistribution.from_state(fcd, config)
+        flex_dataset = FlexDataDistribution.from_config(fcd, config)
         assert len(flex_dataset) == config.n_clients
         assert np.unique(flex_dataset[0].y_data)[0] == 0
         assert set(np.unique(flex_dataset[1].y_data)) == {0, 1}
@@ -216,7 +226,7 @@ class TestFlexDataDistribution(unittest.TestCase):
             weights=[0.25, 0.5],
             replacement=False,
         )
-        flex_dataset = FlexDataDistribution.from_state(fcd, config)
+        flex_dataset = FlexDataDistribution.from_config(fcd, config)
         assert len(flex_dataset) == config.n_clients
         assert np.unique(flex_dataset[0].y_data)[0] == 0
         assert np.unique(flex_dataset[1].y_data)[0] == 1
@@ -229,7 +239,7 @@ class TestFlexDataDistribution(unittest.TestCase):
         config = FlexDatasetConfig(
             seed=2, n_clients=2, features_per_client=3, replacement=True
         )
-        flex_dataset = FlexDataDistribution.from_state(fcd, config)
+        flex_dataset = FlexDataDistribution.from_config(fcd, config)
         assert len(flex_dataset) == config.n_clients
         for k in flex_dataset:
             assert flex_dataset[k].X_data.shape[1] == 3
@@ -241,7 +251,7 @@ class TestFlexDataDistribution(unittest.TestCase):
         config = FlexDatasetConfig(
             seed=2, n_clients=2, features_per_client=(3, 5), replacement=True
         )
-        flex_dataset = FlexDataDistribution.from_state(fcd, config)
+        flex_dataset = FlexDataDistribution.from_config(fcd, config)
         assert len(flex_dataset) == config.n_clients
         for k in flex_dataset:
             assert flex_dataset[k].X_data.shape[1] <= 5
@@ -254,7 +264,7 @@ class TestFlexDataDistribution(unittest.TestCase):
         config = FlexDatasetConfig(
             seed=2, n_clients=2, features_per_client=[[2, 4], [1, 3]], replacement=True
         )
-        flex_dataset = FlexDataDistribution.from_state(fcd, config)
+        flex_dataset = FlexDataDistribution.from_config(fcd, config)
         assert len(flex_dataset) == config.n_clients
         assert flex_dataset[0].X_data.shape[1] == 2
         assert flex_dataset[1].X_data.shape[1] == 2
