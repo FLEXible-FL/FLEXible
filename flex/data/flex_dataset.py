@@ -1,6 +1,5 @@
-from copy import deepcopy
-
 from collections import UserDict
+from copy import deepcopy
 from dataclasses import dataclass
 from typing import Any, Callable, Hashable, List, Optional
 
