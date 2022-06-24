@@ -25,7 +25,7 @@ class FlexDataDistribution(object):
 
         Args:
             cdata (FlexDataObject): Centralized dataset represented as a FlexDataObject.
-            state (FlexDatasetConfig): FlexDatasetConfig with the configuration to federate the dataset.
+            config (FlexDatasetConfig): FlexDatasetConfig with the configuration to federate the dataset.
 
         Returns:
             federated_dataset (FlexDataset): The dataset federated.

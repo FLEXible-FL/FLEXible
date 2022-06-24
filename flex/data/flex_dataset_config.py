@@ -41,15 +41,14 @@ class FlexDatasetConfig:
     features_per_client: Optional[Union[int, npt.NDArray, Tuple[int]]] = None
     client_names: Optional[List[Hashable]] = None
 
-    """ This function checks whether the configuration to federate a dataset is correct and it is compatible with\
-        a given centralized dataset.
-
-    Args:
-        ds (FlexDataObject): Centralized dataset represented as a FlexDataObject.
-
-    """
-
     def validate(self, ds: FlexDataObject):
+        """ This function checks whether the configuration to federate a dataset is correct and it is compatible with\
+            a given centralized dataset.
+
+        Args:
+            ds (FlexDataObject): Centralized dataset represented as a FlexDataObject.
+
+        """
         self.__validate_clients_and_weights()
         if self.classes_per_client is not None and self.features_per_client is not None:
             raise ValueError(
