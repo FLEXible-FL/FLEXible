@@ -130,3 +130,11 @@ class TestFlexDatasetConfig(unittest.TestCase):
         a = FlexDatasetConfig(classes_per_client=(1, 2), replacement=False)
         with pytest.warns(RuntimeWarning):
             a.validate(fcd)
+
+    def test_client_names_error(self):
+        X_data = np.random.rand(100).reshape([20, 5])
+        y_data = np.random.choice(2, 20)
+        fcd = FlexDataObject(X_data=X_data, y_data=y_data)
+        a = FlexDatasetConfig(client_names=["Pepe"])
+        with pytest.raises(ValueError):
+            a.validate(fcd)
