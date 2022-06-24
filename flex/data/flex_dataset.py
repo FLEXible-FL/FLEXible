@@ -1,6 +1,8 @@
+from copy import deepcopy
+
 from collections import UserDict
 from dataclasses import dataclass
-from typing import Any, Callable, List, Optional
+from typing import Any, Callable, Hashable, List, Optional
 
 import numpy as np
 import numpy.typing as npt
@@ -77,7 +79,7 @@ class FlexDataset(UserDict):
     def __setitem__(self, key: str, item: FlexDataObject) -> None:
         self.data[key] = item
 
-    def get(self, key: str, default: Optional[Any] = None) -> Any:
+    def get(self, key: Hashable, default: Optional[Any] = None) -> Any:
         try:
             return self[key]
         except KeyError:
@@ -85,7 +87,7 @@ class FlexDataset(UserDict):
 
     def map(
         self,
-        clients_ids: list = None,
+        clients_ids: List[Hashable] = None,
         num_proc: int = None,
         func: Callable = None,
         *args,
@@ -98,8 +100,8 @@ class FlexDataset(UserDict):
 
         Args:
             fld (FlexDataset): FlexDataset containing all the data from the clients.
-            clients_ids (list, optional): List containig the the clients id whether
-            to normalize the data or not. Defaults to None.
+            clients_ids (List[Hashtable], optional): List containig the the clients id whether
+            to normalize the data or not. Each element of the list must be hashable. Defaults to None.
             num_proc (int, optional): Number of processes to paralelize. Default to None (Use all).
             func (Callable, optional): Function to apply to preprocess the data. Defaults to None.
 
@@ -123,13 +125,13 @@ class FlexDataset(UserDict):
                 for client_id in clients_ids
             }
         )
-        new_fld = self
+        new_fld = deepcopy(self)
         new_fld.update(chosen_clients)
         return new_fld
 
     def normalize(
         self,
-        clients_ids: list = None,
+        clients_ids: List[Hashable] = None,
         num_proc: int = None,
         *args,
         **kwargs,
@@ -138,8 +140,8 @@ class FlexDataset(UserDict):
 
         Args:
             fld (FlexDataset): FlexDataset containing all the data from the clients.
-            clients_ids (list, optional): List containig the the clients id whether
-            to normalize the data or not. Defaults to None.
+            clients_ids (List[Hashtable], optional): List containig the the clients id whether
+            to normalize the data or not. Each element of the list must be hashable. Defaults to None.
             num_proc (int, optional): Number of processes to paralelize. Default to None (Use all).
 
         Returns:
@@ -149,7 +151,7 @@ class FlexDataset(UserDict):
 
     def one_hot_encoding(
         self,
-        clients_ids: list = None,
+        clients_ids: List[Hashable] = None,
         num_proc: int = None,
         *args,
         **kwargs,
@@ -158,8 +160,8 @@ class FlexDataset(UserDict):
 
         Args:
             fld (FlexDataset): FlexDataset containing all the data from the clients.
-            clients_ids (list, optional): List containig the the clients id whether
-            to normalize the data or not. Defaults to None.
+            clients_ids (List[Hashtable], optional): List containig the the clients id whether
+            to normalize the data or not. Each element of the list must be hashable. Defaults to None.
             num_proc (int, optional): Number of processes to paralelize. Default to None (Use all).
 
         Returns:
