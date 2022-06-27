@@ -118,9 +118,11 @@ class FlexDataset(UserDict):
             num_proc = min(num_proc, len(self.keys()))
         if clients_ids is None:
             clients_ids = list(self.keys())
+        elif any(client not in list(self.keys()) for client in clients_ids):
+            raise ValueError("All client ids given must be in the FlexDataset.")
         chosen_clients = FlexDataset(
             {
-                client_id: func(self[client_id], *args, **kwargs)
+                client_id: func(self.get(client_id), *args, **kwargs)
                 for client_id in clients_ids
             }
         )

@@ -190,3 +190,8 @@ class TestFlexDataset(unittest.TestCase):
     def test_one_hot_encoding(self):
         new_fld = self._fld.one_hot_encoding(n_classes=2)
         assert all(client.y_data.shape[1] == 2 for client_id, client in new_fld.items())
+
+    def test_all_clients_in_flex_dataset_when_mapping_func(self):
+        client_ids = ["client_1", "client_84"]
+        with pytest.raises(ValueError):
+            self._fld.map(func=normalize, num_proc=10, clients_ids=client_ids)
