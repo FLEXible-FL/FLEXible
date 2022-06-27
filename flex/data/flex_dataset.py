@@ -1,6 +1,8 @@
 from collections import UserDict
 from copy import deepcopy
 from dataclasses import dataclass
+from functools import partial
+from multiprocessing import Pool
 from typing import Any, Callable, Hashable, List, Optional
 
 import numpy as np
@@ -120,13 +122,27 @@ class FlexDataset(UserDict):
             clients_ids = list(self.keys())
         elif any(client not in list(self.keys()) for client in clients_ids):
             raise ValueError("All client ids given must be in the FlexDataset.")
-        chosen_clients = FlexDataset(
-            {
-                client_id: func(self.get(client_id), *args, **kwargs)
-                for client_id in clients_ids
-            }
-        )
+
         new_fld = deepcopy(self)
+
+        def clients_ids_iterable():
+            for i in clients_ids:
+                yield new_fld[i]
+
+        with Pool(processes=num_proc) as p:
+            chosen_clients = FlexDataset(
+                {
+                    client_id: result
+                    for result, client_id in zip(
+                        p.imap(  # We use imap because it is more memory efficient
+                            partial(func, *args, **kwargs),  # bind *args and **kwargs arguments to each call
+                            clients_ids_iterable(),  # iterate over dict values only
+                            chunksize=1 if num_proc is None else num_proc, # store in memory chunks of the iterable
+                        ),
+                        clients_ids,
+                    )
+                }
+            )
         new_fld.update(chosen_clients)
         return new_fld
 
