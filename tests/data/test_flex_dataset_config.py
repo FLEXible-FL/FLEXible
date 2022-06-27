@@ -6,7 +6,6 @@ from flex.data import FlexDatasetConfig
 
 
 class TestFlexDatasetConfig(unittest.TestCase):
-
     def test_missing_params(self):
         a = FlexDatasetConfig()
         with pytest.raises(ValueError):
@@ -67,4 +66,3 @@ class TestFlexDatasetConfig(unittest.TestCase):
         a = FlexDatasetConfig(replacement=False, n_clients=2, features_per_client=3)
         with pytest.raises(ValueError):
             a.validate()
-
