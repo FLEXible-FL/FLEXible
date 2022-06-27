@@ -122,7 +122,7 @@ class FlexDataset(UserDict):
             raise ValueError("All client ids given must be in the FlexDataset.")
         chosen_clients = FlexDataset(
             {
-                client_id: func(self.get(client_id), *args, **kwargs)
+                client_id: func(deepcopy(self.get(client_id)), *args, **kwargs)
                 for client_id in clients_ids
             }
         )
