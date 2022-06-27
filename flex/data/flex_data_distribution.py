@@ -31,7 +31,7 @@ class FlexDataDistribution(object):
             federated_dataset (FlexDataset): The dataset federated.
         """
         cdata.validate()
-        config.validate(cdata)
+        config.validate()
         rng = default_rng(seed=config.seed)
 
         config_ = copy.deepcopy(config)  # copy, because we might modify some components
