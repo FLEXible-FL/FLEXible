@@ -133,3 +133,5 @@ dmypy.json
 
 # do not include coverage file
 pytest-coverage.txt
+
+.vscode

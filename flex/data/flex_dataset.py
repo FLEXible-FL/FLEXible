@@ -75,7 +75,7 @@ class FlexDataset(UserDict):
         with the clients ids as keys and the dataset as value.
     """
 
-    def __setitem__(self, key: str, item: FlexDataObject) -> None:
+    def __setitem__(self, key: Hashable, item: FlexDataObject) -> None:
         self.data[key] = item
 
     def get(self, key: Hashable, default: Optional[Any] = None) -> Any:
@@ -92,20 +92,20 @@ class FlexDataset(UserDict):
         *args,
         **kwargs,
     ):
-        """This function applies a custom function to the FlexDataset in paralels.
+        """This function applies a custom function to the FlexDataset in parallel.
 
         The *args and the **kwargs provided to this function are all the args and kwargs
         of the custom function provided by the client.
 
         Args:
             fld (FlexDataset): FlexDataset containing all the data from the clients.
-            clients_ids (List[Hashtable], optional): List containig the the clients id whether
-            to normalize the data or not. Each element of the list must be hashable. Defaults to None.
+            clients_ids (List[Hashtable], optional): List containig the the clients id where func will
+            be applied. Each element of the list must be hashable and part of the FlexDataset. Defaults to None.
             num_proc (int, optional): Number of processes to paralelize. Default to None (Use all).
             func (Callable, optional): Function to apply to preprocess the data. Defaults to None.
 
         Returns:
-            FlexDataset: The FlexDataset normalized.
+            FlexDataset: The modified FlexDataset.
 
         Raises:
             ValueError: If function is not given it raises an error.
@@ -139,7 +139,7 @@ class FlexDataset(UserDict):
 
         Args:
             fld (FlexDataset): FlexDataset containing all the data from the clients.
-            clients_ids (List[Hashtable], optional): List containig the the clients id whether
+            clients_ids (List[Hashtable], optional): List containig the clients id whether
             to normalize the data or not. Each element of the list must be hashable. Defaults to None.
             num_proc (int, optional): Number of processes to paralelize. Default to None (Use all).
 
