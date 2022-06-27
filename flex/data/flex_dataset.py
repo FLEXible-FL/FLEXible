@@ -119,9 +119,7 @@ class FlexDataset(UserDict):
         if clients_ids is None:
             clients_ids = list(self.keys())
         elif any(client not in list(self.keys()) for client in clients_ids):
-            raise ValueError(
-                "All client ids must be "
-            )
+            raise ValueError("All client ids given must be in the FlexDataset.")
         chosen_clients = FlexDataset(
             {
                 client_id: func(self.get(client_id), *args, **kwargs)
