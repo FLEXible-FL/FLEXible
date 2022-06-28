@@ -1,6 +1,8 @@
 from collections import UserDict
 from copy import deepcopy
 from dataclasses import dataclass
+from functools import partial
+from multiprocessing import Pool
 from typing import Any, Callable, Hashable, List, Optional
 
 import numpy as np
@@ -101,7 +103,7 @@ class FlexDataset(UserDict):
             fld (FlexDataset): FlexDataset containing all the data from the clients.
             clients_ids (List[Hashtable], optional): List containig the the clients id where func will
             be applied. Each element of the list must be hashable and part of the FlexDataset. Defaults to None.
-            num_proc (int, optional): Number of processes to paralelize. Default to None (Use all).
+            num_proc (int, optional): Number of processes to parallelize, negative values are ignored. Default to None (Use all).
             func (Callable, optional): Function to apply to preprocess the data. Defaults to None.
 
         Returns:
@@ -115,18 +117,38 @@ class FlexDataset(UserDict):
                 "Function to apply can't be null. Please give a function to apply."
             )
         if num_proc is not None:
-            num_proc = min(num_proc, len(self.keys()))
+            num_proc = min(
+                max(1, num_proc), len(self.keys())
+            )  # do not allow negative num_proc
         if clients_ids is None:
             clients_ids = list(self.keys())
         elif any(client not in list(self.keys()) for client in clients_ids):
             raise ValueError("All client ids given must be in the FlexDataset.")
+
         new_fld = deepcopy(self)
-        chosen_clients = FlexDataset(
-            {
-                client_id: func(new_fld.get(client_id), *args, **kwargs)
-                for client_id in clients_ids
-            }
-        )
+
+        def clients_ids_iterable():
+            for i in clients_ids:
+                yield new_fld[i]
+
+        with Pool(processes=num_proc) as p:
+            chosen_clients = FlexDataset(
+                {
+                    client_id: result
+                    for result, client_id in zip(
+                        p.imap(  # We use imap because it is more memory efficient
+                            partial(
+                                func, *args, **kwargs
+                            ),  # bind *args and **kwargs arguments to each call
+                            clients_ids_iterable(),  # iterate over dict values only
+                            chunksize=int(
+                                num_proc or 1
+                            ),  # 1 is the default value in case of None
+                        ),
+                        clients_ids,
+                    )
+                }
+            )
         new_fld.update(chosen_clients)
         return new_fld
 
