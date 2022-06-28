@@ -135,9 +135,13 @@ class FlexDataset(UserDict):
                     client_id: result
                     for result, client_id in zip(
                         p.imap(  # We use imap because it is more memory efficient
-                            partial(func, *args, **kwargs),  # bind *args and **kwargs arguments to each call
+                            partial(
+                                func, *args, **kwargs
+                            ),  # bind *args and **kwargs arguments to each call
                             clients_ids_iterable(),  # iterate over dict values only
-                            chunksize=1 if num_proc is None else num_proc, # store in memory chunks of the iterable
+                            chunksize=1
+                            if num_proc is None
+                            else num_proc,  # store in memory chunks of the iterable
                         ),
                         clients_ids,
                     )
