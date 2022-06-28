@@ -120,13 +120,13 @@ class FlexDataset(UserDict):
             clients_ids = list(self.keys())
         elif any(client not in list(self.keys()) for client in clients_ids):
             raise ValueError("All client ids given must be in the FlexDataset.")
+        new_fld = deepcopy(self)
         chosen_clients = FlexDataset(
             {
-                client_id: func(deepcopy(self.get(client_id)), *args, **kwargs)
+                client_id: func(deepcopy(new_fld.get(client_id)), *args, **kwargs)
                 for client_id in clients_ids
             }
         )
-        new_fld = deepcopy(self)
         new_fld.update(chosen_clients)
         return new_fld
 
