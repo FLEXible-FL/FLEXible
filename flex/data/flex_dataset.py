@@ -123,7 +123,7 @@ class FlexDataset(UserDict):
         new_fld = deepcopy(self)
         chosen_clients = FlexDataset(
             {
-                client_id: func(deepcopy(new_fld.get(client_id)), *args, **kwargs)
+                client_id: func(new_fld.get(client_id), *args, **kwargs)
                 for client_id in clients_ids
             }
         )
