@@ -16,6 +16,16 @@ class TestFlexDataDistribution(unittest.TestCase):
         X_data = np.random.rand(100).reshape([20, 5])
         y_data = np.random.choice(2, 20)
         fcd = FlexDataObject(X_data=X_data, y_data=y_data)
+        config = FlexDatasetConfig(client_names=["Juan", "Pepe", 2])
+        flex_dataset = FlexDataDistribution.from_config(fcd, config)
+        assert "Juan" in flex_dataset
+        assert "Pepe" in flex_dataset
+        assert 2 in flex_dataset
+
+    def test_client_names_bis(self):
+        X_data = np.random.rand(100).reshape([20, 5])
+        y_data = np.random.choice(2, 20)
+        fcd = FlexDataObject(X_data=X_data, y_data=y_data)
         config = FlexDatasetConfig(n_clients=3, client_names=["Juan", "Pepe", 2])
         flex_dataset = FlexDataDistribution.from_config(fcd, config)
         assert "Juan" in flex_dataset
