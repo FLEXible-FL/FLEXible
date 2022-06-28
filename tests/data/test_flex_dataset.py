@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 
 from flex.data.flex_dataset import FlexDataObject, FlexDataset
-from flex.data.flex_preprocessing import normalize
+from flex.data.flex_preprocessing_utils import normalize
 
 
 @pytest.fixture(name="fld")

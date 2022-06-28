@@ -6,7 +6,7 @@ from typing import Any, Callable, Hashable, List, Optional
 import numpy as np
 import numpy.typing as npt
 
-from flex.data.flex_preprocessing import normalize, one_hot_encoding
+from flex.data.flex_preprocessing_utils import normalize, one_hot_encoding
 
 
 @dataclass

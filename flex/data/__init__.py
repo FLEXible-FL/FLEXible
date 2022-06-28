@@ -6,5 +6,5 @@ from flex.data.flex_dataset import FlexDataObject
 from flex.data.flex_dataset import FlexDataset
 from flex.data.flex_dataset_config import FlexDatasetConfig
 from flex.data.flex_data_distribution import FlexDataDistribution
-from flex.data.flex_preprocessing import normalize
-from flex.data.flex_preprocessing import one_hot_encoding
+from flex.data.flex_preprocessing_utils import normalize
+from flex.data.flex_preprocessing_utils import one_hot_encoding
