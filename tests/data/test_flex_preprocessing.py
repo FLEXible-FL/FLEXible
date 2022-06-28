@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 from flex.data.flex_dataset import FlexDataObject
-from flex.data.flex_preprocessing import normalize, one_hot_encoding
+from flex.data.flex_preprocessing_utils import normalize, one_hot_encoding
 
 
 def test_normalize_function():
