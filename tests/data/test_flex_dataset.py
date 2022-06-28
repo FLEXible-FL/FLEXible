@@ -148,15 +148,15 @@ class TestFlexDataset(unittest.TestCase):
 
     def test_normalize_method(self):
         new_fld = self._fld.normalize(num_proc=1)
-        assert any(
-            np.array_equal(client_orig.X_data, client_mod.X_data)
+        assert all(
+            not np.array_equal(client_orig.X_data, client_mod.X_data)
             for client_orig, client_mod in zip(self._fld.values(), new_fld.values())
         )
 
     def test_map_method(self):
         new_fld = self._fld.map(func=normalize)
-        assert any(
-            np.array_equal(client_orig.X_data, client_mod.X_data)
+        assert all(
+            not np.array_equal(client_orig.X_data, client_mod.X_data)
             for client_orig, client_mod in zip(self._fld.values(), new_fld.values())
         )
 
@@ -166,8 +166,8 @@ class TestFlexDataset(unittest.TestCase):
 
     def test_proprocessing_custom_func_more_processes_than_clients(self):
         new_fld = self._fld.map(func=normalize, num_proc=10)
-        assert any(
-            np.array_equal(client_orig.X_data, client_mod.X_data)
+        assert all(
+            not np.array_equal(client_orig.X_data, client_mod.X_data)
             for client_orig, client_mod in zip(self._fld.values(), new_fld.values())
         )
 
