@@ -117,7 +117,9 @@ class FlexDataset(UserDict):
                 "Function to apply can't be null. Please give a function to apply."
             )
         if num_proc is not None:
-            num_proc = min(max(1, num_proc), len(self.keys()))  # do not allow negative num_proc
+            num_proc = min(
+                max(1, num_proc), len(self.keys())
+            )  # do not allow negative num_proc
         if clients_ids is None:
             clients_ids = list(self.keys())
         elif any(client not in list(self.keys()) for client in clients_ids):
@@ -139,7 +141,9 @@ class FlexDataset(UserDict):
                                 func, *args, **kwargs
                             ),  # bind *args and **kwargs arguments to each call
                             clients_ids_iterable(),  # iterate over dict values only
-                            chunksize=int(num_proc or 1),  # 1 is the default value in case of None
+                            chunksize=int(
+                                num_proc or 1
+                            ),  # 1 is the default value in case of None
                         ),
                         clients_ids,
                     )
