@@ -31,6 +31,11 @@ class TestFlexDatasetConfig(unittest.TestCase):
         with pytest.raises(ValueError):
             a.validate()
 
+    def test_positive_weights(self):
+        a = FlexDatasetConfig(n_clients=2, weights=[-1.2, 0.3])
+        with pytest.raises(ValueError):
+            a.validate()
+
     def test_mutually_exclusive_options(self):
         a = FlexDatasetConfig(n_clients=2, classes_per_client=2, features_per_client=2)
         with pytest.raises(ValueError):

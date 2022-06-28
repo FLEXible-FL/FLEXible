@@ -82,6 +82,10 @@ class FlexDatasetConfig:
             raise ValueError(
                 "Provided weights contains an element greater than 1, we do not allow sampling more than one time the entire dataset per client."
             )
+        if self.weights is not None and min(self.weights) < 0:
+            raise ValueError(
+                "Provided weights contains negative numbers, we do not allow that."
+            )
 
     def __validate_classes_per_client(self):
         if isinstance(self.classes_per_client, tuple):

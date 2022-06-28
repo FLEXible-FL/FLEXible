@@ -40,6 +40,7 @@ class FlexDataDistribution(object):
             config.weights is not None
             and not config.replacement
             and sum(config.weights) > 1
+            and config.classes_per_client is None
         ):
             config_.weights = np.array(
                 [w / sum(config.weights) for w in config.weights]
@@ -222,13 +223,13 @@ class FlexDataDistribution(object):
                 replace=False,
             )
         else:  # We have classes assigned for each client
-            sub_y_classes = config.classes_per_client[client_i]
+            sub_y_classes = np.array(config.classes_per_client[client_i])
 
         sub_data_indices = data_indices[np.isin(y_data_available, sub_y_classes)]
         if config.weights is not None:
             len_all_data_available = len(sub_data_indices)
-            sub_data_indices = np.array([], dtype="int64")
-            if not isinstance(sub_y_classes, int):
+            sub_data_indices = np.array([], dtype="uint32")
+            if len(sub_y_classes.shape) > 0:
                 for (
                     c
                 ) in (
