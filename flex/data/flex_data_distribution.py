@@ -44,9 +44,14 @@ class FlexDataDistribution(object):
             config_.weights = np.array(
                 [w / sum(config.weights) for w in config.weights]
             )
-        if (  # If no client_names, then we index clients with integers
-            config_.client_names is None
-        ):
+
+        if config_.client_names is not None and config_.n_clients is not None:
+            common_min = min(config_.n_clients, len(config_.client_names))
+            config_.n_clients = common_min
+            config_.client_names = config_.client_names[:common_min]
+        elif config_.client_names is not None:
+            config_.n_clients = len(config_.client_names)
+        elif config_.n_clients is not None:
             config_.client_names = list(range(config_.n_clients))
 
         fed_dataset = FlexDataset()
