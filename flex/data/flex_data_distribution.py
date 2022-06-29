@@ -88,9 +88,9 @@ class FlexDataDistribution(object):
         Returns:
             federated_dataset (FederatedFlexDatasetObject): Federated Dataset
         """
-        # TODO: Once FlexState is finished, and other functions to create the FlexDataset
-        # are finished too, continue with this class.
-        # return FlexDataset()
+        config = FlexDatasetConfig(n_clients=n_clients)
+        flex_dataset = FlexDataDistribution.from_config(cdata, config)
+        return flex_dataset
 
     @classmethod
     def __sample(
