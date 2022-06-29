@@ -5,42 +5,40 @@ from flex.data.flex_dataset import FlexDataObject
 from flex.data.flex_preprocessing_utils import normalize, one_hot_encoding
 
 
-def test_normalize_function():
-    X_data = np.random.rand(100).reshape([20, 5])
-    fcd = FlexDataObject(X_data=X_data)
-    X_data_normalized = normalize(fcd).X_data
-    assert not np.array_equal(X_data, X_data_normalized)
-    assert X_data.shape == X_data_normalized.shape
-
-
-def test_normalize_function_norm_zero():
+@pytest.fixture(name="fcd_ones")
+def fixture_simple_fex_data_object_with_ones():
     X_data = np.ones(shape=(20, 5))
-    fcd = FlexDataObject(X_data=X_data)
-    X_data_normalized = normalize(fcd).X_data
-    assert not np.array_equal(X_data, X_data_normalized)
-    assert X_data.shape == X_data_normalized.shape
+    y_data = np.random.choice(2, 20)
+    return FlexDataObject(X_data=X_data, y_data=y_data)
 
 
-def test_normalize_func_norm_zero():
-    X_data = np.zeros(shape=(20, 5))
-    fcd = FlexDataObject(X_data=X_data)
-    X_data_normalized = normalize(fcd).X_data
-    assert np.array_equal(X_data, X_data_normalized)
-    assert X_data.shape == X_data_normalized.shape
-
-
-def test_one_hot_encoding():
+@pytest.fixture(name="fcd_zeros")
+def fixture_simple_fex_data_object_with_zeros():
     X_data = np.zeros(shape=(20, 5))
     y_data = np.random.choice(2, 20)
-    fcd = FlexDataObject(X_data=X_data, y_data=y_data)
-    new_fcd = one_hot_encoding(fcd, n_classes=2)
+    return FlexDataObject(X_data=X_data, y_data=y_data)
+
+
+def test_normalize_function(fcd_ones):
+    X_data_normalized = normalize(fcd_ones).X_data
+    assert np.allclose(
+        np.linalg.norm(X_data_normalized, axis=1), np.ones(len(X_data_normalized))
+    )
+    assert fcd_ones.X_data.shape == X_data_normalized.shape
+
+
+def test_normalize_func_norm_zero(fcd_zeros):
+    X_data_normalized = normalize(fcd_zeros).X_data
+    assert np.array_equal(fcd_zeros.X_data, X_data_normalized)
+    assert fcd_zeros.X_data.shape == X_data_normalized.shape
+
+
+def test_one_hot_encoding(fcd_ones):
+    new_fcd = one_hot_encoding(fcd_ones, n_classes=2)
     assert new_fcd.y_data.shape[1] == 2
-    assert new_fcd.y_data.size == fcd.y_data.size
+    assert len(new_fcd.y_data) == len(fcd_ones.y_data)
 
 
-def test_one_hot_encoding_error():
-    X_data = np.zeros(shape=(20, 5))
-    y_data = np.random.choice(2, 20)
-    fcd = FlexDataObject(X_data=X_data, y_data=y_data)
+def test_one_hot_encoding_error(fcd_zeros):
     with pytest.raises(ValueError):
-        one_hot_encoding(fcd)
+        one_hot_encoding(fcd_zeros)
