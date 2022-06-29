@@ -6,17 +6,20 @@ from numpy.random import default_rng
 
 from flex.data import FlexDataDistribution, FlexDataObject, FlexDatasetConfig
 
+
 @pytest.fixture(name="fcd")
 def fixture_simple_fex_data_object():
     X_data = np.random.rand(100).reshape([20, 5])
     y_data = np.random.choice(2, 20)
     return FlexDataObject(X_data=X_data, y_data=y_data)
 
+
 @pytest.fixture(name="fcd_ones_zeros")
 def fixture_simple_fex_data_object_ones_zeros():
     X_data = np.random.rand(100).reshape([20, 5])
     y_data = np.concatenate((np.zeros(10), np.ones(10)))
     return FlexDataObject(X_data=X_data, y_data=y_data)
+
 
 @pytest.fixture(name="fcd_multiple_classes")
 def fixture_simple_fex_data_object_multiple_classes():
@@ -46,7 +49,7 @@ class TestFlexDataDistribution(unittest.TestCase):
     @pytest.fixture(autouse=True)
     def _fixture_simple_flex_data_object_multiple_classes(self, fcd_multiple_classes):
         self._fcd_multiple_classes = fcd_multiple_classes
-        
+
     def test_init_method_does_not_work(self):
         with pytest.raises(AssertionError):
             FlexDataDistribution()
@@ -142,7 +145,9 @@ class TestFlexDataDistribution(unittest.TestCase):
             replacement=False,
         )
 
-        flex_dataset = FlexDataDistribution.from_config(self._fcd_multiple_classes, config)
+        flex_dataset = FlexDataDistribution.from_config(
+            self._fcd_multiple_classes, config
+        )
         assert len(flex_dataset) == config.n_clients
         for k in flex_dataset:
             assert len(np.unique(flex_dataset[k].y_data)) <= 3
@@ -157,7 +162,9 @@ class TestFlexDataDistribution(unittest.TestCase):
             replacement=True,
         )
 
-        flex_dataset = FlexDataDistribution.from_config(self._fcd_multiple_classes, config)
+        flex_dataset = FlexDataDistribution.from_config(
+            self._fcd_multiple_classes, config
+        )
         assert len(flex_dataset) == config.n_clients
         for k in flex_dataset:
             assert len(np.unique(flex_dataset[k].y_data)) <= 3
