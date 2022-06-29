@@ -183,7 +183,7 @@ class FlexDataset(UserDict):
 
         Args:
             fld (FlexDataset): FlexDataset containing all the data from the clients.
-            clients_ids (List[Hashtable], optional): List containig the the clients id whether
+            clients_ids (List[Hashtable], optional): List containing the clients id whether
             to normalize the data or not. Each element of the list must be hashable. Defaults to None.
             num_proc (int, optional): Number of processes to paralelize. Default to None (Use all).
 

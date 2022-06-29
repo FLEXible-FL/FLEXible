@@ -4,13 +4,13 @@ import numpy as np
 
 
 def normalize(client, *args, **kwargs):
-    """Function that normalizes the data
+    """Function that normalizes the federated data.
 
     Args:
         client (FlexDataObject): client whether to normalize the data.
 
     Returns:
-        np.array: Returns data normalized
+        np.array: Returns data normalized.
     """
     norms = np.linalg.norm(client.X_data, axis=0)
     norms = np.where(norms == 0, np.finfo(client.X_data.dtype).eps, norms)
@@ -23,7 +23,7 @@ def one_hot_encoding(client, *args, **kwargs):
     """Function that apply one hot encoding to the labels of a client.
 
     Args:
-        client (FlexDataObject): client wheter to one hot encode his classes.
+        client (FlexDataObject): client to which apply one hot encode to her classes.
 
     Raises:
         ValueError: Raises value error if n_classes is not given in the kwargs argument.
