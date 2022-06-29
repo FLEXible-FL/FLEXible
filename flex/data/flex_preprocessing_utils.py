@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 import numpy as np
 
 
@@ -10,11 +12,12 @@ def normalize(client, *args, **kwargs):
     Returns:
         np.array: Returns data normalized
     """
-    norm = np.linalg.norm(client.X_data, axis=0)
-    if any(norm == 0):
-        norm = np.finfo(client.X_data.dtype).eps
-    client.X_data = client.X_data / norm
-    return client
+    norms = np.linalg.norm(client.X_data, axis=1)
+    norms = np.where(norms == 0, np.finfo(client.X_data.dtype).eps, norms)
+    X_data = np.array([x / n for x, n in zip(client.X_data, norms)])
+    new_client = deepcopy(client)
+    new_client.X_data = X_data
+    return new_client
 
 
 def one_hot_encoding(client, *args, **kwargs):
@@ -36,5 +39,6 @@ def one_hot_encoding(client, *args, **kwargs):
     n_classes = int(kwargs["n_classes"])
     one_hot_classes = np.zeros((client.y_data.size, n_classes))
     one_hot_classes[np.arange(client.y_data.size), client.y_data] = 1
-    client.y_data = one_hot_classes
-    return client
+    new_client = deepcopy(client)
+    new_client.y_data = one_hot_classes
+    return new_client
