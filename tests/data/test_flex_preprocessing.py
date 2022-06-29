@@ -22,7 +22,7 @@ def fixture_simple_fex_data_object_with_zeros():
 def test_normalize_function(fcd_ones):
     X_data_normalized = normalize(fcd_ones).X_data
     assert np.allclose(
-        np.linalg.norm(X_data_normalized, axis=1), np.ones(len(X_data_normalized))
+        np.linalg.norm(X_data_normalized, axis=0), np.ones(len(X_data_normalized))
     )
     assert fcd_ones.X_data.shape == X_data_normalized.shape
 
