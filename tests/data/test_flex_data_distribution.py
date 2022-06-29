@@ -2,7 +2,6 @@ import unittest
 
 import numpy as np
 import pytest
-from numpy.random import default_rng
 
 from flex.data import FlexDataDistribution, FlexDataObject, FlexDatasetConfig
 
