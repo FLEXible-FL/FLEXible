@@ -21,14 +21,14 @@ class FlexDataDistribution(object):
     @classmethod
     def from_config(cls, cdata: FlexDataObject, config: FlexDatasetConfig):
         """This function prepare the data from a centralized data structure to a federated one.
-        It will run diffetent modifications to federate the data.
+        It will run different modifications to federate the data.
 
         Args:
             cdata (FlexDataObject): Centralized dataset represented as a FlexDataObject.
-            config (FlexDatasetConfig): FlexDatasetConfig with the configuration to federate the dataset.
+            config (FlexDatasetConfig): FlexDatasetConfig with the configuration to federate the centralized dataset.
 
         Returns:
-            federated_dataset (FlexDataset): The dataset federated.
+            federated_dataset (FlexDataset): The federated dataset.
         """
         cdata.validate()
         config.validate()
@@ -79,14 +79,15 @@ class FlexDataDistribution(object):
 
     @classmethod
     def iid_distribution(cls, cdata: FlexDataObject, n_clients: int = 2):
-        """Function to create a FlexDataset for an IID experiment.
+        """Function to create a FlexDataset for an IID experiment. We consider the simplest situation
+        in which the data is distributed by giving the same amount of data to each client.
 
         Args:
-            cdata (FlexDataObject): Centralizaed dataset represented as a FlexDataObject.
+            cdata (FlexDataObject): Centralized dataset represented as a FlexDataObject.
             n_clients (int): Number of clients in the Federated Learning experiment. Default 2.
 
         Returns:
-            federated_dataset (FederatedFlexDatasetObject): Federated Dataset
+            federated_dataset (FlexDataset): The federated dataset.
         """
         config = FlexDatasetConfig(n_clients=n_clients)
         flex_dataset = FlexDataDistribution.from_config(cdata, config)
@@ -279,7 +280,7 @@ class FlexDataDistribution(object):
         Args:
             rng (np.random.Generator): Random number generator used to sample.
             data_indices (npt.NDArray[np.int_]): Array of available data indices to sample from.
-            data (FlexDataObject): Centralizaed dataset represented as a FlexDataObject.
+            data (FlexDataObject): Centralized dataset represented as a FlexDataObject.
             config (FlexDatasetConfig): Configuration used to federate a FlexDataObject.
             client_i (int): Position of client which will be identified with the generated sample.
 

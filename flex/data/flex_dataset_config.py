@@ -11,13 +11,13 @@ class FlexDatasetConfig:
     Attributes
     ----------
     seed: Optional[int]
-        Seed used to make the federated dataset generated with this configuration reproducible. Default None.
+        Seed used to make the federated dataset generated reproducible with this configuration. Default None.
     n_clients: Optional[int]
-        Number of clients to split a centralized dataset. If client_names is also given, we consider the number \
-        of clients to be the minimun of n_clients and the length of client_names. Default None.
+        Number of clients among which to split the centralized dataset. If client_names is also given, we consider the number \
+        of clients to be the minimun between n_clients and the length of client_names. Default None.
     client_names: Optional[List[Hashable]]
         Names to identifty each client, if not provided clients will be indexed using integers. If n_clients is also \
-            given, we consider the number of clients to be the minimun of n_clients and the length of client_names.Default None.
+            given, we consider the number of clients to be the minimun of n_clients and the length of client_names. Default None.
     weights: Optional[npt.NDArray]
         A numpy.array which provides the proportion of data to give to each client. Default None.
     replacement: bool
