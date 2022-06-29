@@ -12,11 +12,10 @@ def normalize(client, *args, **kwargs):
     Returns:
         np.array: Returns data normalized
     """
-    norms = np.linalg.norm(client.X_data, axis=1)
+    norms = np.linalg.norm(client.X_data, axis=0)
     norms = np.where(norms == 0, np.finfo(client.X_data.dtype).eps, norms)
-    X_data = np.array([x / n for x, n in zip(client.X_data, norms)])
     new_client = deepcopy(client)
-    new_client.X_data = X_data
+    new_client.X_data = client.X_data / norms
     return new_client
 
 
