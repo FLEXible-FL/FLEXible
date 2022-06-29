@@ -278,3 +278,13 @@ class TestFlexDataDistribution(unittest.TestCase):
         assert len(flex_dataset) == config.n_clients
         assert flex_dataset[0].X_data.shape[1] == 2
         assert flex_dataset[1].X_data.shape[1] == 2
+
+    def test_iid_distribution(self):
+        X_data = np.random.rand(100).reshape([20, 5])
+        y_data = np.random.choice(2, 20)
+        fcd = FlexDataObject(X_data=X_data, y_data=y_data)
+        n_clients = 2
+        flex_dataset = FlexDataDistribution.iid_distribution(fcd, n_clients)
+        assert len(flex_dataset) == n_clients
+        assert len(flex_dataset[0]) == len(flex_dataset[1])
+        assert len(flex_dataset[0]) + len(flex_dataset[1]) == len(fcd)
