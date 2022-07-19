@@ -1,7 +1,7 @@
 from typing import Callable
 
 from flex.data.flex_dataset import FlexDataset
-from flex.pool.actors import Actors, Role
+from flex.pool.actors import Actors, Role, RoleManager
 
 
 class FlexPoolManager:
@@ -38,7 +38,29 @@ class FlexPoolManager:
         - Los actores con rol de cliente deben aparecer (mismo id) en self._data.
         - Debe haber, al menos, un actor servidor-aggregador. Puede estar representado por dos actores.
         """
-        pass
+        if any(
+            actor_id
+            for actor_id in self._actors
+            if RoleManager.is_client(self._actors[actor_id])
+            and actor_id not in self._data.keys()
+        ):
+            raise ValueError(
+                "All clients must have data. There are some actors with the client Role that doens't have any data."
+            )
+
+        if not any(
+            actor_id
+            for actor_id in self._actors
+            if RoleManager.is_server(self._actors[actor_id])
+        ):
+            raise ValueError("There must be a server in the actor pool.")
+
+        if not any(
+            actor_id
+            for actor_id in self._actors
+            if RoleManager.is_aggregator(self._actors[actor_id])
+        ):
+            raise ValueError("There must be an aggregator in the actor pool.")
 
     '''
     La función se implementará cuando se haga el módulo de los modelos.
