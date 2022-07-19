@@ -142,47 +142,69 @@ class TestRoleManger(unittest.TestCase):
         )
         # Peer-To-Peer Architecture
         assert (
-            FlexRoleManager.check_compatibility(self._p2p["actor1"], self._p2p["actor2"])
+            FlexRoleManager.check_compatibility(
+                self._p2p["actor1"], self._p2p["actor2"]
+            )
             is True
         )
         assert (
-            FlexRoleManager.check_compatibility(self._p2p["actor1"], self._p2p["actor3"])
+            FlexRoleManager.check_compatibility(
+                self._p2p["actor1"], self._p2p["actor3"]
+            )
             is True
         )
         assert (
-            FlexRoleManager.check_compatibility(self._p2p["actor1"], self._p2p["actor4"])
+            FlexRoleManager.check_compatibility(
+                self._p2p["actor1"], self._p2p["actor4"]
+            )
             is True
         )
         assert (
-            FlexRoleManager.check_compatibility(self._p2p["actor1"], self._p2p["actor5"])
+            FlexRoleManager.check_compatibility(
+                self._p2p["actor1"], self._p2p["actor5"]
+            )
             is True
         )
         assert (
-            FlexRoleManager.check_compatibility(self._p2p["actor2"], self._p2p["actor3"])
+            FlexRoleManager.check_compatibility(
+                self._p2p["actor2"], self._p2p["actor3"]
+            )
             is True
         )
         assert (
-            FlexRoleManager.check_compatibility(self._p2p["actor2"], self._p2p["actor4"])
+            FlexRoleManager.check_compatibility(
+                self._p2p["actor2"], self._p2p["actor4"]
+            )
             is True
         )
         assert (
-            FlexRoleManager.check_compatibility(self._p2p["actor2"], self._p2p["actor5"])
+            FlexRoleManager.check_compatibility(
+                self._p2p["actor2"], self._p2p["actor5"]
+            )
             is True
         )
         assert (
-            FlexRoleManager.check_compatibility(self._p2p["actor3"], self._p2p["actor4"])
+            FlexRoleManager.check_compatibility(
+                self._p2p["actor3"], self._p2p["actor4"]
+            )
             is True
         )
         assert (
-            FlexRoleManager.check_compatibility(self._p2p["actor3"], self._p2p["actor5"])
+            FlexRoleManager.check_compatibility(
+                self._p2p["actor3"], self._p2p["actor5"]
+            )
             is True
         )
         assert (
-            FlexRoleManager.check_compatibility(self._p2p["actor4"], self._p2p["actor5"])
+            FlexRoleManager.check_compatibility(
+                self._p2p["actor4"], self._p2p["actor5"]
+            )
             is True
         )
         assert (
-            FlexRoleManager.check_compatibility(self._p2p["actor5"], self._p2p["actor3"])
+            FlexRoleManager.check_compatibility(
+                self._p2p["actor5"], self._p2p["actor3"]
+            )
             is True
         )
 
