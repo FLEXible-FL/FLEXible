@@ -49,6 +49,19 @@ class FlexPoolManager:
         - pool: pool de la que viene el modelo
         """
         pass
+
+    def deploy_model(self):
+        """
+        Inicialmente se debe hacer el deploy_model para instanciar el número de modelos que se quiera y no todos.
+        Aquí se define el inicio de la ronda para cada usuario en base al modelo que desee entrenar.
+        """
+        pass
+
+    def aggregation_step(self):
+        """
+        Función que realizará la agregación de los modelos de los clientes.
+        """
+        pass
     '''
 
     @classmethod
