@@ -4,7 +4,7 @@ from flex.data.flex_dataset import FlexDataset
 from flex.pool.actors import Actors, Role
 
 
-class FlexPoolManager(object):
+class FlexPoolManager:
     """ """
 
     def __init__(
@@ -29,6 +29,17 @@ class FlexPoolManager(object):
         - Debe haber, al menos, un actor servidor-aggregador. Puede estar representado por dos actores.
         """
         pass
+
+    '''
+    La función se implementará cuando se haga el módulo de los modelos.
+    def send_model(self, pool: object = None):
+        """
+        pool es la pool que manda a self el modelo.
+        Indicar:
+        - pool: pool de la que viene el modelo
+        """
+        pass
+    '''
 
     @classmethod
     def client_server_architecture(
