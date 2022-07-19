@@ -29,8 +29,8 @@ class RoleManager:
     )
     server_mask = (
         Role.client,
-        Role.server_client,
         Role.aggregator_client,
+        Role.server_aggregator,
         Role.server_aggregator_client,
     )
 
@@ -41,7 +41,7 @@ class RoleManager:
         Role.server_aggregator_client,
     )
     aggregator_wannabe = (
-        Role.client,
+        Role.aggregator,
         Role.server_client,
         Role.aggregator_client,
         Role.server_aggregator_client,
