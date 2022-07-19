@@ -18,6 +18,7 @@ class FlexPoolManager:
         self._data = flex_data  # FlexDataset
         self._models = flex_model  # Add when models are finished
         self._dr_rate = dropout_rate  # Connection dropout rate
+        self.validate()  # check if the provided arguments generate a valid object
 
     def filter(self, func: Callable):
         """Function that filter the PoolManager by actors giving a function.
@@ -33,34 +34,32 @@ class FlexPoolManager:
         pass
 
     def validate(self):
-        """
-        Validar:
-        - Los actores con rol de cliente deben aparecer (mismo id) en self._data.
-        - Debe haber, al menos, un actor servidor-aggregador. Puede estar representado por dos actores.
-        """
-        if any(
-            actor_id
-            for actor_id in self._actors
-            if FlexRoleManager.is_client(self._actors[actor_id])
-            and actor_id not in self._data.keys()
-        ):
-            raise ValueError(
-                "All clients must have data. There are some actors with the client Role that doens't have any data."
-            )
+        """Function that checks whether the object is correct or not."""
+        for actor_id in self._actors:
+            if (
+                FlexRoleManager.is_client(self._actors[actor_id])
+                and actor_id not in self._data.keys()
+            ):
+                raise ValueError(
+                    "All node with client role must have data. Node with client role and id {actor_id} does not have any data."
+                )
 
-        if not any(
+        servers = [
             actor_id
             for actor_id in self._actors
             if FlexRoleManager.is_server(self._actors[actor_id])
-        ):
-            raise ValueError("There must be a server in the actor pool.")
-
-        if not any(
+        ]
+        aggregators = [
             actor_id
             for actor_id in self._actors
             if FlexRoleManager.is_aggregator(self._actors[actor_id])
-        ):
-            raise ValueError("There must be an aggregator in the actor pool.")
+        ]
+
+        if not servers or not aggregators:
+            raise ValueError(
+                f"There must be at least one server role and one aggregator role in the actor pool. \
+                    but there are {len(servers)} server roles and {len(aggregators)} aggregator roles."
+            )
 
     '''
     La función se implementará cuando se haga el módulo de los modelos.
@@ -90,7 +89,9 @@ class FlexPoolManager:
     def client_server_architecture(
         cls, fed_dataset: FlexDataset, dropout_rate: float = None
     ):
-        actors = FlexActors({actor_id: FlexRole.client for actor_id in fed_dataset.keys()})
+        actors = FlexActors(
+            {actor_id: FlexRole.client for actor_id in fed_dataset.keys()}
+        )
         actors["server"] = FlexRole.server_aggregator
         return cls(
             flex_data=fed_dataset,
