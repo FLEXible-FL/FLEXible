@@ -20,6 +20,16 @@ class FlexPoolManager:
         self._dr_rate = dropout_rate  # Connection dropout rate
 
     def filter(self, func: Callable):
+        """Function that filter the PoolManager by actors giving a function.
+
+        Note: This function doesn't send a copy of the original pool, it sends a reference.
+            Changes made on the new pool may affect the original pool.
+        Args:
+            func (Callable): Function to filter the pool by.
+
+        Returns:
+            FlexPoolManger: New filtered pool.
+        """
         pass
 
     def validate(self):
