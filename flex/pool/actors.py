@@ -3,7 +3,7 @@ from enum import Enum
 from typing import Hashable
 
 
-class Role(Enum):
+class FlexRole(Enum):
     """Enum which contains all possible roles:
         - Basic roles: client, server or aggregator
         - Composite roles: aggregator_client, server_client, server_aggregator, server_aggregator_client
@@ -19,52 +19,54 @@ class Role(Enum):
     server_aggregator_client = 7
 
 
-class RoleManager:
+class FlexRoleManager:
     """Class used to check allowed communications between
     different roles.
     """
 
     client_allowed_comm = {
-        Role.aggregator,
-        Role.aggregator_client,
-        Role.server_aggregator,
-        Role.server_aggregator_client,
+        FlexRole.aggregator,
+        FlexRole.aggregator_client,
+        FlexRole.server_aggregator,
+        FlexRole.server_aggregator_client,
     }
     aggregator_allowed_comm = {
-        Role.aggregator,
-        Role.aggregator_client,
-        Role.server,
-        Role.server_aggregator,
-        Role.server_aggregator_client,
+        FlexRole.aggregator,
+        FlexRole.aggregator_client,
+        FlexRole.server,
+        FlexRole.server_aggregator,
+        FlexRole.server_client,
+        FlexRole.server_aggregator_client,
     }
     server_allowed_comm = {
-        Role.client,
-        Role.aggregator_client,
-        Role.server_aggregator,
-        Role.server_aggregator_client,
+        FlexRole.client,
+        FlexRole.aggregator_client,
+        FlexRole.server_client,
+        FlexRole.server_aggregator,
+        FlexRole.server_aggregator_client,
     }
 
     client_wannabe = {
-        Role.client,
-        Role.server_client,
-        Role.aggregator_client,
-        Role.server_aggregator_client,
+        FlexRole.client,
+        FlexRole.server_client,
+        FlexRole.aggregator_client,
+        FlexRole.server_aggregator_client,
     }
     aggregator_wannabe = {
-        Role.aggregator,
-        Role.server_client,
-        Role.aggregator_client,
-        Role.server_aggregator_client,
+        FlexRole.aggregator,
+        FlexRole.server_aggregator,
+        FlexRole.aggregator_client,
+        FlexRole.server_aggregator_client,
     }
     server_wannabe = {
-        Role.server,
-        Role.server_client,
-        Role.server_aggregator,
-        Role.server_aggregator_client,
+        FlexRole.server,
+        FlexRole.server_client,
+        FlexRole.server_aggregator,
+        FlexRole.server_aggregator_client,
     }
 
     @classmethod
-    def is_client(cls, role: Role) -> bool:
+    def is_client(cls, role: FlexRole) -> bool:
         """Method to check whether a role is a client role.
 
         Args:
@@ -76,7 +78,7 @@ class RoleManager:
         return role in cls.client_wannabe
 
     @classmethod
-    def can_comm_with_client(cls, role: Role) -> bool:
+    def can_comm_with_client(cls, role: FlexRole) -> bool:
         """Method to ensure that role can establish a communication with
         a client role.
 
@@ -89,21 +91,21 @@ class RoleManager:
         return role in cls.client_allowed_comm
 
     @classmethod
-    def is_aggregator(cls, role: Role) -> bool:
-        """Method to check whether a role is a aggregator role.
+    def is_aggregator(cls, role: FlexRole) -> bool:
+        """Method to check whether a role is an aggregator role.
 
         Args:
             role (Role): role to be checked
 
         Returns:
-            bool: wheter the not role is a aggregator role
+            bool: wheter the not role is an aggregator role
         """
         return role in cls.aggregator_wannabe
 
     @classmethod
-    def can_comm_with_aggregator(cls, role: Role) -> bool:
+    def can_comm_with_aggregator(cls, role: FlexRole) -> bool:
         """Method to ensure that role can establish a communication with
-        a aggregator role.
+        an aggregator role.
 
         Args:
             role (Role): role to be checked
@@ -114,7 +116,7 @@ class RoleManager:
         return role in cls.aggregator_allowed_comm
 
     @classmethod
-    def is_server(cls, role: Role) -> bool:
+    def is_server(cls, role: FlexRole) -> bool:
         """Method to check whether a role is a server role.
 
         Args:
@@ -126,7 +128,7 @@ class RoleManager:
         return role in cls.server_wannabe
 
     @classmethod
-    def can_comm_with_server(cls, role: Role) -> bool:
+    def can_comm_with_server(cls, role: FlexRole) -> bool:
         """Method to ensure that role can establish a communication with
         a server role.
 
@@ -139,7 +141,7 @@ class RoleManager:
         return role in cls.server_allowed_comm
 
     @classmethod
-    def check_compatibility(cls, role1: Role, role2: Role) -> bool:
+    def check_compatibility(cls, role1: FlexRole, role2: FlexRole) -> bool:
         """Method used to ensure that it is possible to communicate from role1
         to role2, note that the communication from role2 to role1 is not checked.
 
@@ -159,10 +161,10 @@ class RoleManager:
         )
 
 
-class Actors(UserDict):
+class FlexActors(UserDict):
     """Class that represents roles assigned to each node in a Federated Experiment.
     Roles are designed to restrict communications between nodes. It is important
-    to note that Roles are not mutuall exclusive, that is, a node can have multiple
+    to note that Roles are not mutually exclusive, that is, a node can have multiple
     Roles.
 
     Attributes
@@ -186,7 +188,7 @@ class Actors(UserDict):
         Returns:
             bool: whether or not the communication is allowed.
         """
-        return RoleManager.check_compatibility(self[key1], self[key2])
+        return FlexRoleManager.check_compatibility(self[key1], self[key2])
 
-    def __setitem__(self, key: Hashable, item: Role) -> None:
+    def __setitem__(self, key: Hashable, item: FlexRole) -> None:
         self.data[key] = item

@@ -2,22 +2,22 @@ import unittest
 
 import pytest
 
-from flex.pool.actors import Actors, Role, RoleManager
+from flex.pool.actors import FlexActors, FlexRole, FlexRoleManager
 
 
 @pytest.fixture(name="actors_cs")
 def fixture_actors():
     client1_id = "client1"
-    role1 = Role.client
+    role1 = FlexRole.client
     client2_id = "client2"
-    role2 = Role.client
+    role2 = FlexRole.client
     client3_id = "client3"
-    role3 = Role.client
+    role3 = FlexRole.client
     aggregator_id = "aggregator"
-    role4 = Role.aggregator
+    role4 = FlexRole.aggregator
     server_id = "server"
-    role5 = Role.server
-    return Actors(
+    role5 = FlexRole.server
+    return FlexActors(
         {
             client1_id: role1,
             client2_id: role2,
@@ -31,16 +31,16 @@ def fixture_actors():
 @pytest.fixture(name="p2p")
 def fixture_peer_to_peer():
     actor1_id = "actor1"
-    role1 = Role.server_aggregator_client
+    role1 = FlexRole.server_aggregator_client
     actor2_id = "actor2"
-    role2 = Role.server_aggregator_client
+    role2 = FlexRole.server_aggregator_client
     actor3_id = "actor3"
-    role3 = Role.server_aggregator_client
+    role3 = FlexRole.server_aggregator_client
     actor4_id = "actor4"
-    role4 = Role.server_aggregator_client
+    role4 = FlexRole.server_aggregator_client
     actor5_id = "actor5"
-    role5 = Role.server_aggregator_client
-    return Actors(
+    role5 = FlexRole.server_aggregator_client
+    return FlexActors(
         {
             actor1_id: role1,
             actor2_id: role2,
@@ -62,127 +62,149 @@ class TestRoleManger(unittest.TestCase):
 
     def test_is_client_method(self):
         # Client-Server Architecture
-        assert RoleManager.is_client(self._actors_cs["client1"]) is True
-        assert RoleManager.is_client(self._actors_cs["client2"]) is True
-        assert RoleManager.is_client(self._actors_cs["client3"]) is True
-        assert RoleManager.is_client(self._actors_cs["aggregator"]) is False
-        assert RoleManager.is_client(self._actors_cs["server"]) is False
+        assert FlexRoleManager.is_client(self._actors_cs["client1"]) is True
+        assert FlexRoleManager.is_client(self._actors_cs["client2"]) is True
+        assert FlexRoleManager.is_client(self._actors_cs["client3"]) is True
+        assert FlexRoleManager.is_client(self._actors_cs["aggregator"]) is False
+        assert FlexRoleManager.is_client(self._actors_cs["server"]) is False
         # Peer-To-Peer Architecture
-        assert RoleManager.is_client(self._p2p["actor1"]) is True
-        assert RoleManager.is_client(self._p2p["actor2"]) is True
-        assert RoleManager.is_client(self._p2p["actor3"]) is True
-        assert RoleManager.is_client(self._p2p["actor4"]) is True
-        assert RoleManager.is_client(self._p2p["actor5"]) is True
+        assert FlexRoleManager.is_client(self._p2p["actor1"]) is True
+        assert FlexRoleManager.is_client(self._p2p["actor2"]) is True
+        assert FlexRoleManager.is_client(self._p2p["actor3"]) is True
+        assert FlexRoleManager.is_client(self._p2p["actor4"]) is True
+        assert FlexRoleManager.is_client(self._p2p["actor5"]) is True
 
     def test_is_aggregator_method(self):
         # Client-Server Architecture
-        assert RoleManager.is_aggregator(self._actors_cs["client1"]) is False
-        assert RoleManager.is_aggregator(self._actors_cs["client2"]) is False
-        assert RoleManager.is_aggregator(self._actors_cs["client3"]) is False
-        assert RoleManager.is_aggregator(self._actors_cs["aggregator"]) is True
-        assert RoleManager.is_aggregator(self._actors_cs["server"]) is False
+        assert FlexRoleManager.is_aggregator(self._actors_cs["client1"]) is False
+        assert FlexRoleManager.is_aggregator(self._actors_cs["client2"]) is False
+        assert FlexRoleManager.is_aggregator(self._actors_cs["client3"]) is False
+        assert FlexRoleManager.is_aggregator(self._actors_cs["aggregator"]) is True
+        assert FlexRoleManager.is_aggregator(self._actors_cs["server"]) is False
         # Peer-To-Peer Architecture
-        assert RoleManager.is_aggregator(self._p2p["actor1"]) is True
-        assert RoleManager.is_aggregator(self._p2p["actor2"]) is True
-        assert RoleManager.is_aggregator(self._p2p["actor3"]) is True
-        assert RoleManager.is_aggregator(self._p2p["actor4"]) is True
-        assert RoleManager.is_aggregator(self._p2p["actor5"]) is True
+        assert FlexRoleManager.is_aggregator(self._p2p["actor1"]) is True
+        assert FlexRoleManager.is_aggregator(self._p2p["actor2"]) is True
+        assert FlexRoleManager.is_aggregator(self._p2p["actor3"]) is True
+        assert FlexRoleManager.is_aggregator(self._p2p["actor4"]) is True
+        assert FlexRoleManager.is_aggregator(self._p2p["actor5"]) is True
 
     def test_is_server_method(self):
         # Client-Server Architecture
-        assert RoleManager.is_server(self._actors_cs["client1"]) is False
-        assert RoleManager.is_server(self._actors_cs["client2"]) is False
-        assert RoleManager.is_server(self._actors_cs["client3"]) is False
-        assert RoleManager.is_server(self._actors_cs["aggregator"]) is False
-        assert RoleManager.is_server(self._actors_cs["server"]) is True
+        assert FlexRoleManager.is_server(self._actors_cs["client1"]) is False
+        assert FlexRoleManager.is_server(self._actors_cs["client2"]) is False
+        assert FlexRoleManager.is_server(self._actors_cs["client3"]) is False
+        assert FlexRoleManager.is_server(self._actors_cs["aggregator"]) is False
+        assert FlexRoleManager.is_server(self._actors_cs["server"]) is True
         # Peer-To-Peer Architecture
-        assert RoleManager.is_server(self._p2p["actor1"]) is True
-        assert RoleManager.is_server(self._p2p["actor2"]) is True
-        assert RoleManager.is_server(self._p2p["actor3"]) is True
-        assert RoleManager.is_server(self._p2p["actor4"]) is True
-        assert RoleManager.is_server(self._p2p["actor5"]) is True
+        assert FlexRoleManager.is_server(self._p2p["actor1"]) is True
+        assert FlexRoleManager.is_server(self._p2p["actor2"]) is True
+        assert FlexRoleManager.is_server(self._p2p["actor3"]) is True
+        assert FlexRoleManager.is_server(self._p2p["actor4"]) is True
+        assert FlexRoleManager.is_server(self._p2p["actor5"]) is True
 
     def test_check_compatibility_method(self):
         # Client-Server Architecture
         assert (
-            RoleManager.check_compatibility(
+            FlexRoleManager.check_compatibility(
                 self._actors_cs["client1"], self._actors_cs["server"]
             )
             is False
         )
         assert (
-            RoleManager.check_compatibility(
+            FlexRoleManager.check_compatibility(
                 self._actors_cs["server"], self._actors_cs["client1"]
             )
             is True
         )
         assert (
-            RoleManager.check_compatibility(
+            FlexRoleManager.check_compatibility(
                 self._actors_cs["server"], self._actors_cs["aggregator"]
             )
             is False
         )
         assert (
-            RoleManager.check_compatibility(
+            FlexRoleManager.check_compatibility(
                 self._actors_cs["client1"], self._actors_cs["client2"]
             )
             is False
         )
         assert (
-            RoleManager.check_compatibility(
+            FlexRoleManager.check_compatibility(
                 self._actors_cs["aggregator"], self._actors_cs["server"]
             )
             is True
         )
         assert (
-            RoleManager.check_compatibility(
+            FlexRoleManager.check_compatibility(
                 self._actors_cs["client1"], self._actors_cs["aggregator"]
             )
             is True
         )
         # Peer-To-Peer Architecture
         assert (
-            RoleManager.check_compatibility(self._p2p["actor1"], self._p2p["actor2"])
+            FlexRoleManager.check_compatibility(
+                self._p2p["actor1"], self._p2p["actor2"]
+            )
             is True
         )
         assert (
-            RoleManager.check_compatibility(self._p2p["actor1"], self._p2p["actor3"])
+            FlexRoleManager.check_compatibility(
+                self._p2p["actor1"], self._p2p["actor3"]
+            )
             is True
         )
         assert (
-            RoleManager.check_compatibility(self._p2p["actor1"], self._p2p["actor4"])
+            FlexRoleManager.check_compatibility(
+                self._p2p["actor1"], self._p2p["actor4"]
+            )
             is True
         )
         assert (
-            RoleManager.check_compatibility(self._p2p["actor1"], self._p2p["actor5"])
+            FlexRoleManager.check_compatibility(
+                self._p2p["actor1"], self._p2p["actor5"]
+            )
             is True
         )
         assert (
-            RoleManager.check_compatibility(self._p2p["actor2"], self._p2p["actor3"])
+            FlexRoleManager.check_compatibility(
+                self._p2p["actor2"], self._p2p["actor3"]
+            )
             is True
         )
         assert (
-            RoleManager.check_compatibility(self._p2p["actor2"], self._p2p["actor4"])
+            FlexRoleManager.check_compatibility(
+                self._p2p["actor2"], self._p2p["actor4"]
+            )
             is True
         )
         assert (
-            RoleManager.check_compatibility(self._p2p["actor2"], self._p2p["actor5"])
+            FlexRoleManager.check_compatibility(
+                self._p2p["actor2"], self._p2p["actor5"]
+            )
             is True
         )
         assert (
-            RoleManager.check_compatibility(self._p2p["actor3"], self._p2p["actor4"])
+            FlexRoleManager.check_compatibility(
+                self._p2p["actor3"], self._p2p["actor4"]
+            )
             is True
         )
         assert (
-            RoleManager.check_compatibility(self._p2p["actor3"], self._p2p["actor5"])
+            FlexRoleManager.check_compatibility(
+                self._p2p["actor3"], self._p2p["actor5"]
+            )
             is True
         )
         assert (
-            RoleManager.check_compatibility(self._p2p["actor4"], self._p2p["actor5"])
+            FlexRoleManager.check_compatibility(
+                self._p2p["actor4"], self._p2p["actor5"]
+            )
             is True
         )
         assert (
-            RoleManager.check_compatibility(self._p2p["actor5"], self._p2p["actor3"])
+            FlexRoleManager.check_compatibility(
+                self._p2p["actor5"], self._p2p["actor3"]
+            )
             is True
         )
 
@@ -219,7 +241,7 @@ class TestActors(unittest.TestCase):
 
     def test_set_function(self):
         client4_id = "client4"
-        role_client4 = Role.client
+        role_client4 = FlexRole.client
         self._actors_cs[client4_id] = role_client4
         assert client4_id in self._actors_cs.keys()
         assert self._actors_cs[client4_id] == role_client4
