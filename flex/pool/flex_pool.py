@@ -1,7 +1,7 @@
 from typing import Callable
 
-from flex.data.flex_dataset import FlexDataset
-from flex.pool.actors import Actors, Role, RoleManager
+from flex.data import FlexDataset
+from flex.pool.actors import FlexActors, FlexRole, FlexRoleManager
 
 
 class FlexPoolManager:
@@ -10,7 +10,7 @@ class FlexPoolManager:
     def __init__(
         self,
         flex_data: FlexDataset = None,
-        flex_actors: Actors = None,
+        flex_actors: FlexActors = None,
         flex_model=None,
         dropout_rate: float = None,
     ) -> None:
@@ -41,7 +41,7 @@ class FlexPoolManager:
         if any(
             actor_id
             for actor_id in self._actors
-            if RoleManager.is_client(self._actors[actor_id])
+            if FlexRoleManager.is_client(self._actors[actor_id])
             and actor_id not in self._data.keys()
         ):
             raise ValueError(
@@ -51,14 +51,14 @@ class FlexPoolManager:
         if not any(
             actor_id
             for actor_id in self._actors
-            if RoleManager.is_server(self._actors[actor_id])
+            if FlexRoleManager.is_server(self._actors[actor_id])
         ):
             raise ValueError("There must be a server in the actor pool.")
 
         if not any(
             actor_id
             for actor_id in self._actors
-            if RoleManager.is_aggregator(self._actors[actor_id])
+            if FlexRoleManager.is_aggregator(self._actors[actor_id])
         ):
             raise ValueError("There must be an aggregator in the actor pool.")
 
@@ -90,8 +90,8 @@ class FlexPoolManager:
     def client_server_architecture(
         cls, fed_dataset: FlexDataset, dropout_rate: float = None
     ):
-        actors = Actors({actor_id: Role.client for actor_id in fed_dataset.keys()})
-        actors["server"] = Role.server_aggregator
+        actors = FlexActors({actor_id: FlexRole.client for actor_id in fed_dataset.keys()})
+        actors["server"] = FlexRole.server_aggregator
         return cls(
             flex_data=fed_dataset,
             flex_actors=actors,
@@ -110,6 +110,6 @@ class FlexPoolManager:
 
     @classmethod
     def __create_actors_all_privileges(cls, actors_ids):
-        return Actors(
-            {actor_id: Role.server_aggregator_client for actor_id in actors_ids}
+        return FlexActors(
+            {actor_id: FlexRole.server_aggregator_client for actor_id in actors_ids}
         )
