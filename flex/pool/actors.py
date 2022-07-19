@@ -14,64 +14,76 @@ class Role(Enum):
 
 
 class RoleManager:
-    client_mask = (
+    client_allowed_comm = {
         Role.aggregator,
         Role.aggregator_client,
         Role.server_aggregator,
         Role.server_aggregator_client,
-    )
-    aggregator_mask = (
+    }
+    aggregator_allowed_comm = {
         Role.aggregator,
         Role.aggregator_client,
         Role.server,
         Role.server_aggregator,
         Role.server_aggregator_client,
-    )
-    server_mask = (
+    }
+    server_allowed_comm = {
         Role.client,
-        Role.server_client,
         Role.aggregator_client,
+        Role.server_aggregator,
         Role.server_aggregator_client,
-    )
+    }
 
-    client_wannabe = (
+    client_wannabe = {
         Role.client,
         Role.server_client,
         Role.aggregator_client,
         Role.server_aggregator_client,
-    )
-    aggregator_wannabe = (
-        Role.client,
+    }
+    aggregator_wannabe = {
+        Role.aggregator,
         Role.server_client,
         Role.aggregator_client,
         Role.server_aggregator_client,
-    )
-    server_wannabe = (
+    }
+    server_wannabe = {
         Role.server,
         Role.server_client,
         Role.server_aggregator,
         Role.server_aggregator_client,
-    )
+    }
 
     @classmethod
-    def isClient(cls, role: Role) -> bool:
+    def is_client(cls, role: Role) -> bool:
         return role in cls.client_wannabe
 
     @classmethod
-    def isAggregator(cls, role: Role) -> bool:
+    def can_comm_with_client(cls, role: Role) -> bool:
+        return role in cls.client_allowed_comm
+
+    @classmethod
+    def is_aggregator(cls, role: Role) -> bool:
         return role in cls.aggregator_wannabe
 
     @classmethod
-    def isServer(cls, role: Role) -> bool:
+    def can_comm_with_aggregator(cls, role: Role) -> bool:
+        return role in cls.aggregator_allowed_comm
+
+    @classmethod
+    def is_server(cls, role: Role) -> bool:
         return role in cls.server_wannabe
+
+    @classmethod
+    def can_comm_with_server(cls, role: Role) -> bool:
+        return role in cls.server_allowed_comm
 
     @classmethod
     def check_compatibility(cls, role1: Role, role2: Role) -> bool:
         return any(
             [
-                cls.isClient(role1) and (role2 in cls.client_mask),
-                cls.isAggregator(role1) and (role2 in cls.aggregator_mask),
-                cls.isServer(role1) and (role2 in cls.server_mask),
+                cls.is_client(role1) and cls.can_comm_with_client(role2),
+                cls.is_aggregator(role1) and cls.can_comm_with_aggregator(role2),
+                cls.is_server(role1) and cls.can_comm_with_server(role2),
             ]
         )
 
