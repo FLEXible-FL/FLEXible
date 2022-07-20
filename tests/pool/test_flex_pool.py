@@ -67,9 +67,18 @@ class TestRoleManger(unittest.TestCase):
         assert FlexRoleManager.is_aggregator(p._actors["client_3"]) is False
         assert FlexRoleManager.is_server(p._actors["client_3"]) is False
 
-        assert FlexRoleManager.is_client(p._actors["server"]) is False
-        assert FlexRoleManager.is_aggregator(p._actors["server"]) is True
-        assert FlexRoleManager.is_server(p._actors["server"]) is True
+        assert (
+            FlexRoleManager.is_client(p._actors[f"server_{id(FlexPoolManager)}"])
+            is False
+        )
+        assert (
+            FlexRoleManager.is_aggregator(p._actors[f"server_{id(FlexPoolManager)}"])
+            is True
+        )
+        assert (
+            FlexRoleManager.is_server(p._actors[f"server_{id(FlexPoolManager)}"])
+            is True
+        )
 
     def test_p2p_architecture(self):
         p = FlexPoolManager.p2p_architecture(self._fld)
