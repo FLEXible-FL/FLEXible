@@ -85,10 +85,6 @@ class TestRoleManger(unittest.TestCase):
         assert FlexRoleManager.is_aggregator(p._actors["client_3"]) is True
         assert FlexRoleManager.is_server(p._actors["client_3"]) is True
 
-    def test_validate_no_server_no_aggregator(self):
-        with pytest.raises(ValueError):
-            FlexPoolManager(self._fld, self._only_clients)
-
     def test_validate_client_without_data(self):
         fld = FlexDataset(
             {"client_1": self._fld["client_1"], "client_2": self._fld["client_2"]}
@@ -96,7 +92,39 @@ class TestRoleManger(unittest.TestCase):
         with pytest.raises(ValueError):
             FlexPoolManager(fld, self._only_clients)
 
-    def test_filer(self):
+    def test_filter(self):
         p = FlexPoolManager.p2p_architecture(self._fld)
-        p.filter(lambda a: a)
-        pass
+        new_p = p.filter(lambda a, b: FlexRoleManager.is_client(b))
+        assert all(
+            FlexRoleManager.is_client(actor_role)
+            for _, actor_role in new_p._actors.items()
+        )
+
+    def test_client_property(self):
+        p = FlexPoolManager.p2p_architecture(self._fld)
+        new_p = p.clients
+        assert all(
+            FlexRoleManager.is_client(actor_role)
+            for _, actor_role in new_p._actors.items()
+        )
+
+    def test_aggregator_property(self):
+        p = FlexPoolManager.p2p_architecture(self._fld)
+        new_p = p.aggregators
+        assert all(
+            FlexRoleManager.is_aggregator(actor_role)
+            for _, actor_role in new_p._actors.items()
+        )
+
+    def test_server_property(self):
+        p = FlexPoolManager.p2p_architecture(self._fld)
+        new_p = p.servers
+        assert all(
+            FlexRoleManager.is_server(actor_role)
+            for _, actor_role in new_p._actors.items()
+        )
+
+    def test_filter_func_none(self):
+        p = FlexPoolManager.p2p_architecture(self._fld)
+        with pytest.raises(ValueError):
+            p.filter(None)
