@@ -1,3 +1,4 @@
+import functools
 from typing import Callable
 
 from flex.data import FlexDataset
@@ -5,12 +6,14 @@ from flex.pool.actors import FlexActors, FlexRole, FlexRoleManager
 
 
 class FlexPoolManager:
-    """ """
+    """
+    Class that orchest the training phase of a federated learning experiment.
+    """
 
     def __init__(
         self,
-        flex_data: FlexDataset = None,
-        flex_actors: FlexActors = None,
+        flex_data: FlexDataset,
+        flex_actors: FlexActors,
         flex_model=None,
         dropout_rate: float = None,
     ) -> None:
@@ -20,18 +23,47 @@ class FlexPoolManager:
         self._dr_rate = dropout_rate  # Connection dropout rate
         self.validate()  # check if the provided arguments generate a valid object
 
-    def filter(self, func: Callable):
+    def filter(self, func: Callable = None, *args, **kwargs):
         """Function that filter the PoolManager by actors giving a function.
-
+        The function has to return True/False, and it recieves the args and kwargs arguments
+        for its internal uses. Also, the function recieves an actor_id and an actor_role.
+        The actor_id is a string, and the actor_role is a FlexRole.
         Note: This function doesn't send a copy of the original pool, it sends a reference.
             Changes made on the new pool may affect the original pool.
         Args:
-            func (Callable): Function to filter the pool by.
+            func (Callable): Function to filter the pool by. The function must return True/False.
 
         Returns:
             FlexPoolManger: New filtered pool.
         """
-        pass
+        if func is None:
+            raise ValueError(
+                "Function to filter can't be None. Please, provide a function."
+            )
+        new_actors = FlexActors()
+        new_data = FlexDataset()
+        for actor_id in self._actors:
+            if func(actor_id, self._actors[actor_id], *args, **kwargs):
+                new_actors[actor_id] = self._actors[actor_id]
+                if actor_id in self._data:
+                    new_data[actor_id] = self._data[actor_id]
+                # TODO: Add Model when Model module is finished.
+        new_models = None
+        return FlexPoolManager(
+            flex_actors=new_actors, flex_data=new_data, flex_model=new_models
+        )
+
+    @functools.cached_property
+    def clients(self):
+        return self.filter(lambda a, b: FlexRoleManager.is_client(b))
+
+    @functools.cached_property
+    def aggregators(self):
+        return self.filter(lambda a, b: FlexRoleManager.is_aggregator(b))
+
+    @functools.cached_property
+    def servers(self):
+        return self.filter(lambda a, b: FlexRoleManager.is_server(b))
 
     def validate(self):
         """Function that checks whether the object is correct or not."""
@@ -43,23 +75,6 @@ class FlexPoolManager:
                 raise ValueError(
                     "All node with client role must have data. Node with client role and id {actor_id} does not have any data."
                 )
-
-        servers = [
-            actor_id
-            for actor_id in self._actors
-            if FlexRoleManager.is_server(self._actors[actor_id])
-        ]
-        aggregators = [
-            actor_id
-            for actor_id in self._actors
-            if FlexRoleManager.is_aggregator(self._actors[actor_id])
-        ]
-
-        if not servers or not aggregators:
-            raise ValueError(
-                f"There must be at least one server role and one aggregator role in the actor pool. \
-                    but there are {len(servers)} server roles and {len(aggregators)} aggregator roles."
-            )
 
     '''
     La función se implementará cuando se haga el módulo de los modelos.
@@ -92,7 +107,7 @@ class FlexPoolManager:
         actors = FlexActors(
             {actor_id: FlexRole.client for actor_id in fed_dataset.keys()}
         )
-        actors["server"] = FlexRole.server_aggregator
+        actors[f"server_{id(cls)}"] = FlexRole.server_aggregator
         return cls(
             flex_data=fed_dataset,
             flex_actors=actors,
