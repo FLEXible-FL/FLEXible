@@ -1,8 +1,8 @@
 from collections import UserDict
-from enum import Enum
+from enum import unique, Enum
 from typing import Hashable
 
-
+@unique
 class FlexRole(Enum):
     """Enum which contains all possible roles:
         - Basic roles: client, server or aggregator
