@@ -1,6 +1,7 @@
 from collections import UserDict
-from enum import unique, Enum
+from enum import Enum, unique
 from typing import Hashable
+
 
 @unique
 class FlexRole(Enum):
