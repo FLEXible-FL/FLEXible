@@ -5,7 +5,7 @@ from flex.data import FlexDataset
 from flex.pool.actors import FlexActors, FlexRole, FlexRoleManager
 
 
-class FlexPoolManager:
+class FlexPool:
     """
     Class that orchest the training phase of a federated learning experiment.
     """
@@ -34,7 +34,7 @@ class FlexPoolManager:
             func (Callable): Function to filter the pool by. The function must return True/False.
 
         Returns:
-            FlexPoolManger: New filtered pool.
+            FlexPool: New filtered pool.
         """
         if func is None:
             raise ValueError(
@@ -49,7 +49,7 @@ class FlexPoolManager:
                     new_data[actor_id] = self._data[actor_id]
                 # TODO: Add Model when Model module is finished.
         new_models = None
-        return FlexPoolManager(
+        return FlexPool(
             flex_actors=new_actors, flex_data=new_data, flex_models=new_models
         )
 
