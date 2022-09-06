@@ -1,4 +1,5 @@
 import unittest
+from collections import defaultdict
 
 import numpy as np
 import pytest
@@ -92,7 +93,13 @@ class TestRoleManger(unittest.TestCase):
             {"client_1": self._fld["client_1"], "client_2": self._fld["client_2"]}
         )
         with pytest.raises(ValueError):
-            FlexPool(fld, self._only_clients)
+            FlexPool(fld, self._only_clients, defaultdict())
+
+    def test_validate_client_without_model(self):
+        p = FlexPool.p2p_architecture(self._fld)
+        assert p._models.get("client_1") is None
+        assert p._models.get("client_2") is None
+        assert p._models.get("client_3") is None
 
     def test_filter(self):
         p = FlexPool.p2p_architecture(self._fld)

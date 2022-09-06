@@ -1,4 +1,5 @@
 import functools
+from collections import defaultdict
 from typing import Callable
 
 from flex.data import FlexDataset
@@ -14,7 +15,7 @@ class FlexPool:
         self,
         flex_data: FlexDataset,
         flex_actors: FlexActors,
-        flex_models=None,
+        flex_models: defaultdict,
         dropout_rate: float = None,
     ) -> None:
         self._actors = flex_actors  # Actors
@@ -48,7 +49,7 @@ class FlexPool:
                 if actor_id in self._data:
                     new_data[actor_id] = self._data[actor_id]
                 # TODO: Add Model when Model module is finished.
-        new_models = None
+        new_models = defaultdict()
         return FlexPool(
             flex_actors=new_actors, flex_data=new_data, flex_models=new_models
         )
@@ -111,7 +112,7 @@ class FlexPool:
         return cls(
             flex_data=fed_dataset,
             flex_actors=actors,
-            flex_models=None,
+            flex_models=defaultdict(),
             dropout_rate=dropout_rate,
         )
 
@@ -120,7 +121,7 @@ class FlexPool:
         return cls(
             flex_data=fed_dataset,
             flex_actors=cls.__create_actors_all_privileges(fed_dataset.keys()),
-            flex_models=None,
+            flex_models=defaultdict(),
             dropout_rate=dropout_rate,
         )
 
