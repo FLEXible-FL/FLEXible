@@ -14,12 +14,12 @@ class FlexPoolManager:
         self,
         flex_data: FlexDataset,
         flex_actors: FlexActors,
-        flex_model=None,
+        flex_models=None,
         dropout_rate: float = None,
     ) -> None:
         self._actors = flex_actors  # Actors
         self._data = flex_data  # FlexDataset
-        self._models = flex_model  # Add when models are finished
+        self._models = flex_models  # Add when models are finished
         self._dr_rate = dropout_rate  # Connection dropout rate
         self.validate()  # check if the provided arguments generate a valid object
 
@@ -50,7 +50,7 @@ class FlexPoolManager:
                 # TODO: Add Model when Model module is finished.
         new_models = None
         return FlexPoolManager(
-            flex_actors=new_actors, flex_data=new_data, flex_model=new_models
+            flex_actors=new_actors, flex_data=new_data, flex_models=new_models
         )
 
     @functools.cached_property
@@ -111,7 +111,7 @@ class FlexPoolManager:
         return cls(
             flex_data=fed_dataset,
             flex_actors=actors,
-            flex_model=None,
+            flex_models=None,
             dropout_rate=dropout_rate,
         )
 
@@ -120,7 +120,7 @@ class FlexPoolManager:
         return cls(
             flex_data=fed_dataset,
             flex_actors=cls.__create_actors_all_privileges(fed_dataset.keys()),
-            flex_model=None,
+            flex_models=None,
             dropout_rate=dropout_rate,
         )
 
