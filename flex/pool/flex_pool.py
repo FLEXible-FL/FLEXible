@@ -2,6 +2,9 @@ import functools
 from collections import defaultdict
 from typing import Callable
 
+# trunk-ignore(flake8/F401)
+from future import annotations
+
 from flex.data import FlexDataset
 from flex.pool.actors import FlexActors, FlexRole, FlexRoleManager
 
@@ -15,7 +18,7 @@ class FlexPool:
         self,
         flex_data: FlexDataset,
         flex_actors: FlexActors,
-        flex_models: defaultdict,
+        flex_models: defaultdict = None,
         dropout_rate: float = None,
     ) -> None:
         self._actors = flex_actors  # Actors
@@ -23,6 +26,16 @@ class FlexPool:
         self._models = flex_models  # Add when models are finished
         self._dr_rate = dropout_rate  # Connection dropout rate
         self.validate()  # check if the provided arguments generate a valid object
+
+    @classmethod
+    def check_compatibility(cls, src_actors, dst_actors):
+        for i in src_actors:
+            for j in dst_actors:
+                FlexRoleManager.check_compatibility(i, j)
+
+    def map_procedure(self, func: Callable, dst_pool: "FlexPool", *args, **kwargs):
+        FlexPool.check_compatibility(self._actors, dst_pool._actors)
+        func(self._models, dst_pool._models, *args, **kwargs)
 
     def filter(self, func: Callable = None, *args, **kwargs):
         """Function that filter the PoolManager by actors giving a function.
