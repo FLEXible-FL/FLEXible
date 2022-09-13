@@ -95,6 +95,20 @@ class TestRoleManger(unittest.TestCase):
         with pytest.raises(ValueError):
             FlexPool(fld, self._only_clients, defaultdict())
 
+    def test_validate_client_without_role(self):
+        client1_id = "client_1"
+        role1 = FlexRole.client
+        client2_id = "client_2"
+        role2 = FlexRole.client
+        missing_one = FlexActors(
+            {
+                client1_id: role1,
+                client2_id: role2,
+            }
+        )
+        with pytest.raises(ValueError):
+            FlexPool(self._fld, missing_one, defaultdict())
+
     def test_validate_client_without_model(self):
         p = FlexPool.p2p_architecture(self._fld)
         assert p._models.get("client_1") is None
