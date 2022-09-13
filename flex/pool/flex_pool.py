@@ -82,7 +82,6 @@ class FlexPool:
                     "All node with client role must have data. Node with client role and id {actor_id} does not have any data."
                 )
 
-
     '''
     La función se implementará cuando se haga el módulo de los modelos.
     def send_model(self, pool: object = None):
