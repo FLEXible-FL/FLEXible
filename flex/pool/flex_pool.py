@@ -86,10 +86,15 @@ class FlexPool:
 
     def validate(self):
         """Function that checks whether the object is correct or not."""
+        actors_ids = self._actors.keys()
+        data_ids = self._data.keys()
+        models_ids = self._models.keys()
+        if not (actors_ids >= data_ids and actors_ids >= models_ids):
+            raise ValueError("Each node with data or model must have a role asigned")
         for actor_id in self._actors:
             if (
                 FlexRoleManager.is_client(self._actors[actor_id])
-                and actor_id not in self._data.keys()
+                and actor_id not in data_ids
             ):
                 raise ValueError(
                     "All node with client role must have data. Node with client role and id {actor_id} does not have any data."
