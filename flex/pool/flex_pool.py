@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import functools
 from collections import defaultdict
 from typing import Callable
@@ -15,7 +17,7 @@ class FlexPool:
         self,
         flex_data: FlexDataset,
         flex_actors: FlexActors,
-        flex_models: defaultdict,
+        flex_models: defaultdict = None,
         dropout_rate: float = None,
     ) -> None:
         self._actors = flex_actors  # Actors
@@ -23,6 +25,22 @@ class FlexPool:
         self._models = flex_models  # Add when models are finished
         self._dr_rate = dropout_rate  # Connection dropout rate
         self.validate()  # check if the provided arguments generate a valid object
+
+    @classmethod
+    def check_compatibility(cls, src_pool, dst_pool):
+        return all(
+            FlexRoleManager.check_compatibility(src, dst)
+            for _, src in src_pool._actors.items()
+            for _, dst in dst_pool._actors.items()
+        )
+
+    def map_procedure(self, func: Callable, dst_pool: FlexPool, *args, **kwargs):
+        if FlexPool.check_compatibility(self, dst_pool):
+            return func(self._models, dst_pool._models, *args, **kwargs)
+        else:
+            raise ValueError(
+                "Source and destination pools are not allowed to comunicate, ensure that their actors can communicate."
+            )
 
     def filter(self, func: Callable = None, *args, **kwargs):
         """Function that filter the PoolManager by actors giving a function.
