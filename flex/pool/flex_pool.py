@@ -1,9 +1,8 @@
+from __future__ import annotations
+
 import functools
 from collections import defaultdict
 from typing import Callable
-
-# trunk-ignore(flake8/F401)
-from future import annotations
 
 from flex.data import FlexDataset
 from flex.pool.actors import FlexActors, FlexRole, FlexRoleManager
@@ -28,14 +27,20 @@ class FlexPool:
         self.validate()  # check if the provided arguments generate a valid object
 
     @classmethod
-    def check_compatibility(cls, src_actors, dst_actors):
-        for i in src_actors:
-            for j in dst_actors:
-                FlexRoleManager.check_compatibility(i, j)
+    def check_compatibility(cls, src_pool, dst_pool):
+        return all(
+            FlexRoleManager.check_compatibility(src, dst)
+            for _, src in src_pool._actors.items()
+            for _, dst in dst_pool._actors.items()
+        )
 
-    def map_procedure(self, func: Callable, dst_pool: "FlexPool", *args, **kwargs):
-        FlexPool.check_compatibility(self._actors, dst_pool._actors)
-        func(self._models, dst_pool._models, *args, **kwargs)
+    def map_procedure(self, func: Callable, dst_pool: FlexPool, *args, **kwargs):
+        if FlexPool.check_compatibility(self, dst_pool):
+            return func(self._models, dst_pool._models, *args, **kwargs)
+        else:
+            raise ValueError(
+                "Source and destination pools are not allowed to comunicate, ensure that their actors can communicate."
+            )
 
     def filter(self, func: Callable = None, *args, **kwargs):
         """Function that filter the PoolManager by actors giving a function.

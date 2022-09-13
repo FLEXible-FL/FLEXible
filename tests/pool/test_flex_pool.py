@@ -45,7 +45,7 @@ def fixture_only_clients():
     )
 
 
-class TestRoleManger(unittest.TestCase):
+class TestFlexPool(unittest.TestCase):
     @pytest.fixture(autouse=True)
     def _fixture_only_clients(self, only_clients):
         self._only_clients = only_clients
@@ -53,6 +53,24 @@ class TestRoleManger(unittest.TestCase):
     @pytest.fixture(autouse=True)
     def _fixture_flex_dataset(self, fld):
         self._fld = fld
+
+    def test_check_compatibility(self):
+        p = FlexPool.client_server_architecture(self._fld)
+        server_pool = p.servers
+        client_pool = p.clients
+        assert FlexPool.check_compatibility(server_pool, client_pool) is True
+        assert (
+            FlexPool.check_compatibility(client_pool, server_pool) is True
+        )  # Servers are also aggregators in this architecture
+        assert FlexPool.check_compatibility(client_pool, client_pool) is False
+
+    def test_map_procedure(self):
+        p = FlexPool.client_server_architecture(self._fld)
+        server_pool = p.servers
+        client_pool = p.clients
+        assert server_pool.map_procedure(lambda *args: None, client_pool) is None
+        with pytest.raises(ValueError):
+            client_pool.map_procedure(lambda *args: None, client_pool)
 
     def test_client_server_architecture(self):
         p = FlexPool.client_server_architecture(self._fld)
