@@ -102,7 +102,7 @@ class FlexPool:
         for actor_id in self._actors:
             if func(actor_id, self._actors[actor_id], *args, **kwargs):
                 new_actors[actor_id] = self._actors[actor_id]
-                new_models[actor_id] = self._models[actor_id]
+                new_models[actor_id] = self._models.get(actor_id)
                 if actor_id in self._data:
                     new_data[actor_id] = self._data[actor_id]
         return FlexPool(
@@ -155,30 +155,6 @@ class FlexPool:
             raise ValueError(
                 "flex_models must have the same keys as flex_actors, but with None value if no model is required."
             )
-
-    '''
-    La función se implementará cuando se haga el módulo de los modelos.
-    def send_model(self, pool: object = None):
-        """
-        pool es la pool que manda a self el modelo.
-        Indicar:
-        - pool: pool de la que viene el modelo
-        """
-        pass
-
-    def deploy_model(self):
-        """
-        Inicialmente se debe hacer el deploy_model para instanciar el número de modelos que se quiera y no todos.
-        Aquí se define el inicio de la ronda para cada usuario en base al modelo que desee entrenar.
-        """
-        pass
-
-    def aggregation_step(self):
-        """
-        Función que realizará la agregación de los modelos de los clientes.
-        """
-        pass
-    '''
 
     @classmethod
     def client_server_architecture(
