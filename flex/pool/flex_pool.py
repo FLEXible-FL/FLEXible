@@ -13,7 +13,7 @@ class FlexPool:
     Class that orchest the training phase of a federated learning experiment.
     The FlexPool class is responsible for orchestating the clients to train a
     federated model.
-    This class represents a pool of actors and is in charge of checking the 
+    This class represents a pool of actors and is in charge of checking the
     communications between them during the process of training a federated model.
 
     Attributes
