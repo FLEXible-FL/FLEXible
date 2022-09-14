@@ -113,6 +113,11 @@ class TestFlexPool(unittest.TestCase):
         with pytest.raises(ValueError):
             FlexPool(fld, self._only_clients, defaultdict())
 
+    def test_validate_client_without_all_models(self):
+        models = defaultdict(None, {"client_1": 0, "client_2": 0})
+        with pytest.raises(ValueError):
+            FlexPool(self._fld, self._only_clients, models)
+
     def test_validate_client_without_role(self):
         client1_id = "client_1"
         role1 = FlexRole.client
