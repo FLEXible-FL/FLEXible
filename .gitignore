@@ -132,6 +132,8 @@ dmypy.json
 .trunk/out
 .trunk/external
 .trunk/logs
+.trunk/actions
+.trunk/notifications
 
 # do not include coverage file
 pytest-coverage.txt
