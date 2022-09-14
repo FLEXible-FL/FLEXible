@@ -16,7 +16,7 @@ class FlexPool:
     This class represents a pool of actors and is in charge of checking the
     communications between them during the process of training a federated model.
 
-    Note: At the moment this class only supports Horizontal Federated Learning, 
+    Note: At the moment this class only supports Horizontal Federated Learning,
     but in the future it will cover Vertical Federated Learning and Transfer Learning,
     so users can simulate all the experiments correctly.
 
@@ -27,12 +27,12 @@ class FlexPool:
         - flex_models (defaultdict): A dictionary containing the each actor id,
         and initialized to None. The model to train by each actor will be initialized
         using the map_procedure function following the communication constraints.
-    
-    
+
+
     --------------------------------------------------------------------------
     We offer two class methods to create two architectures, client-server architecture
     and p2p architecture. In the client-server architecture, every id from the
-    FlexDataset is assigned to be a client, and we create a third-party actor, 
+    FlexDataset is assigned to be a client, and we create a third-party actor,
     supposed to be neutral, to orchestate the training. Meanwhile, in the p2p
     architecture, each id from the FlexDataset will be assigned to be client,
     server and aggregator. In both cases, the method will create the actors
