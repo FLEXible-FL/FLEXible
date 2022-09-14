@@ -28,7 +28,7 @@ class FlexPool:
 
     @classmethod
     def check_compatibility(cls, src_pool, dst_pool):
-        """Method to check the compatibility between two different pools. 
+        """Method to check the compatibility between two different pools.
         This method is used by the map_procedure function to check if the
         function to apply from the source pool to the destiny pool can be done.
 
@@ -50,7 +50,7 @@ class FlexPool:
         this method is the source pool, and it will send a message, apply a function,
         to the destiny pool. The pool sends a message in other to complete a round
         in the Federated Learning (FL) paradigm, so, some examples of the messages
-        that will be used by the pools are: 
+        that will be used by the pools are:
         - send_model: Aggregators send the model to the server when the aggregation is done.
         - aggregation_step: Clients send the model to the aggregator so it can apply the
         aggregation mechanism given.
@@ -179,10 +179,10 @@ class FlexPool:
         cls, fed_dataset: FlexDataset, dropout_rate: float = None
     ):
         """Method to create a client-server architeture for a FlexDataset given.
-        This functions is used when you have a FlexDataset and you want to start 
+        This functions is used when you have a FlexDataset and you want to start
         the learning phase following a traditional client-server architecture.
-        
-        This method will assing to each id from the FlexDataset the client-role, 
+
+        This method will assing to each id from the FlexDataset the client-role,
         and will create a new actor that will be the server-aggregator that will
         orchestrate the learning phase.
 
@@ -210,7 +210,7 @@ class FlexPool:
         """Method to create a peer-to-peer (p2p) architecture for a FlexDataset given.
         This method is used when you have a FlexDataset and you want to start the
         learning phase following a p2p architecture.
-        
+
         This method will assing all roles (client-aggregator-server) to every id from
         the FlexDataset, so each participant in the learning phase can act as client,
         aggregator and server.
