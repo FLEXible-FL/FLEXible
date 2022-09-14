@@ -22,7 +22,9 @@ class FlexPool:
     ) -> None:
         self._actors = flex_actors  # Actors
         self._data = flex_data  # FlexDataset
-        self._models = flex_models  # Add when models are finished
+        self._models = flex_models
+        if self._models is None:
+            self._models = defaultdict(None, {k: None for k in self._actors.keys()})
         self._dr_rate = dropout_rate  # Connection dropout rate
         self.validate()  # check if the provided arguments generate a valid object
 
@@ -96,13 +98,13 @@ class FlexPool:
             )
         new_actors = FlexActors()
         new_data = FlexDataset()
+        new_models = defaultdict()
         for actor_id in self._actors:
             if func(actor_id, self._actors[actor_id], *args, **kwargs):
                 new_actors[actor_id] = self._actors[actor_id]
+                new_models[actor_id] = self._models.get(actor_id)
                 if actor_id in self._data:
                     new_data[actor_id] = self._data[actor_id]
-                # TODO: Add Model when Model module is finished.
-        new_models = defaultdict()
         return FlexPool(
             flex_actors=new_actors, flex_data=new_data, flex_models=new_models
         )
@@ -149,30 +151,10 @@ class FlexPool:
                 raise ValueError(
                     "All node with client role must have data. Node with client role and id {actor_id} does not have any data."
                 )
-
-    '''
-    La función se implementará cuando se haga el módulo de los modelos.
-    def send_model(self, pool: object = None):
-        """
-        pool es la pool que manda a self el modelo.
-        Indicar:
-        - pool: pool de la que viene el modelo
-        """
-        pass
-
-    def deploy_model(self):
-        """
-        Inicialmente se debe hacer el deploy_model para instanciar el número de modelos que se quiera y no todos.
-        Aquí se define el inicio de la ronda para cada usuario en base al modelo que desee entrenar.
-        """
-        pass
-
-    def aggregation_step(self):
-        """
-        Función que realizará la agregación de los modelos de los clientes.
-        """
-        pass
-    '''
+        if not (self._actors.keys() <= self._models.keys()):
+            raise ValueError(
+                "flex_models must have the same keys as flex_actors, but with None value if no model is required."
+            )
 
     @classmethod
     def client_server_architecture(
@@ -201,7 +183,7 @@ class FlexPool:
         return cls(
             flex_data=fed_dataset,
             flex_actors=actors,
-            flex_models=defaultdict(),
+            flex_models=None,
             dropout_rate=dropout_rate,
         )
 
@@ -226,7 +208,7 @@ class FlexPool:
         return cls(
             flex_data=fed_dataset,
             flex_actors=cls.__create_actors_all_privileges(fed_dataset.keys()),
-            flex_models=defaultdict(),
+            flex_models=None,
             dropout_rate=dropout_rate,
         )
 
