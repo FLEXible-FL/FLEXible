@@ -30,11 +30,11 @@ class FlexPool:
     def check_compatibility(cls, src_pool, dst_pool):
         """Method to check the compatibility between two different pools.
         This method is used by the map_procedure function to check if the
-        function to apply from the source pool to the destiny pool can be done.
+        function to apply from the source pool to the destination pool can be done.
 
         Args:
             src_pool (FlexPool): Source pool. Pool that will send the message.
-            dst_pool (FlexPool): Destiny pool. Pool that will recieve the message.
+            dst_pool (FlexPool): Destination pool. Pool that will recieve the message.
 
         Returns:
             bool: True if pools are compatible. False in other case.
@@ -48,7 +48,7 @@ class FlexPool:
     def map_procedure(self, func: Callable, dst_pool: FlexPool, *args, **kwargs):
         """Method used to send messages from one pool to another. The pool using
         this method is the source pool, and it will send a message, apply a function,
-        to the destiny pool. The pool sends a message in other to complete a round
+        to the destination pool. The pool sends a message in order to complete a round
         in the Federated Learning (FL) paradigm, so, some examples of the messages
         that will be used by the pools are:
         - send_model: Aggregators send the model to the server when the aggregation is done.
@@ -64,7 +64,7 @@ class FlexPool:
             dst_pool (FlexPool): Pool that will recieve the message from the source pool (self).
 
         Raises:
-            ValueError: This method raises and error if the pools aren't
+            ValueError: This method raises and error if the pools aren't allowed to comunicate
 
         Returns:
             _type_: The result of applying the function (func) from the source pool (self) to the
@@ -78,8 +78,8 @@ class FlexPool:
             )
 
     def filter(self, func: Callable = None, *args, **kwargs):
-        """Function that filter the PoolManager by actors giving a function.
-        The function has to return True/False, and it recieves the args and kwargs arguments
+        """Function that filter the PoolManager by actors given a function.
+        The function must return True/False, and it recieves the args and kwargs arguments
         for its internal uses. Also, the function recieves an actor_id and an actor_role.
         The actor_id is a string, and the actor_role is a FlexRole.
         Note: This function doesn't send a copy of the original pool, it sends a reference.
