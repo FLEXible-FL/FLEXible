@@ -45,7 +45,7 @@ def fixture_only_clients():
     )
 
 
-class TestRoleManger(unittest.TestCase):
+class TestFlexPool(unittest.TestCase):
     @pytest.fixture(autouse=True)
     def _fixture_only_clients(self, only_clients):
         self._only_clients = only_clients
@@ -53,6 +53,24 @@ class TestRoleManger(unittest.TestCase):
     @pytest.fixture(autouse=True)
     def _fixture_flex_dataset(self, fld):
         self._fld = fld
+
+    def test_check_compatibility(self):
+        p = FlexPool.client_server_architecture(self._fld)
+        server_pool = p.servers
+        client_pool = p.clients
+        assert FlexPool.check_compatibility(server_pool, client_pool) is True
+        assert (
+            FlexPool.check_compatibility(client_pool, server_pool) is True
+        )  # Servers are also aggregators in this architecture
+        assert FlexPool.check_compatibility(client_pool, client_pool) is False
+
+    def test_map_procedure(self):
+        p = FlexPool.client_server_architecture(self._fld)
+        server_pool = p.servers
+        client_pool = p.clients
+        assert server_pool.map_procedure(lambda *args: None, client_pool) is None
+        with pytest.raises(ValueError):
+            client_pool.map_procedure(lambda *args: None, client_pool)
 
     def test_client_server_architecture(self):
         p = FlexPool.client_server_architecture(self._fld)
@@ -95,10 +113,26 @@ class TestRoleManger(unittest.TestCase):
         with pytest.raises(ValueError):
             FlexPool(fld, self._only_clients, defaultdict())
 
+
     def test_validate_client_without_all_models(self):
         models = defaultdict(None, {"client_1": 0, "client_2": 0})
         with pytest.raises(ValueError):
             FlexPool(self._fld, self._only_clients, models)
+
+    def test_validate_client_without_role(self):
+        client1_id = "client_1"
+        role1 = FlexRole.client
+        client2_id = "client_2"
+        role2 = FlexRole.client
+        missing_one = FlexActors(
+            {
+                client1_id: role1,
+                client2_id: role2,
+            }
+        )
+        with pytest.raises(ValueError):
+            FlexPool(self._fld, missing_one, defaultdict())
+
 
     def test_validate_client_without_model(self):
         p = FlexPool.p2p_architecture(self._fld)
