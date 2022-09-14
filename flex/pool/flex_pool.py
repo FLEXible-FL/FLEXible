@@ -11,6 +11,18 @@ from flex.pool.actors import FlexActors, FlexRole, FlexRoleManager
 class FlexPool:
     """
     Class that orchest the training phase of a federated learning experiment.
+    The FlexPool class is responsible for orchestating the clients to train a
+    federated model.
+    This class represents a pool of actors and is in charge of checking the 
+    communications between them during the process of training a federated model.
+
+    Attributes
+    ----------
+        - flex_data (FlexDataset): The federated dataset prepared to be used.
+        - flex_actors (FlexActors): Actors with its roles.
+        - flex_models (defaultdict): A dictionary containing the each actor id,
+        and initialized to None. The model to train by each actor will be initialized
+        using the map_procedure function following the communication constraints.
     """
 
     def __init__(
