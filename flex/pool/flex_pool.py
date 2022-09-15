@@ -106,8 +106,9 @@ class FlexPool:
             ValueError: This method raises and error if the pools aren't allowed to comunicate
 
         Returns:
-            _type_: The result of applying the function (func) from the source pool (self) to the
-            destination pool (dst_pool).
+            List[Any]: A list of the result of applying the function (func) from the source pool (self) to the
+            destination pool (dst_pool). If dst_pool is None, then the results come from the source pool. The
+            length of the returned values equals the number of actors in the source pool.
         """
         if dst_pool is None:
             return [
