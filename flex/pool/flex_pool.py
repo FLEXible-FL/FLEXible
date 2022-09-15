@@ -11,6 +11,36 @@ from flex.pool.actors import FlexActors, FlexRole, FlexRoleManager
 class FlexPool:
     """
     Class that orchest the training phase of a federated learning experiment.
+    The FlexPool class is responsible for orchestating the clients to train a
+    federated model.
+    This class represents a pool of actors and is in charge of checking the
+    communications between them during the process of training a federated model.
+
+    Note: At the moment this class only supports Horizontal Federated Learning,
+    but in the future it will cover Vertical Federated Learning and Transfer Learning,
+    so users can simulate all the experiments correctly.
+
+    Attributes
+    ----------
+        - flex_data (FlexDataset): The federated dataset prepared to be used.
+        - flex_actors (FlexActors): Actors with its roles.
+        - flex_models (defaultdict): A dictionary containing the each actor id,
+        and initialized to None. The model to train by each actor will be initialized
+        using the map_procedure function following the communication constraints.
+
+
+    --------------------------------------------------------------------------
+    We offer two class methods to create two architectures, client-server architecture
+    and p2p architecture. In the client-server architecture, every id from the
+    FlexDataset is assigned to be a client, and we create a third-party actor,
+    supposed to be neutral, to orchestate the training. Meanwhile, in the p2p
+    architecture, each id from the FlexDataset will be assigned to be client,
+    server and aggregator. In both cases, the method will create the actors
+    so the user will only have to apply the map_procedure function to train the model.
+
+    If the user wants to use a different architecture, she will need to create
+    the actors by using the FlexActors class. For example, we let the user create
+    a client-server architecture with multiple aggregators, to carry out the aggregation.
     """
 
     def __init__(
