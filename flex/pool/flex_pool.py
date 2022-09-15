@@ -77,10 +77,11 @@ class FlexPool:
             for _, dst in dst_pool._actors.items()
         )
 
-    def map_procedure(self, func: Callable, dst_pool: FlexPool, *args, **kwargs):
+    def map_procedure(self, func: Callable, dst_pool: FlexPool = None, *args, **kwargs):
         """Method used to send messages from one pool to another. The pool using
         this method is the source pool, and it will send a message, apply a function,
-        to the destination pool. The pool sends a message in order to complete a round
+        to the destination pool. If no destination pool is provided, then the function is applied
+        to the source pool. The pool sends a message in order to complete a round
         in the Federated Learning (FL) paradigm, so, some examples of the messages
         that will be used by the pools are:
         - send_model: Aggregators send the model to the server when the aggregation is done.
@@ -92,18 +93,32 @@ class FlexPool:
         clients can initialize it. This is a particular case from the deploy_model case.
 
         Args:
-            func (Callable): Message to pass from the source pool (self) to the destinity pool (dst_pool)
-            dst_pool (FlexPool): Pool that will recieve the message from the source pool (self).
+            func (Callable): If dst_pool is None, then message is sent to the source (self). In this situation
+            the function func is called for each actor in the pool, providing actor's data and actor's model 
+            as arguments in addition to *args and **kwargs. If dst_pool is not None, the message is sent from
+            the source pool (self) to the destination pool (dst_pool). The function func is called for each actor 
+            in the pool, providing the model of the current actor in the source pool and all the models of the 
+            actors in the destination pool.
+
+            dst_pool (FlexPool): Pool that will recieve the message from the source pool (self), it can be None.
 
         Raises:
             ValueError: This method raises and error if the pools aren't allowed to comunicate
 
         Returns:
             _type_: The result of applying the function (func) from the source pool (self) to the
-            destinty pool (dst_pool).
+            destination pool (dst_pool).
         """
-        if FlexPool.check_compatibility(self, dst_pool):
-            return func(self._models, dst_pool._models, *args, **kwargs)
+        if dst_pool is None:
+            return [
+                func(self._data[i], self._models[i], *args, **kwargs)
+                for i in self._actors
+            ]
+        elif FlexPool.check_compatibility(self, dst_pool):
+            return [
+                func(self._models[i], dst_pool._models, *args, **kwargs)
+                for i in self._actors
+            ]
         else:
             raise ValueError(
                 "Source and destination pools are not allowed to comunicate, ensure that their actors can communicate."

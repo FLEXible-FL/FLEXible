@@ -74,9 +74,12 @@ class TestFlexPool(unittest.TestCase):
         p = FlexPool.client_server_architecture(self._fld)
         server_pool = p.servers
         client_pool = p.clients
-        assert server_pool.map_procedure(lambda *args: None, client_pool) is None
+        assert server_pool.map_procedure(lambda *args: True, client_pool) == [True]
+        assert client_pool.map_procedure(lambda *args: True) == len(client_pool) * [
+            True
+        ]
         with pytest.raises(ValueError):
-            client_pool.map_procedure(lambda *args: None, client_pool)
+            assert client_pool.map_procedure(lambda *args: True, client_pool)
 
     def test_client_server_architecture(self):
         p = FlexPool.client_server_architecture(self._fld)
