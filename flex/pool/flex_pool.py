@@ -39,7 +39,7 @@ class FlexPool:
     so the user will only have to apply the map_procedure function to train the model.
 
     If the user wants to use a different architecture, she will need to create
-    the actors by using the FlexActors class. For example, we let the user to create
+    the actors by using the FlexActors class. For example, we let the user create
     a client-server architecture with multiple aggregators, to carry out the aggregation.
     """
 
