@@ -94,10 +94,10 @@ class FlexPool:
 
         Args:
             func (Callable): If dst_pool is None, then message is sent to the source (self). In this situation
-            the function func is called for each actor in the pool, providing actor's data and actor's model 
+            the function func is called for each actor in the pool, providing actor's data and actor's model
             as arguments in addition to *args and **kwargs. If dst_pool is not None, the message is sent from
-            the source pool (self) to the destination pool (dst_pool). The function func is called for each actor 
-            in the pool, providing the model of the current actor in the source pool and all the models of the 
+            the source pool (self) to the destination pool (dst_pool). The function func is called for each actor
+            in the pool, providing the model of the current actor in the source pool and all the models of the
             actors in the destination pool.
 
             dst_pool (FlexPool): Pool that will recieve the message from the source pool (self), it can be None.
