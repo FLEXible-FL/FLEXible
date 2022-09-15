@@ -139,6 +139,9 @@ class FlexPool:
             flex_actors=new_actors, flex_data=new_data, flex_models=new_models
         )
 
+    def __len__(self):
+        return len(self._actors)
+
     @functools.cached_property
     def clients(self):
         """Property to get all the clients available in a pool

@@ -54,6 +54,12 @@ class TestFlexPool(unittest.TestCase):
     def _fixture_flex_dataset(self, fld):
         self._fld = fld
 
+    def test_len_property(self):
+        p = FlexPool.client_server_architecture(self._fld)
+        assert len(p) != len(self._fld)
+        assert len(p.filter(lambda *args: True)) == len(p)
+        assert len(p._actors) == len(p)
+
     def test_check_compatibility(self):
         p = FlexPool.client_server_architecture(self._fld)
         server_pool = p.servers
