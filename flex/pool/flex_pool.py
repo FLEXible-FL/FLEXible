@@ -4,6 +4,8 @@ import functools
 from collections import defaultdict
 from typing import Callable
 
+import numpy as np
+
 from flex.data import FlexDataset
 from flex.pool.actors import FlexActors, FlexRole, FlexRoleManager
 
@@ -48,14 +50,12 @@ class FlexPool:
         flex_data: FlexDataset,
         flex_actors: FlexActors,
         flex_models: defaultdict = None,
-        dropout_rate: float = None,
     ) -> None:
         self._actors = flex_actors  # Actors
         self._data = flex_data  # FlexDataset
         self._models = flex_models
         if self._models is None:
             self._models = defaultdict(None, {k: None for k in self._actors.keys()})
-        self._dr_rate = dropout_rate  # Connection dropout rate
         self.validate()  # check if the provided arguments generate a valid object
 
     @classmethod
@@ -109,16 +109,21 @@ class FlexPool:
                 "Source and destination pools are not allowed to comunicate, ensure that their actors can communicate."
             )
 
-    def filter(self, func: Callable = None, *args, **kwargs):
+    def filter(
+        self, func: Callable = None, clients_dropout: float = 0.0, *args, **kwargs
+    ):
         """Function that filter the PoolManager by actors given a function.
         The function must return True/False, and it recieves the args and kwargs arguments
         for its internal uses. Also, the function recieves an actor_id and an actor_role.
         The actor_id is a string, and the actor_role is a FlexRole.
+
         Note: This function doesn't send a copy of the original pool, it sends a reference.
             Changes made on the new pool may affect the original pool.
         Args:
             func (Callable): Function to filter the pool by. The function must return True/False.
-
+            clients_dropout (float): Percentage of clients to drop from the training phase. This param
+            must be a value in the range [0, 1]. If the clients_dropout > 1, it will return all the
+            pool without any changes. For negative values the funcion raises an error.
         Returns:
             FlexPool: New filtered pool.
         """
@@ -126,10 +131,19 @@ class FlexPool:
             raise ValueError(
                 "Function to filter can't be None. Please, provide a function."
             )
+        if clients_dropout < 0:
+            raise ValueError(
+                "The clients dropout can't be negative. Please check use a value in the range [0, 1]"
+            )
+        clients_dropout = max(1 - min(clients_dropout, 1), 0)
+        clients_dropout = int(len(self._actors) * clients_dropout)
+        training_clients = np.random.choice(
+            list(self._actors.keys()), clients_dropout, replace=False
+        )
         new_actors = FlexActors()
         new_data = FlexDataset()
         new_models = defaultdict()
-        for actor_id in self._actors:
+        for actor_id in training_clients:
             if func(actor_id, self._actors[actor_id], *args, **kwargs):
                 new_actors[actor_id] = self._actors[actor_id]
                 new_models[actor_id] = self._models.get(actor_id)
@@ -144,12 +158,14 @@ class FlexPool:
 
     @functools.cached_property
     def clients(self):
-        """Property to get all the clients available in a pool
+        """Property to get all the clients available in a pool.
 
         Returns:
             FlexPool: Pool containing all the clients from a pool
         """
-        return self.filter(lambda a, b: FlexRoleManager.is_client(b))
+        return self.filter(
+            lambda a, b: FlexRoleManager.is_client(b), clients_dropout=0.0
+        )
 
     @functools.cached_property
     def aggregators(self):
@@ -190,9 +206,7 @@ class FlexPool:
             )
 
     @classmethod
-    def client_server_architecture(
-        cls, fed_dataset: FlexDataset, dropout_rate: float = None
-    ):
+    def client_server_architecture(cls, fed_dataset: FlexDataset):
         """Method to create a client-server architeture for a FlexDataset given.
         This functions is used when you have a FlexDataset and you want to start
         the learning phase following a traditional client-server architecture.
@@ -203,8 +217,6 @@ class FlexPool:
 
         Args:
             fed_dataset (FlexDataset): Federated dataset used to train a model.
-            dropout_rate (float, optional): Percentage of clients that will drop
-            before the training phase starts. Defaults to None.
 
         Returns:
             FlexPool: A FlexPool with the assigned roles for a client-server architecture.
@@ -217,11 +229,10 @@ class FlexPool:
             flex_data=fed_dataset,
             flex_actors=actors,
             flex_models=None,
-            dropout_rate=dropout_rate,
         )
 
     @classmethod
-    def p2p_architecture(cls, fed_dataset: FlexDataset, dropout_rate: float = None):
+    def p2p_architecture(cls, fed_dataset: FlexDataset):
         """Method to create a peer-to-peer (p2p) architecture for a FlexDataset given.
         This method is used when you have a FlexDataset and you want to start the
         learning phase following a p2p architecture.
@@ -232,8 +243,6 @@ class FlexPool:
 
         Args:
             fed_dataset (FlexDataset): Federated dataset used to train a model.
-            dropout_rate (float, optional): Percentage of clients that will drop
-            before the training phase starts. Defaults to None.
 
         Returns:
             FlexPool: A FlexPool with the assigned roles for a p2p architecture.
@@ -242,7 +251,6 @@ class FlexPool:
             flex_data=fed_dataset,
             flex_actors=cls.__create_actors_all_privileges(fed_dataset.keys()),
             flex_models=None,
-            dropout_rate=dropout_rate,
         )
 
     @classmethod
