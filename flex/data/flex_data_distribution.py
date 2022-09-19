@@ -65,7 +65,9 @@ class FlexDataDistribution(object):
             ) = cls.__sample(rng, remaining_data_indices, cdata, config_, i)
 
             fed_dataset[config_.client_names[i]] = FlexDataObject(
-                X_data=cdata.X_data[sub_data_indices][:, sub_features_indices],
+                X_data=cdata.X_data[sub_data_indices][:, sub_features_indices]
+                if len(cdata.X_data.shape) > 1
+                else cdata.X_data[sub_data_indices],
                 y_data=cdata.y_data[sub_data_indices]
                 if cdata.y_data is not None
                 else None,
