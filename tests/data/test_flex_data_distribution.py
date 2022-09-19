@@ -265,7 +265,6 @@ class TestFlexDataDistribution(unittest.TestCase):
         assert len(flex_dataset[0]) + len(flex_dataset[1]) == len(self._iris)
 
     def test_single_feature_data(self):
-        X_ = self._iris[:, 0] # fails here, it is not possible to index the way we want
-        cdata_ = FlexDataObject(X_[0])
-        federated_iris = FlexDataDistribution.iid_distribution(cdata=cdata_)
+        X, _ = self._iris[:, 0]
+        federated_iris = FlexDataDistribution.iid_distribution(cdata=FlexDataObject(X))
         assert len(federated_iris[0].X_data.shape) == 1

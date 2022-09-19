@@ -38,7 +38,10 @@ class FlexDataObject:
 
     def __getitem__(self, pos):
         if self.y_data is not None:
-            return (self.X_data[pos], self.y_data[pos])
+            return (
+                self.X_data[pos],
+                self.y_data[pos[0]] if isinstance(pos, tuple) else self.y_data[pos],
+            )
         else:
             return (self.X_data[pos], None)
 
