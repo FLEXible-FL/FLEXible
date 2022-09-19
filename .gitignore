@@ -130,8 +130,16 @@ dmypy.json
 
 # Trunk linter
 .trunk/out
+.trunk/external
+.trunk/logs
+.trunk/actions
+.trunk/notifications
 
 # do not include coverage file
 pytest-coverage.txt
 
+#vs-code config
 .vscode
+
+#Mac os index files
+.DS_Store
