@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 
 from flex.data import FlexDataDistribution, FlexDataObject, FlexDatasetConfig
-
+from sklearn.datasets import load_iris
 
 @pytest.fixture(name="fcd")
 def fixture_simple_fex_data_object():
@@ -37,6 +37,12 @@ def fixture_simple_fex_data_object_multiple_classes():
 
 
 class TestFlexDataDistribution(unittest.TestCase):
+
+    @pytest.fixture(autouse=True)
+    def _fixture_iris_dataset(self):
+        iris = load_iris()
+        self._iris = FlexDataObject(X_data=iris.data, y_data=iris.target)
+
     @pytest.fixture(autouse=True)
     def _fixture_simple_flex_data_object(self, fcd):
         self._fcd = fcd
@@ -177,7 +183,7 @@ class TestFlexDataDistribution(unittest.TestCase):
             weights=None,
             replacement=False,
         )
-        flex_dataset = FlexDataDistribution.from_config(self._fcd, config)
+        flex_dataset = FlexDataDistribution.from_config(self._iris, config)
         assert np.unique(flex_dataset[0].y_data)[0] == 0
         assert np.unique(flex_dataset[1].y_data)[0] == 1
 
@@ -189,7 +195,7 @@ class TestFlexDataDistribution(unittest.TestCase):
             weights=None,
             replacement=True,
         )
-        flex_dataset = FlexDataDistribution.from_config(self._fcd, config)
+        flex_dataset = FlexDataDistribution.from_config(self._iris, config)
         assert len(flex_dataset) == config.n_clients
         assert np.unique(flex_dataset[0].y_data)[0] == 0
         assert set(np.unique(flex_dataset[1].y_data)) == {0, 1}
@@ -202,7 +208,7 @@ class TestFlexDataDistribution(unittest.TestCase):
             weights=[0.25, 0.5],
             replacement=True,
         )
-        flex_dataset = FlexDataDistribution.from_config(self._fcd, config)
+        flex_dataset = FlexDataDistribution.from_config(self._iris, config)
         assert len(flex_dataset) == config.n_clients
         assert np.unique(flex_dataset[0].y_data)[0] == 0
         assert set(np.unique(flex_dataset[1].y_data)) == {0, 1}
@@ -215,7 +221,7 @@ class TestFlexDataDistribution(unittest.TestCase):
             weights=[0.25, 0.5],
             replacement=False,
         )
-        flex_dataset = FlexDataDistribution.from_config(self._fcd, config)
+        flex_dataset = FlexDataDistribution.from_config(self._iris, config)
         assert len(flex_dataset) == config.n_clients
         assert np.unique(flex_dataset[0].y_data)[0] == 0
         assert np.unique(flex_dataset[1].y_data)[0] == 1
@@ -225,33 +231,41 @@ class TestFlexDataDistribution(unittest.TestCase):
         config = FlexDatasetConfig(
             seed=2, n_clients=2, features_per_client=3, replacement=True
         )
-        flex_dataset = FlexDataDistribution.from_config(self._fcd, config)
+        flex_dataset = FlexDataDistribution.from_config(self._iris, config)
         assert len(flex_dataset) == config.n_clients
         for k in flex_dataset:
             assert flex_dataset[k].X_data.shape[1] == 3
 
     def test_featutes_per_client_tuple(self):
+        min_features = 1
+        max_features = 3
         config = FlexDatasetConfig(
-            seed=2, n_clients=2, features_per_client=(3, 5), replacement=True
+            seed=2, n_clients=2, features_per_client=(min_features, max_features), replacement=True
         )
-        flex_dataset = FlexDataDistribution.from_config(self._fcd, config)
+        flex_dataset = FlexDataDistribution.from_config(self._iris, config)
         assert len(flex_dataset) == config.n_clients
         for k in flex_dataset:
-            assert flex_dataset[k].X_data.shape[1] <= 5
-            assert flex_dataset[k].X_data.shape[1] >= 3
+            assert flex_dataset[k].X_data.shape[1] <= max_features
+            assert flex_dataset[k].X_data.shape[1] >= min_features
 
     def test_featutes_per_client_arr(self):
         config = FlexDatasetConfig(
-            seed=2, n_clients=2, features_per_client=[[2, 4], [1, 3]], replacement=True
+            seed=2, n_clients=2, features_per_client=[[1, 3], [0, 2]], replacement=True
         )
-        flex_dataset = FlexDataDistribution.from_config(self._fcd, config)
+        flex_dataset = FlexDataDistribution.from_config(self._iris, config)
         assert len(flex_dataset) == config.n_clients
         assert flex_dataset[0].X_data.shape[1] == 2
         assert flex_dataset[1].X_data.shape[1] == 2
 
     def test_iid_distribution(self):
         n_clients = 2
-        flex_dataset = FlexDataDistribution.iid_distribution(self._fcd, n_clients)
+        flex_dataset = FlexDataDistribution.iid_distribution(self._iris, n_clients)
         assert len(flex_dataset) == n_clients
         assert len(flex_dataset[0]) == len(flex_dataset[1])
-        assert len(flex_dataset[0]) + len(flex_dataset[1]) == len(self._fcd)
+        assert len(flex_dataset[0]) + len(flex_dataset[1]) == len(self._iris)
+
+    def test_single_feature_data(self):
+        X_ = self._iris[:, 0] # fails here, it is not possible to index the way we want
+        cdata_ = FlexDataObject(X_[0])
+        federated_iris = FlexDataDistribution.iid_distribution(cdata=cdata_)
+        assert len(federated_iris[0].X_data.shape) == 1
