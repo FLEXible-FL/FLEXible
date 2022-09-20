@@ -2,9 +2,10 @@ import unittest
 
 import numpy as np
 import pytest
+from sklearn.datasets import load_iris
 
 from flex.data import FlexDataDistribution, FlexDataObject, FlexDatasetConfig
-from sklearn.datasets import load_iris
+
 
 @pytest.fixture(name="fcd")
 def fixture_simple_fex_data_object():
@@ -37,7 +38,6 @@ def fixture_simple_fex_data_object_multiple_classes():
 
 
 class TestFlexDataDistribution(unittest.TestCase):
-
     @pytest.fixture(autouse=True)
     def _fixture_iris_dataset(self):
         iris = load_iris()
@@ -240,7 +240,10 @@ class TestFlexDataDistribution(unittest.TestCase):
         min_features = 1
         max_features = 3
         config = FlexDatasetConfig(
-            seed=2, n_clients=2, features_per_client=(min_features, max_features), replacement=True
+            seed=2,
+            n_clients=2,
+            features_per_client=(min_features, max_features),
+            replacement=True,
         )
         flex_dataset = FlexDataDistribution.from_config(self._iris, config)
         assert len(flex_dataset) == config.n_clients
