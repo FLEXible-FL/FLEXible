@@ -71,10 +71,6 @@ class FlexDataDistribution(object):
                 y_data=cdata.y_data[sub_data_indices]
                 if cdata.y_data is not None
                 else None,
-                X_names=cdata.X_names[sub_features_indices]
-                if cdata.X_names is not None
-                else None,
-                y_names=cdata.y_names,
             )
 
         return fed_dataset
