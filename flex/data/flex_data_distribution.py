@@ -171,9 +171,7 @@ class FlexDataDistribution(object):
 
         sub_data_indices = rng.choice(data_indices, data_proportion, replace=False)
         # Sample feature indices
-        sub_features_indices = slice(
-            None
-        )  # Default slice for features, it includes all the features
+        sub_features_indices = None
         return sub_data_indices, sub_features_indices
 
     @classmethod
