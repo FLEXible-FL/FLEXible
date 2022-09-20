@@ -77,6 +77,17 @@ class FlexPool:
             for _, dst in dst_pool._actors.items()
         )
 
+    def init_server_model(self, func: Callable, *args, **kwargs):
+        """Method to initialize the model on the server side using the return value of function func,
+        by default func must accept at very least one argument, the id used to identify the server
+
+        Args:
+            func (Callable): function that receives as argument a id that represents a server actor
+            and returns a model
+        """
+        for i in self.servers._actors:
+            self._models[i] = func(i, *args, **kwargs)
+
     def map_procedure(self, func: Callable, dst_pool: FlexPool = None, *args, **kwargs):
         """Method used to send messages from one pool to another. The pool using
         this method is the source pool, and it will send a message, apply a function,
@@ -222,7 +233,9 @@ class FlexPool:
             )
 
     @classmethod
-    def client_server_architecture(cls, fed_dataset: FlexDataset):
+    def client_server_architecture(
+        cls, fed_dataset: FlexDataset, func: Callable, *args, **kwargs
+    ):
         """Method to create a client-server architeture for a FlexDataset given.
         This functions is used when you have a FlexDataset and you want to start
         the learning phase following a traditional client-server architecture.
@@ -241,14 +254,18 @@ class FlexPool:
             {actor_id: FlexRole.client for actor_id in fed_dataset.keys()}
         )
         actors[f"server_{id(cls)}"] = FlexRole.server_aggregator
-        return cls(
+        new_arch = cls(
             flex_data=fed_dataset,
             flex_actors=actors,
             flex_models=None,
         )
+        new_arch.init_server_model(func(*args, **kwargs))
+        return new_arch
 
     @classmethod
-    def p2p_architecture(cls, fed_dataset: FlexDataset):
+    def p2p_architecture(
+        cls, fed_dataset: FlexDataset, func: Callable, *args, **kwargs
+    ):
         """Method to create a peer-to-peer (p2p) architecture for a FlexDataset given.
         This method is used when you have a FlexDataset and you want to start the
         learning phase following a p2p architecture.
@@ -263,11 +280,13 @@ class FlexPool:
         Returns:
             FlexPool: A FlexPool with the assigned roles for a p2p architecture.
         """
-        return cls(
+        new_arch = cls(
             flex_data=fed_dataset,
             flex_actors=cls.__create_actors_all_privileges(fed_dataset.keys()),
             flex_models=None,
         )
+        new_arch.init_server_model(func(*args, **kwargs))
+        return new_arch
 
     @classmethod
     def __create_actors_all_privileges(cls, actors_ids):
