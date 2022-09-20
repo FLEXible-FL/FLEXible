@@ -16,15 +16,23 @@ class FlexDataObject:
 
     Attributes
     ----------
-    X_data: numpy.typing.ArrayLike
+    _X_data: numpy.typing.ArrayLike
         A numpy.array containing the data for the client.
-    y_data: numpy.typing.ArrayLike
+    _y_data: numpy.typing.ArrayLike
         A numpy.array containing the labels for the training data. Can be None if working
         on an unsupervised learning task. Default None.
     """
 
     X_data: npt.NDArray
     y_data: Optional[npt.NDArray] = None
+
+    @property
+    def X_data(self):
+        return self._X_data
+
+    @property
+    def y_data(self):
+        return self._y_data
 
     def __len__(self):
         return len(self.X_data)
