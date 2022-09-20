@@ -51,36 +51,6 @@ class TestFlexDataObject(unittest.TestCase):
         assert np.array_equal(y_data, self._fcd.y_data)
         assert np.array_equal(y_data, self._fcd.y_data)
 
-    def test_X_names_property_valid_X_names(self):
-        X_names = np.array([f"x{i}" for i in range(self._fcd.X_data.shape[1])])
-        self._fcd.X_names = X_names
-        assert np.array_equal(X_names, self._fcd.X_names)
-        assert self._fcd.X_data.shape[0] == self._fcd.y_data.shape[0]
-
-    def test_X_names_property_invalid_X_names(self):
-        X_names = [f"x{i}" for i in range(self._fcd.X_data.shape[1] + 4)]
-        with pytest.raises(Exception):
-            self._fcd.X_names = X_names
-            self._fcd.validate()
-
-    def test_X_names_property_setter(self):
-        X_names = [f"x{i}" for i in range(self._fcd.X_data.shape[1])]
-        self._fcd.X_names = X_names
-        assert np.array_equal(X_names, self._fcd.X_names)
-
-    def test_y_names_property_valid_y_names(self):
-        y_names = [f"class_{c}" for c in np.unique(self._fcd.y_data)]
-        self._fcd.y_names = y_names
-        assert np.array_equal(y_names, self._fcd.y_names)
-
-    def test_empty_y_names_y_data(self):
-        assert self._fcd.y_names is None
-
-    def test_y_names_property_setter(self):
-        y_names = [f"class_{c}" for c in np.unique(self._fcd.y_data)]
-        self._fcd.y_names = y_names
-        assert np.array_equal(y_names, self._fcd.y_names)
-
     def test_len_property(self):
         X_data = np.random.rand(100).reshape([20, 5])
         self._fcd.X_data = X_data
@@ -100,18 +70,6 @@ class TestFlexDataObject(unittest.TestCase):
 
     def test_validate_correct_object(self):
         self._fcd.validate()
-
-    def test_validate_invalid_object(self):
-        X_names = [f"x{i}" for i in range(self._fcd.X_data.shape[1] - 1)]
-        self._fcd.X_names = X_names
-        with pytest.raises(ValueError):
-            self._fcd.validate()
-        X_names = [f"x{i}" for i in range(self._fcd.X_data.shape[1])]
-        y_names = [f"class_{c}" for c in range(len(np.unique(self._fcd.y_data)) - 1)]
-        self._fcd.X_names = X_names
-        self._fcd.y_names = y_names
-        with pytest.raises(ValueError):
-            self._fcd.validate()
 
     def test_len_X_data_differs_len_y_data(self):
         X_data = np.random.rand(100).reshape([20, 5])

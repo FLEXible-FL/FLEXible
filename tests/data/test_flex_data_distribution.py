@@ -2,9 +2,10 @@ import unittest
 
 import numpy as np
 import pytest
+from sklearn.datasets import load_iris
 
 from flex.data import FlexDataDistribution, FlexDataObject, FlexDatasetConfig
-from sklearn.datasets import load_iris
+
 
 @pytest.fixture(name="fcd")
 def fixture_simple_fex_data_object():
@@ -37,7 +38,6 @@ def fixture_simple_fex_data_object_multiple_classes():
 
 
 class TestFlexDataDistribution(unittest.TestCase):
-
     @pytest.fixture(autouse=True)
     def _fixture_iris_dataset(self):
         iris = load_iris()
@@ -240,7 +240,10 @@ class TestFlexDataDistribution(unittest.TestCase):
         min_features = 1
         max_features = 3
         config = FlexDatasetConfig(
-            seed=2, n_clients=2, features_per_client=(min_features, max_features), replacement=True
+            seed=2,
+            n_clients=2,
+            features_per_client=(min_features, max_features),
+            replacement=True,
         )
         flex_dataset = FlexDataDistribution.from_config(self._iris, config)
         assert len(flex_dataset) == config.n_clients
@@ -265,6 +268,13 @@ class TestFlexDataDistribution(unittest.TestCase):
         assert len(flex_dataset[0]) + len(flex_dataset[1]) == len(self._iris)
 
     def test_single_feature_data(self):
-        X, _ = self._iris[:, 0]
-        federated_iris = FlexDataDistribution.iid_distribution(cdata=FlexDataObject(X))
+        single_feature_dataset = self._iris[:, 0]
+        federated_iris = FlexDataDistribution.iid_distribution(
+            cdata=single_feature_dataset
+        )
         assert len(federated_iris[0].X_data.shape) == 1
+
+    def test_getitem_property(self):
+        dataset = self._iris[:, :2]
+        dataset.y_data = None
+        assert len(dataset[:2]) == 2
