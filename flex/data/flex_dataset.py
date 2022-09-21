@@ -4,8 +4,6 @@ from functools import partial
 from multiprocessing import Pool
 from typing import Any, Callable, Hashable, List, Optional
 
-import numpy.typing as npt
-
 from flex.data.flex_data_object import FlexDataObject
 from flex.data.flex_preprocessing_utils import normalize, one_hot_encoding
 
