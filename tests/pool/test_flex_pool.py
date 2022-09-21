@@ -6,8 +6,9 @@ import pytest
 
 from flex.data.flex_dataset import FlexDataObject, FlexDataset
 from flex.pool.actors import FlexActors, FlexRole, FlexRoleManager
-from flex.pool.flex_pool import FlexPool
 from flex.pool.flex_model import FlexModel
+from flex.pool.flex_pool import FlexPool
+
 
 @pytest.fixture(name="fld")
 def fixture_flex_dataset():
@@ -206,6 +207,7 @@ class TestFlexPool(unittest.TestCase):
     def test_flex_model_key_restriction(self):
         def init_func(fmodel, data):
             fmodel["model"] = 0
+
         p = FlexPool.p2p_architecture(self._fld, init_func)
         for i in p.servers._models:
             with pytest.raises(KeyError):
