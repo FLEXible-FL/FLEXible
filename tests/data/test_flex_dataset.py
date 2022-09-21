@@ -40,20 +40,16 @@ class TestFlexDataObject(unittest.TestCase):
 
     def test_X_data_property(self):
         X_data = np.random.rand(100).reshape([20, 5])
-        self._fcd.X_data = X_data
-        assert np.array_equal(X_data, self._fcd.X_data)
+        with pytest.raises(AttributeError):
+            self._fcd.X_data = X_data
 
     def test_y_data_property(self):
-        X_data = np.random.rand(100).reshape([20, 5])
         y_data = np.random.choice(2, 20)
-        self._fcd.X_data = X_data
-        self._fcd.y_data = y_data
-        assert np.array_equal(y_data, self._fcd.y_data)
-        assert np.array_equal(y_data, self._fcd.y_data)
+        with pytest.raises(AttributeError):
+            self._fcd.y_data = y_data
 
     def test_len_property(self):
         X_data = np.random.rand(100).reshape([20, 5])
-        self._fcd.X_data = X_data
         assert len(self._fcd) == len(X_data)
 
     def test_getitem_property(self):

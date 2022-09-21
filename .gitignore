@@ -143,3 +143,5 @@ pytest-coverage.txt
 
 #Mac os index files
 .DS_Store
+notebooks/.vector_cache/wiki.en.vec
+notebooks/.vector_cache/wiki.en.vec.pt
