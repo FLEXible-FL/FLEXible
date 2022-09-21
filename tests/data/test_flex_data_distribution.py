@@ -276,5 +276,4 @@ class TestFlexDataDistribution(unittest.TestCase):
 
     def test_getitem_property(self):
         dataset = self._iris[:, :2]
-        dataset.y_data = None
         assert len(dataset[:2]) == 2

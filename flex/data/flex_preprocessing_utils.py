@@ -2,7 +2,7 @@ from copy import deepcopy
 
 import numpy as np
 
-from flex.data.flex_dataset import FlexDataObject
+from flex.data.flex_data_object import FlexDataObject
 
 
 def normalize(client, *args, **kwargs):
@@ -12,7 +12,7 @@ def normalize(client, *args, **kwargs):
         client (FlexDataObject): client whether to normalize the data.
 
     Returns:
-        np.array: Returns data normalized.
+        FlexDataObject: Returns the client with the X_data property normalized.
     """
     norms = np.linalg.norm(client.X_data, axis=0)
     norms = np.where(norms == 0, np.finfo(client.X_data.dtype).eps, norms)
