@@ -56,13 +56,11 @@ class FlexDataset(UserDict):
 
         if clients_ids is None:
             clients_ids = list(self.keys())
-        elif (
-            not isinstance(clients_ids, list)
-            and isinstance(clients_ids, str)
-            and clients_ids in self.keys()
-        ) or any(client not in list(self.keys()) for client in clients_ids):
-            if clients_ids not in self.keys():
+        elif isinstance(clients_ids, str):
+            if clients_ids not in list(self.keys()):
                 raise ValueError("All client ids given must be in the FlexDataset.")
+        elif any(client not in self.keys() for client in clients_ids):
+            raise ValueError("All client ids given must be in the FlexDataset.")
 
         if num_proc < 2:
             updates = self._map_single(func, clients_ids, **kwargs)
