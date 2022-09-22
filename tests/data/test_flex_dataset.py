@@ -55,6 +55,10 @@ class TestFlexDataset(unittest.TestCase):
             for client_orig, client_mod in zip(self._fld.values(), new_fld.values())
         )
 
+    def test_one_hot_encoding(self):
+        new_fld = self._fld.one_hot_encoding(n_classes=2)
+        assert all(client.y_data.shape[1] == 2 for _, client in new_fld.items())
+
     def test_map_method(self):
         new_fld = self._fld.map(func=normalize)
         assert all(
@@ -62,9 +66,15 @@ class TestFlexDataset(unittest.TestCase):
             for client_orig, client_mod in zip(self._fld.values(), new_fld.values())
         )
 
-    def test_map_func_none(self):
-        with pytest.raises(ValueError):
-            self._fld.map(func=None)
+    def test_map_func_from_outside(self):
+        def dummy_func(data, **kwargs):
+            return data
+
+        new_fld = self._fld.map(func=dummy_func, num_proc=10)
+        assert all(
+            np.array_equal(client_orig.X_data, client_mod.X_data)
+            for client_orig, client_mod in zip(self._fld.values(), new_fld.values())
+        )
 
     def test_proprocessing_custom_func_more_processes_than_clients(self):
         new_fld = self._fld.map(func=normalize, num_proc=10)
@@ -88,10 +98,6 @@ class TestFlexDataset(unittest.TestCase):
             np.array_equal(client_orig.X_data, client_mod.X_data)
             for client_orig, client_mod in zip(self._fld.values(), new_fld.values())
         )
-
-    def test_one_hot_encoding(self):
-        new_fld = self._fld.one_hot_encoding(n_classes=2)
-        assert all(client.y_data.shape[1] == 2 for client_id, client in new_fld.items())
 
     def test_all_clients_in_flex_dataset_when_mapping_func(self):
         client_ids = ["client_1", "client_84"]
