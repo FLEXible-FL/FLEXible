@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 import functools
-from collections import defaultdict
-from typing import Callable
+from typing import Callable, Hashable
 
 import numpy as np
 
 from flex.data import FlexDataset
 from flex.pool.actors import FlexActors, FlexRole, FlexRoleManager
+from flex.pool.flex_model import FlexModel
 
 
 class FlexPool:
@@ -49,13 +49,13 @@ class FlexPool:
         self,
         flex_data: FlexDataset,
         flex_actors: FlexActors,
-        flex_models: defaultdict = None,
+        flex_models: dict[Hashable, FlexModel] = None,
     ) -> None:
         self._actors = flex_actors  # Actors
         self._data = flex_data  # FlexDataset
         self._models = flex_models
         if self._models is None:
-            self._models = defaultdict(None, {k: None for k in self._actors.keys()})
+            self._models = {k: FlexModel() for k in self._actors}
         self.validate()  # check if the provided arguments generate a valid object
 
     @classmethod
@@ -112,12 +112,12 @@ class FlexPool:
         """
         if dst_pool is None:
             return [
-                func(self._data[i], self._models[i], *args, **kwargs)
+                func(self._models.get(i), self._data.get(i), *args, **kwargs)
                 for i in self._actors
             ]
         elif FlexPool.check_compatibility(self, dst_pool):
             return [
-                func(self._models[i], dst_pool._models, *args, **kwargs)
+                func(self._models.get(i), dst_pool._models, *args, **kwargs)
                 for i in self._actors
             ]
         else:
@@ -158,11 +158,11 @@ class FlexPool:
         )
         new_actors = FlexActors()
         new_data = FlexDataset()
-        new_models = defaultdict()
+        new_models = {}
         for actor_id in training_clients:
             if func(actor_id, self._actors[actor_id], *args, **kwargs):
                 new_actors[actor_id] = self._actors[actor_id]
-                new_models[actor_id] = self._models.get(actor_id)
+                new_models[actor_id] = self._models[actor_id]
                 if actor_id in self._data:
                     new_data[actor_id] = self._data[actor_id]
         return FlexPool(
@@ -208,7 +208,7 @@ class FlexPool:
         models_ids = self._models.keys()
         if not (actors_ids >= data_ids and actors_ids >= models_ids):
             raise ValueError("Each node with data or model must have a role asigned")
-        for actor_id in self._actors:
+        for actor_id in actors_ids:
             if (
                 FlexRoleManager.is_client(self._actors[actor_id])
                 and actor_id not in data_ids
@@ -216,13 +216,15 @@ class FlexPool:
                 raise ValueError(
                     "All node with client role must have data. Node with client role and id {actor_id} does not have any data."
                 )
-        if not (self._actors.keys() <= self._models.keys()):
-            raise ValueError(
-                "flex_models must have the same keys as flex_actors, but with None value if no model is required."
-            )
+            if actor_id not in self._models:
+                raise ValueError(
+                    f"All nodes must have a FlexModel object associated as a model, but {actor_id} does not."
+                )
 
     @classmethod
-    def client_server_architecture(cls, fed_dataset: FlexDataset):
+    def client_server_architecture(
+        cls, fed_dataset: FlexDataset, init_func: Callable, *args, **kwargs
+    ):
         """Method to create a client-server architeture for a FlexDataset given.
         This functions is used when you have a FlexDataset and you want to start
         the learning phase following a traditional client-server architecture.
@@ -241,14 +243,18 @@ class FlexPool:
             {actor_id: FlexRole.client for actor_id in fed_dataset.keys()}
         )
         actors[f"server_{id(cls)}"] = FlexRole.server_aggregator
-        return cls(
+        new_arch = cls(
             flex_data=fed_dataset,
             flex_actors=actors,
             flex_models=None,
         )
+        new_arch.servers.map_procedure(init_func, *args, **kwargs)
+        return new_arch
 
     @classmethod
-    def p2p_architecture(cls, fed_dataset: FlexDataset):
+    def p2p_architecture(
+        cls, fed_dataset: FlexDataset, init_func: Callable, *args, **kwargs
+    ):
         """Method to create a peer-to-peer (p2p) architecture for a FlexDataset given.
         This method is used when you have a FlexDataset and you want to start the
         learning phase following a p2p architecture.
@@ -263,11 +269,13 @@ class FlexPool:
         Returns:
             FlexPool: A FlexPool with the assigned roles for a p2p architecture.
         """
-        return cls(
+        new_arch = cls(
             flex_data=fed_dataset,
-            flex_actors=cls.__create_actors_all_privileges(fed_dataset.keys()),
+            flex_actors=cls.__create_actors_all_privileges(fed_dataset),
             flex_models=None,
         )
+        new_arch.servers.map_procedure(init_func, *args, **kwargs)
+        return new_arch
 
     @classmethod
     def __create_actors_all_privileges(cls, actors_ids):
