@@ -49,7 +49,7 @@ class TestFlexDataset(unittest.TestCase):
         assert flex_data.get("client_2") is None
 
     def test_normalize_method(self):
-        new_fld = self._fld.normalize(num_proc=1)
+        new_fld = self._fld.normalize()
         assert all(
             not np.array_equal(client_orig.X_data, client_mod.X_data)
             for client_orig, client_mod in zip(self._fld.values(), new_fld.values())
@@ -70,7 +70,7 @@ class TestFlexDataset(unittest.TestCase):
         def dummy_func(data, **kwargs):
             return data
 
-        new_fld = self._fld.map(func=dummy_func, num_proc=10)
+        new_fld = self._fld.map(func=dummy_func, num_proc=2)
         assert all(
             np.array_equal(client_orig.X_data, client_mod.X_data)
             for client_orig, client_mod in zip(self._fld.values(), new_fld.values())
