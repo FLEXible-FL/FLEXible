@@ -145,3 +145,4 @@ pytest-coverage.txt
 .DS_Store
 notebooks/.vector_cache/wiki.en.vec
 notebooks/.vector_cache/wiki.en.vec.pt
+notebooks/~/

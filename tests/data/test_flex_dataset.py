@@ -103,3 +103,24 @@ class TestFlexDataset(unittest.TestCase):
         client_ids = ["client_1", "client_84"]
         with pytest.raises(ValueError):
             self._fld.map(func=normalize, num_proc=10, clients_ids=client_ids)
+
+    def test_map_func_executes_secuential(self):
+        chosen_clients = ["client_1"]
+        new_fld = self._fld.normalize(num_proc=1, clients_ids=chosen_clients)
+        assert any(
+            np.array_equal(client_orig.X_data, client_mod.X_data)
+            for client_orig, client_mod in zip(self._fld.values(), new_fld.values())
+        )
+
+    def test_map_recieves_one_client_as_str_correct(self):
+        chosen_clients = "client_1"
+        new_fld = self._fld.normalize(num_proc=1, clients_ids=chosen_clients)
+        assert any(
+            np.array_equal(client_orig.X_data, client_mod.X_data)
+            for client_orig, client_mod in zip(self._fld.values(), new_fld.values())
+        )
+
+    def test_map_recieves_one_client_as_str_fails(self):
+        client_ids = "client_8232"
+        with pytest.raises(ValueError):
+            self._fld.map(func=normalize, num_proc=1, clients_ids=client_ids)
