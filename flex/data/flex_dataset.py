@@ -1,67 +1,12 @@
 from collections import UserDict
 from copy import deepcopy
-from dataclasses import dataclass
 from functools import partial
-from multiprocessing import Pool
 from typing import Any, Callable, Hashable, List, Optional
 
-import numpy.typing as npt
+from multiprocess import Pool
 
+from flex.data.flex_data_object import FlexDataObject
 from flex.data.flex_preprocessing_utils import normalize, one_hot_encoding
-
-
-@dataclass
-class FlexDataObject:
-    """Class used to represent the dataset from a client in a Federated Learning enviroment.
-
-    Attributes
-    ----------
-    _X_data: numpy.typing.ArrayLike
-        A numpy.array containing the data for the client.
-    _y_data: numpy.typing.ArrayLike
-        A numpy.array containing the labels for the training data. Can be None if working
-        on an unsupervised learning task. Default None.
-    """
-
-    X_data: npt.NDArray
-    y_data: Optional[npt.NDArray] = None
-
-    @property
-    def X_data(self):
-        return self._X_data
-
-    @property
-    def y_data(self):
-        return self._y_data
-
-    def __len__(self):
-        return len(self.X_data)
-
-    def __getitem__(self, pos):
-        if self.y_data is None:
-            return FlexDataObject(self.X_data[pos], None)
-        else:
-            return FlexDataObject(
-                self.X_data[pos],
-                self.y_data[pos[0]] if isinstance(pos, tuple) else self.y_data[pos],
-            )
-
-    def __iter__(self):
-        return zip(
-            self.X_data,
-            self.y_data if self.y_data is not None else [None] * len(self.X_data),
-        )
-
-    def validate(self):
-        """Function that checks whether the object is correct or not."""
-        if self.y_data is not None and len(self.X_data) != len(self.y_data):
-            raise ValueError(
-                f"X_data and y_data must have equal lenght. X_data has {len(self.X_data)} elements and y_data has {len(self.y_data)} elements."
-            )
-        if self.y_data is not None and self.y_data.ndim > 1:
-            raise ValueError(
-                "y_data is multidimensional and we only support unidimensional labels."
-            )
 
 
 class FlexDataset(UserDict):
@@ -86,74 +31,111 @@ class FlexDataset(UserDict):
 
     def map(
         self,
+        func: Callable,
         clients_ids: List[Hashable] = None,
-        num_proc: int = None,
-        func: Callable = None,
-        *args,
+        num_proc: int = 1,
         **kwargs,
     ):
-        """This function applies a custom function to the FlexDataset in parallel.
+        """This function lets apply a custom function to the FlexDataset in parallel.
 
-        The *args and the **kwargs provided to this function are all the args and kwargs
-        of the custom function provided by the client.
+        The **kwargs provided to this function are all the kwargs of the custom function provided by the client.
 
         Args:
-            fld (FlexDataset): FlexDataset containing all the data from the clients.
+            func (Callable, optional): Function to apply to preprocess the data.
             clients_ids (List[Hashtable], optional): List containig the the clients id where func will
             be applied. Each element of the list must be hashable and part of the FlexDataset. Defaults to None.
-            num_proc (int, optional): Number of processes to parallelize, negative values are ignored. Default to None (Use all).
-            func (Callable, optional): Function to apply to preprocess the data. Defaults to None.
+            num_proc (int, optional): Number of processes to parallelize, negative values are ignored. Default to 1
 
         Returns:
             FlexDataset: The modified FlexDataset.
 
         Raises:
-            ValueError: If function is not given it raises an error.
+            ValueError: All client ids given must be in the FlexDataset.
+
         """
-        if func is None:
-            raise ValueError(
-                "Function to apply can't be null. Please give a function to apply."
-            )
-        if num_proc is not None:
-            num_proc = min(
-                max(1, num_proc), len(self.keys())
-            )  # do not allow negative num_proc
+
         if clients_ids is None:
             clients_ids = list(self.keys())
-        elif any(client not in list(self.keys()) for client in clients_ids):
+        elif isinstance(clients_ids, str):
+            if clients_ids not in self.keys():
+                raise ValueError("All client ids given must be in the FlexDataset.")
+        elif any(client not in self.keys() for client in clients_ids):
             raise ValueError("All client ids given must be in the FlexDataset.")
 
-        new_fld = deepcopy(self)
+        if num_proc < 2:
+            updates = self._map_single(func, clients_ids, **kwargs)
+        else:
+            f = partial(self._map_single, func)
+            updates = self._map_parallel(f, clients_ids, num_proc=num_proc, **kwargs)
 
-        def clients_ids_iterable():
-            for i in clients_ids:
-                yield new_fld[i]
+        new_fld = deepcopy(self)
+        new_fld.update(updates)
+        return new_fld
+
+    def _map_parallel(
+        self,
+        func: Callable,
+        clients_ids: List[Hashable],
+        num_proc: int = 2,
+        **kwargs,
+    ):
+        """This function lets apply a custom function to the FlexDataset in parallel.
+
+        The  **kwargs provided to this function are the kwargs of the custom function provided by the client.
+
+        Args:
+            fld (FlexDataset): FlexDataset containing all the data from the clients.
+            func (Callable): Function to apply to preprocess the data.
+            clients_ids (List[Hashtable]): List containig the the clients id where func will
+            be applied. Each element of the list must be hashable and part of the FlexDataset
+            num_proc (int): Number of processes to parallelize, negative values are ignored. Default to 2
+
+        Returns:
+            FlexDataset: The modified FlexDataset.
+
+        """
+
+        updates = {}
+        f = partial(func, **kwargs)  # bind **kwargs arguments to each call
 
         with Pool(processes=num_proc) as p:
-            chosen_clients = FlexDataset(
-                {
-                    client_id: result
-                    for result, client_id in zip(
-                        p.imap(  # We use imap because it is more memory efficient
-                            partial(
-                                func, *args, **kwargs
-                            ),  # bind *args and **kwargs arguments to each call
-                            clients_ids_iterable(),  # iterate over dict values only
-                            chunksize=int(
-                                num_proc or 1
-                            ),  # 1 is the default value in case of None
-                        ),
-                        clients_ids,
-                    )
-                }
-            )
-        new_fld.update(chosen_clients)
-        return new_fld
+            for i in p.imap(f, clients_ids):
+                updates |= i
+
+        return updates
+
+    def _map_single(
+        self,
+        func: Callable,
+        clients_ids: List[Hashable],
+        **kwargs,
+    ):
+        """This function lets apply a custom function to the FlexDataset secuentially.
+
+        This functions will be used by default in the map function, because of the error
+        generated by a bug with the multiprocessing library. If you want to check the error
+        to try to use the _map_parallel
+
+        The *args and the **kwargs provided to this function are all the args and kwargs
+        of the custom function provided by the client.
+
+        Args:
+            func (Callable): Function to apply to preprocess the data.
+            clients_ids (List[Hashtable]): List containig the the clients id where func will
+            be applied. Each element of the list must be hashable and part of the FlexDataset.
+
+        Returns:
+            FlexDataset: The modified FlexDataset.
+        """
+        if not isinstance(clients_ids, list):
+            clients_ids = [clients_ids]
+
+        return {client_id: func(self[client_id], **kwargs) for client_id in clients_ids}
 
     def normalize(
         self,
         clients_ids: List[Hashable] = None,
-        num_proc: int = None,
+        num_proc: int = 0,
         *args,
         **kwargs,
     ):
@@ -168,12 +150,12 @@ class FlexDataset(UserDict):
         Returns:
             FlexDataset: The FlexDataset normalized.
         """
-        return self.map(clients_ids, num_proc, normalize, *args, **kwargs)
+        return self.map(normalize, clients_ids, num_proc, *args, **kwargs)
 
     def one_hot_encoding(
         self,
         clients_ids: List[Hashable] = None,
-        num_proc: int = None,
+        num_proc: int = 0,
         *args,
         **kwargs,
     ):
@@ -188,4 +170,4 @@ class FlexDataset(UserDict):
         Returns:
             FlexDataset: The FlexDataset normalized.
         """
-        return self.map(clients_ids, num_proc, one_hot_encoding, *args, **kwargs)
+        return self.map(one_hot_encoding, clients_ids, num_proc, *args, **kwargs)
