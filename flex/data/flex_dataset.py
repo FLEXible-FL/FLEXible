@@ -59,14 +59,13 @@ class FlexDataset(UserDict):
         elif any(client not in list(self.keys()) for client in clients_ids):
             raise ValueError("All client ids given must be in the FlexDataset.")
 
-        new_fld = deepcopy(self)
-        num_proc = max(num_proc, 2)
         if num_proc < 2:
             updates = self._map_single(func, clients_ids, **kwargs)
         else:
             f = partial(self._map_single, func)
             updates = self._map_parallel(f, clients_ids, num_proc=num_proc, **kwargs)
 
+        new_fld = deepcopy(self)
         new_fld.update(updates)
         return new_fld
 
