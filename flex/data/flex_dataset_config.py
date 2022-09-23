@@ -26,9 +26,12 @@ class FlexDatasetConfig:
         Classes to assign to each client, if provided as an int, it is the number classes per client, if provided as a \
         tuple of ints, it establishes a mininum and a maximum of number of classes per client, a random number sampled \
         in such interval decides the number of classes of each client. If provided as a list, it establishes the classes \
-        assigned to each client.
+        assigned to each client. Default None.
     features_per_client: Optional[Union[int, npt.NDArray, Tuple[int]]]
         Features to assign to each client, it share the same interface as classes_per_client.
+    indexes_per_client: Optional[npt.NDArray]
+        Data indexes to assign to each client, note that this option is incompatible with classes_per_client, \
+        features_per_client options. If replacement and weights are speficied, they are ignored.
     """
 
     seed: Optional[int] = None
@@ -38,9 +41,17 @@ class FlexDatasetConfig:
     replacement: bool = True
     classes_per_client: Optional[Union[int, npt.NDArray, Tuple[int]]] = None
     features_per_client: Optional[Union[int, npt.NDArray, Tuple[int]]] = None
+    indexes_per_client: Optional[npt.NDArray] = None
 
     def validate(self):
         """This function checks whether the configuration to federate a dataset is correct."""
+        if self.indexes_per_client is not None and (
+            self.classes_per_client is not None or self.features_per_client is not None
+        ):
+            raise ValueError(
+                "Indexes_per_client option is not compatible with classes_per_client and features_per_client. \
+                    If replacement and weights are speficied, they are ignored."
+            )
         self.__validate_clients_and_weights()
         if self.classes_per_client is not None and self.features_per_client is not None:
             raise ValueError(

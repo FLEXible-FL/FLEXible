@@ -71,3 +71,11 @@ class TestFlexDatasetConfig(unittest.TestCase):
         a = FlexDatasetConfig(replacement=False, n_clients=2, features_per_client=3)
         with pytest.raises(ValueError):
             a.validate()
+
+    def test_incompatible_options(self):
+        a = FlexDatasetConfig(features_per_client=3, indexes_per_client=[2])
+        b = FlexDatasetConfig(classes_per_client=3, indexes_per_client=[2])
+        with pytest.raises(ValueError):
+            a.validate()
+        with pytest.raises(ValueError):
+            b.validate()
