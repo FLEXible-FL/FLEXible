@@ -21,6 +21,18 @@ class FlexDataDistribution(object):
 
     @classmethod
     def from_clustering_func(cls, cdata: FlexDataObject, clustering_func: Callable):
+        """This function federates data into clients by means of a clustering function, that outputs
+        to which client (cluster) a data point belongs.
+
+        Args:
+            cdata (FlexDataObject): Centralized dataset represented as a FlexDataObject.
+            clustering_func (Callable): function that receives as arguments a pair of x and y elements from cdata
+            and returns the name of the client (cluster) that should own it, the returned type must be Hashable.
+            Note that we only support one client (cluster) per data point.
+
+        Returns:
+            federated_dataset (FlexDataset): The federated dataset.
+        """
         d = defaultdict()
         for idx, (x, y) in enumerate(cdata):
             client_name = clustering_func(x, y)
@@ -113,6 +125,18 @@ class FlexDataDistribution(object):
     def __sample_dataset_with_indexes(
         cls, data: FlexDataObject, config: FlexDatasetConfig
     ):
+        """Iterable function that associates a client with its data, when a list of indexes is given for
+        each client.
+
+        Args:
+            data (FlexDataObject): Centralizaed dataset represented as a FlexDataObject.
+            config (FlexDatasetConfig): Configuration used to federate a FlexDataObject.
+
+        Yields:
+            tuple (Tuple): a tuple whose first item is the client name and the second one is the indexes of
+            the dataset associated to such client.
+
+        """
         for idx, name in zip(config.indexes_per_client, config.client_names):
             yield name, FlexDataObject(
                 X_data=data.X_data[idx],
