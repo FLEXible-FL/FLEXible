@@ -7,7 +7,7 @@ import pytest
 from flex.data.flex_dataset import FlexDataObject, FlexDataset
 from flex.pool.actors import FlexActors, FlexRole, FlexRoleManager
 from flex.pool.flex_pool import FlexPool
-
+from flex.pool.flex_model import FlexModel
 
 @pytest.fixture(name="fld")
 def fixture_flex_dataset():
@@ -55,13 +55,13 @@ class TestFlexPool(unittest.TestCase):
         self._fld = fld
 
     def test_len_property(self):
-        p = FlexPool.client_server_architecture(self._fld)
+        p = FlexPool.client_server_architecture(self._fld, lambda *args: None)
         assert len(p) != len(self._fld)
         assert len(p.filter(lambda *args: True)) == len(p)
         assert len(p._actors) == len(p)
 
     def test_check_compatibility(self):
-        p = FlexPool.client_server_architecture(self._fld)
+        p = FlexPool.client_server_architecture(self._fld, lambda *args: None)
         server_pool = p.servers
         client_pool = p.clients
         assert FlexPool.check_compatibility(server_pool, client_pool) is True
@@ -71,7 +71,7 @@ class TestFlexPool(unittest.TestCase):
         assert FlexPool.check_compatibility(client_pool, client_pool) is False
 
     def test_map_procedure(self):
-        p = FlexPool.client_server_architecture(self._fld)
+        p = FlexPool.client_server_architecture(self._fld, lambda *args: None)
         server_pool = p.servers
         client_pool = p.clients
         assert server_pool.map_procedure(lambda *args: True, client_pool) == [True]
@@ -82,7 +82,7 @@ class TestFlexPool(unittest.TestCase):
             assert client_pool.map_procedure(lambda *args: True, client_pool)
 
     def test_client_server_architecture(self):
-        p = FlexPool.client_server_architecture(self._fld)
+        p = FlexPool.client_server_architecture(self._fld, lambda *args: None)
         assert FlexRoleManager.is_client(p._actors["client_1"]) is True
         assert FlexRoleManager.is_aggregator(p._actors["client_1"]) is False
         assert FlexRoleManager.is_server(p._actors["client_1"]) is False
@@ -102,7 +102,7 @@ class TestFlexPool(unittest.TestCase):
         assert FlexRoleManager.is_server(p._actors[f"server_{id(FlexPool)}"]) is True
 
     def test_p2p_architecture(self):
-        p = FlexPool.p2p_architecture(self._fld)
+        p = FlexPool.p2p_architecture(self._fld, lambda *args: None)
         assert FlexRoleManager.is_client(p._actors["client_1"]) is True
         assert FlexRoleManager.is_aggregator(p._actors["client_1"]) is True
         assert FlexRoleManager.is_server(p._actors["client_1"]) is True
@@ -120,7 +120,7 @@ class TestFlexPool(unittest.TestCase):
             {"client_1": self._fld["client_1"], "client_2": self._fld["client_2"]}
         )
         with pytest.raises(ValueError):
-            FlexPool(fld, self._only_clients, defaultdict())
+            FlexPool(fld, self._only_clients, None)
 
     def test_validate_client_without_all_models(self):
         models = defaultdict(None, {"client_1": 0, "client_2": 0})
@@ -142,13 +142,13 @@ class TestFlexPool(unittest.TestCase):
             FlexPool(self._fld, missing_one, defaultdict())
 
     def test_validate_client_without_model(self):
-        p = FlexPool.p2p_architecture(self._fld)
-        assert p._models.get("client_1") is None
-        assert p._models.get("client_2") is None
-        assert p._models.get("client_3") is None
+        p = FlexPool.p2p_architecture(self._fld, init_func=lambda *args: None)
+        assert p._models.get("client_1") == FlexModel()
+        assert p._models.get("client_2") == FlexModel()
+        assert p._models.get("client_3") == FlexModel()
 
     def test_filter(self):
-        p = FlexPool.p2p_architecture(self._fld)
+        p = FlexPool.p2p_architecture(self._fld, init_func=lambda *args: None)
         new_p = p.filter(lambda a, b: FlexRoleManager.is_client(b))
         assert all(
             FlexRoleManager.is_client(actor_role)
@@ -156,7 +156,7 @@ class TestFlexPool(unittest.TestCase):
         )
 
     def test_client_property(self):
-        p = FlexPool.p2p_architecture(self._fld)
+        p = FlexPool.p2p_architecture(self._fld, init_func=lambda *args: None)
         new_p = p.clients
         assert all(
             FlexRoleManager.is_client(actor_role)
@@ -164,7 +164,7 @@ class TestFlexPool(unittest.TestCase):
         )
 
     def test_aggregator_property(self):
-        p = FlexPool.p2p_architecture(self._fld)
+        p = FlexPool.p2p_architecture(self._fld, init_func=lambda *args: None)
         new_p = p.aggregators
         assert all(
             FlexRoleManager.is_aggregator(actor_role)
@@ -172,7 +172,7 @@ class TestFlexPool(unittest.TestCase):
         )
 
     def test_server_property(self):
-        p = FlexPool.p2p_architecture(self._fld)
+        p = FlexPool.p2p_architecture(self._fld, init_func=lambda *args: None)
         new_p = p.servers
         assert all(
             FlexRoleManager.is_server(actor_role)
@@ -180,25 +180,33 @@ class TestFlexPool(unittest.TestCase):
         )
 
     def test_filter_func_none(self):
-        p = FlexPool.p2p_architecture(self._fld)
+        p = FlexPool.p2p_architecture(self._fld, init_func=lambda *args: None)
         with pytest.raises(ValueError):
             p.filter(None)
 
     def test_filter_dropout_correct(self):
-        p = FlexPool.p2p_architecture(self._fld)
+        p = FlexPool.p2p_architecture(self._fld, init_func=lambda *args: None)
         clients = p.filter(
             lambda a, b: FlexRoleManager.is_client(b), clients_dropout=0.33
         )
         assert len(clients._actors) == 2
 
     def test_filter_dropout_negative(self):
-        p = FlexPool.p2p_architecture(self._fld)
+        p = FlexPool.p2p_architecture(self._fld, lambda *args: None)
         with pytest.raises(ValueError):
             p.filter(lambda a, b: FlexRoleManager.is_client(b), clients_dropout=-10)
 
     def test_filter_dropout_greater_one(self):
-        p = FlexPool.p2p_architecture(self._fld)
+        p = FlexPool.p2p_architecture(self._fld, init_func=lambda *args: None)
         clients = p.filter(
             lambda a, b: FlexRoleManager.is_client(b), clients_dropout=10
         )
         assert len(clients._actors) == 0
+
+    def test_flex_model_key_restriction(self):
+        def init_func(fmodel, data):
+            fmodel["model"] = 0
+        p = FlexPool.p2p_architecture(self._fld, init_func)
+        for i in p.servers._models:
+            with pytest.raises(KeyError):
+                p.servers._models[i]["model"] = 0
