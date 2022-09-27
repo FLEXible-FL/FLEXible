@@ -1,6 +1,6 @@
 from collections import UserDict
 from copy import deepcopy
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from functools import partial
 from multiprocessing import Pool
 from typing import Any, Callable, Hashable, List, Optional
@@ -10,7 +10,7 @@ import numpy.typing as npt
 from flex.data.flex_preprocessing_utils import normalize, one_hot_encoding
 
 
-@dataclass
+@dataclass(frozen=True)
 class FlexDataObject:
     """Class used to represent the dataset from a client in a Federated Learning enviroment.
 
@@ -23,16 +23,8 @@ class FlexDataObject:
         on an unsupervised learning task. Default None.
     """
 
-    X_data: npt.NDArray
-    y_data: Optional[npt.NDArray] = None
-
-    @property
-    def X_data(self):
-        return self._X_data
-
-    @property
-    def y_data(self):
-        return self._y_data
+    X_data: npt.NDArray = field(init=True)
+    y_data: Optional[npt.NDArray] = field(default=None, init=True)
 
     def __len__(self):
         return len(self.X_data)
@@ -114,15 +106,52 @@ class FlexDataset(UserDict):
             raise ValueError(
                 "Function to apply can't be null. Please give a function to apply."
             )
-        if num_proc is not None:
-            num_proc = min(
-                max(1, num_proc), len(self.keys())
-            )  # do not allow negative num_proc
+
         if clients_ids is None:
             clients_ids = list(self.keys())
         elif any(client not in list(self.keys()) for client in clients_ids):
             raise ValueError("All client ids given must be in the FlexDataset.")
 
+        if num_proc is None:
+            # Execute without using multiprocessing to avoid bugs from multiprocssing
+            return self._map_single(clients_ids, func, *args, **kwargs)
+
+        num_proc = min(max(1, num_proc), len(self.keys()))
+        return self._map_parallel(
+            clients_ids=clients_ids, num_proc=num_proc, func=func, *args, **kwargs
+        )
+
+    def _map_single(
+        self,
+        clients_ids: List[Hashable],
+        func: Callable,
+        *args,
+        **kwargs,
+    ):
+        """Function to apply the map function secuentially.
+        # TODO: Documentar función
+        """
+        new_fld = deepcopy(self)
+        chosen_clients = FlexDataset(
+            {
+                client_id: func(new_fld[client_id], *args, **kwargs)
+                for client_id in clients_ids
+            }
+        )
+        new_fld.update(chosen_clients)
+        return new_fld
+
+    def _map_parallel(
+        self,
+        clients_ids: List[Hashable],
+        num_proc: int,
+        func: Callable,
+        *args,
+        **kwargs,
+    ):
+        """Function to apply the map function in parallel.
+        # TODO: Documentar el error y cómo se puede solucionar en caso de que de.
+        """
         new_fld = deepcopy(self)
 
         def clients_ids_iterable():

@@ -21,7 +21,7 @@ def fixture_simple_fex_data_object_with_zeros():
 
 def test_normalize_function(fcd_ones):
     X_data_normalized = normalize(fcd_ones).X_data
-    assert all(
+    assert all( 
         np.isclose(
             np.linalg.norm(X_data_normalized, axis=0),
             np.ones(X_data_normalized.shape[1]),
