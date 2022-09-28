@@ -8,7 +8,7 @@ from flex.data.flex_dataset import FlexDataObject, FlexDataset
 from flex.pool.actors import FlexActors, FlexRole, FlexRoleManager
 from flex.pool.flex_model import FlexModel
 from flex.pool.flex_pool import FlexPool
-
+from flex.pool.flex_model import FlexModel
 
 @pytest.fixture(name="fld")
 def fixture_flex_dataset():
