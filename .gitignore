@@ -145,12 +145,4 @@ pytest-coverage.txt
 .DS_Store
 notebooks/.vector_cache/wiki.en.vec
 notebooks/.vector_cache/wiki.en.vec.pt
-<<<<<<< HEAD
 notebooks/~/
-=======
-<<<<<<< HEAD
-notebooks/~/
-=======
-notebooks/~/
->>>>>>> 3fe8686 (Notebooks)
->>>>>>> 7dc5acd (Notebooks but have errors)
