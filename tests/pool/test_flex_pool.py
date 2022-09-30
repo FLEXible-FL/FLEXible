@@ -71,16 +71,14 @@ class TestFlexPool(unittest.TestCase):
         )  # Servers are also aggregators in this architecture
         assert FlexPool.check_compatibility(client_pool, client_pool) is False
 
-    def test_map_procedure(self):
+    def test_map(self):
         p = FlexPool.client_server_architecture(self._fld, lambda *args: None)
         server_pool = p.servers
         client_pool = p.clients
-        assert server_pool.map_procedure(lambda *args: True, client_pool) == [True]
-        assert client_pool.map_procedure(lambda *args: True) == len(client_pool) * [
-            True
-        ]
+        assert server_pool.map(lambda *args: True, client_pool) == [True]
+        assert client_pool.map(lambda *args: True) == len(client_pool) * [True]
         with pytest.raises(ValueError):
-            assert client_pool.map_procedure(lambda *args: True, client_pool)
+            assert client_pool.map(lambda *args: True, client_pool)
 
     def test_client_server_architecture(self):
         p = FlexPool.client_server_architecture(self._fld, lambda *args: None)
@@ -96,11 +94,9 @@ class TestFlexPool(unittest.TestCase):
         assert FlexRoleManager.is_aggregator(p._actors["client_3"]) is False
         assert FlexRoleManager.is_server(p._actors["client_3"]) is False
 
-        assert FlexRoleManager.is_client(p._actors[f"server_{id(FlexPool)}"]) is False
-        assert (
-            FlexRoleManager.is_aggregator(p._actors[f"server_{id(FlexPool)}"]) is True
-        )
-        assert FlexRoleManager.is_server(p._actors[f"server_{id(FlexPool)}"]) is True
+        assert FlexRoleManager.is_client(p._actors["server"]) is False
+        assert FlexRoleManager.is_aggregator(p._actors["server"]) is True
+        assert FlexRoleManager.is_server(p._actors["server"]) is True
 
     def test_p2p_architecture(self):
         p = FlexPool.p2p_architecture(self._fld, lambda *args: None)

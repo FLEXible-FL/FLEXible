@@ -28,7 +28,7 @@ class FlexPool:
         - flex_actors (FlexActors): Actors with its roles.
         - flex_models (defaultdict): A dictionary containing the each actor id,
         and initialized to None. The model to train by each actor will be initialized
-        using the map_procedure function following the communication constraints.
+        using the map function following the communication constraints.
 
 
     --------------------------------------------------------------------------
@@ -38,7 +38,7 @@ class FlexPool:
     supposed to be neutral, to orchestate the training. Meanwhile, in the p2p
     architecture, each id from the FlexDataset will be assigned to be client,
     server and aggregator. In both cases, the method will create the actors
-    so the user will only have to apply the map_procedure function to train the model.
+    so the user will only have to apply the map function to train the model.
 
     If the user wants to use a different architecture, she will need to create
     the actors by using the FlexActors class. For example, we let the user create
@@ -61,7 +61,7 @@ class FlexPool:
     @classmethod
     def check_compatibility(cls, src_pool, dst_pool):
         """Method to check the compatibility between two different pools.
-        This method is used by the map_procedure function to check if the
+        This method is used by the map function to check if the
         function to apply from the source pool to the destination pool can be done.
 
         Args:
@@ -77,7 +77,7 @@ class FlexPool:
             for _, dst in dst_pool._actors.items()
         )
 
-    def map_procedure(self, func: Callable, dst_pool: FlexPool = None, *args, **kwargs):
+    def map(self, func: Callable, dst_pool: FlexPool = None, *args, **kwargs):
         """Method used to send messages from one pool to another. The pool using
         this method is the source pool, and it will send a message, apply a function,
         to the destination pool. If no destination pool is provided, then the function is applied
@@ -257,7 +257,7 @@ class FlexPool:
             flex_actors=actors,
             flex_models=None,
         )
-        new_arch.servers.map_procedure(init_func, *args, **kwargs)
+        new_arch.servers.map(init_func, *args, **kwargs)
         return new_arch
 
     @classmethod
@@ -283,7 +283,7 @@ class FlexPool:
             flex_actors=cls.__create_actors_all_privileges(fed_dataset),
             flex_models=None,
         )
-        new_arch.servers.map_procedure(init_func, *args, **kwargs)
+        new_arch.servers.map(init_func, *args, **kwargs)
         return new_arch
 
     @classmethod
