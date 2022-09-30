@@ -173,6 +173,10 @@ class FlexPool:
         return len(self._actors)
 
     @functools.cached_property
+    def actor_ids(self):
+        return list(self._actors.keys())
+
+    @functools.cached_property
     def clients(self):
         """Property to get all the clients available in a pool.
 
@@ -239,10 +243,15 @@ class FlexPool:
         Returns:
             FlexPool: A FlexPool with the assigned roles for a client-server architecture.
         """
+        if "server" in fed_dataset.keys():
+            raise ValueError(
+                "The name 'server' is reserved only for the server in a client-server architecture."
+            )
+
         actors = FlexActors(
             {actor_id: FlexRole.client for actor_id in fed_dataset.keys()}
         )
-        actors[f"server_{id(cls)}"] = FlexRole.server_aggregator
+        actors["server"] = FlexRole.server_aggregator
         new_arch = cls(
             flex_data=fed_dataset,
             flex_actors=actors,
