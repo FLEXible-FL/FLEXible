@@ -1,6 +1,7 @@
 import copy
+from collections import defaultdict
 from math import floor
-from typing import Tuple
+from typing import Callable, Tuple
 
 import numpy as np
 import numpy.typing as npt
@@ -17,6 +18,32 @@ class FlexDataDistribution(object):
             create_key == FlexDataDistribution.__create_key
         ), """FlexDataDistribution objects must be created using FlexDataDistribution.from_config or
         FlexDataDistribution.iid_distribution"""
+
+    @classmethod
+    def from_clustering_func(cls, cdata: FlexDataObject, clustering_func: Callable):
+        """This function federates data into clients by means of a clustering function, that outputs
+        to which client (cluster) a data point belongs.
+
+        Args:
+            cdata (FlexDataObject): Centralized dataset represented as a FlexDataObject.
+            clustering_func (Callable): function that receives as arguments a pair of x and y elements from cdata
+            and returns the name of the client (cluster) that should own it, the returned type must be Hashable.
+            Note that we only support one client (cluster) per data point.
+
+        Returns:
+            federated_dataset (FlexDataset): The federated dataset.
+        """
+        d = defaultdict()
+        for idx, (x, y) in enumerate(cdata):
+            client_name = clustering_func(x, y)
+            if d.get(client_name) is None:
+                d[client_name] = [idx]
+            else:
+                d[client_name].append(idx)
+        config = FlexDatasetConfig(
+            client_names=list(d.keys()), indexes_per_client=list(d.values())
+        )
+        return cls.from_config(cdata, config)
 
     @classmethod
     def from_config(cls, cdata: FlexDataObject, config: FlexDatasetConfig):
@@ -56,22 +83,26 @@ class FlexDataDistribution(object):
             config_.client_names = [f"client_{i}" for i in range(config_.n_clients)]
 
         fed_dataset = FlexDataset()
-        remaining_data_indices = np.arange(len(cdata))
-        for i in range(config_.n_clients):
-            (
-                sub_data_indices,
-                sub_features_indices,
-                remaining_data_indices,
-            ) = cls.__sample(rng, remaining_data_indices, cdata, config_, i)
+        if config_.indexes_per_client is not None:
+            for client_name, data in cls.__sample_dataset_with_indexes(cdata, config_):
+                fed_dataset[client_name] = data
+        else:
+            remaining_data_indices = np.arange(len(cdata))
+            for i in range(config_.n_clients):
+                (
+                    sub_data_indices,
+                    sub_features_indices,
+                    remaining_data_indices,
+                ) = cls.__sample(rng, remaining_data_indices, cdata, config_, i)
 
-            fed_dataset[config_.client_names[i]] = FlexDataObject(
-                X_data=cdata.X_data[sub_data_indices][:, sub_features_indices]
-                if len(cdata.X_data.shape) > 1
-                else cdata.X_data[sub_data_indices],
-                y_data=cdata.y_data[sub_data_indices]
-                if cdata.y_data is not None
-                else None,
-            )
+                fed_dataset[config_.client_names[i]] = FlexDataObject(
+                    X_data=cdata.X_data[sub_data_indices][:, sub_features_indices]
+                    if len(cdata.X_data.shape) > 1
+                    else cdata.X_data[sub_data_indices],
+                    y_data=cdata.y_data[sub_data_indices]
+                    if cdata.y_data is not None
+                    else None,
+                )
 
         return fed_dataset
 
@@ -89,6 +120,28 @@ class FlexDataDistribution(object):
         """
         config = FlexDatasetConfig(n_clients=n_clients)
         return FlexDataDistribution.from_config(cdata, config)
+    
+    @classmethod
+    def __sample_dataset_with_indexes(
+        cls, data: FlexDataObject, config: FlexDatasetConfig
+    ):
+        """Iterable function that associates a client with its data, when a list of indexes is given for
+        each client.
+
+        Args:
+            data (FlexDataObject): Centralizaed dataset represented as a FlexDataObject.
+            config (FlexDatasetConfig): Configuration used to federate a FlexDataObject.
+
+        Yields:
+            tuple (Tuple): a tuple whose first item is the client name and the second one is the indexes of
+            the dataset associated to such client.
+
+        """
+        for idx, name in zip(config.indexes_per_client, config.client_names):
+            yield name, FlexDataObject(
+                X_data=data.X_data[idx],
+                y_data=data.y_data[idx] if data.y_data is not None else None,
+            )
 
     @classmethod
     def __sample(

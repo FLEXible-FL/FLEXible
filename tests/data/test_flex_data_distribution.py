@@ -2,6 +2,7 @@ import unittest
 
 import numpy as np
 import pytest
+from sklearn.cluster import KMeans
 from sklearn.datasets import load_iris
 
 from flex.data import FlexDataDistribution, FlexDataObject, FlexDatasetConfig
@@ -287,3 +288,25 @@ class TestFlexDataDistribution(unittest.TestCase):
     def test_getitem_property(self):
         dataset = self._iris[:, :2]
         assert len(dataset[:2]) == 2
+
+    def test_indexes_per_client(self):
+        indexes = [[1, 3], [0, 2]]
+        config = FlexDatasetConfig(n_clients=len(indexes), indexes_per_client=indexes)
+        federated_iris = FlexDataDistribution.from_config(self._iris, config)
+        assert all(
+            np.array_equal(federated_iris[client].X_data, self._iris.X_data[idx])
+            and np.array_equal(federated_iris[client].y_data, self._iris.y_data[idx])
+            for client, idx in enumerate(indexes)
+        )
+
+    def test_from_clustering_func(self):
+        n_clients = 10
+        kmeans = KMeans(n_clusters=n_clients, random_state=0).fit(self._iris.X_data)
+        federated_iris = FlexDataDistribution.from_clustering_func(
+            self._iris, clustering_func=lambda x, _: kmeans.predict(x.reshape(1, -1))[0]
+        )
+        assert len(federated_iris) == n_clients
+        assert all(
+            self._iris.X_data[idx] in federated_iris[client].X_data
+            for idx, client in enumerate(kmeans.labels_)
+        )

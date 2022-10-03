@@ -71,3 +71,27 @@ class TestFlexDatasetConfig(unittest.TestCase):
         a = FlexDatasetConfig(replacement=False, n_clients=2, features_per_client=3)
         with pytest.raises(ValueError):
             a.validate()
+
+    def test_incompatible_options_w_indexes_per_client(self):
+        a = FlexDatasetConfig(
+            n_clients=3, features_per_client=3, indexes_per_client=[[2]]
+        )
+        b = FlexDatasetConfig(
+            n_clients=3, classes_per_client=3, indexes_per_client=[[2]]
+        )
+        with pytest.raises(ValueError):
+            a.validate()
+        with pytest.raises(ValueError):
+            b.validate()
+
+    def test_indexes_per_client_w_number_of_clients(self):
+        a = FlexDatasetConfig(n_clients=2, indexes_per_client=[])
+        with pytest.raises(ValueError):
+            a.validate()
+
+    def test_indexes_per_client_w_client_names(self):
+        a = FlexDatasetConfig(
+            client_names=["clarisa", "Randuin"], indexes_per_client=[]
+        )
+        with pytest.raises(ValueError):
+            a.validate()
