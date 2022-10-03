@@ -3,13 +3,14 @@ from collections import defaultdict
 
 import numpy as np
 import pytest
+from sklearn.datasets import load_iris
 
+from flex.data import FlexDataDistribution
 from flex.data.flex_dataset import FlexDataObject, FlexDataset
 from flex.pool.actors import FlexActors, FlexRole, FlexRoleManager
 from flex.pool.flex_model import FlexModel
 from flex.pool.flex_pool import FlexPool
-from sklearn.datasets import load_iris
-from flex.data import FlexDataDistribution
+
 
 @pytest.fixture(name="fld")
 def fixture_flex_dataset():
