@@ -120,7 +120,7 @@ class FlexDataDistribution(object):
         """
         config = FlexDatasetConfig(n_clients=n_clients)
         return FlexDataDistribution.from_config(cdata, config)
-    
+
     @classmethod
     def __sample_dataset_with_indexes(
         cls, data: FlexDataObject, config: FlexDatasetConfig
