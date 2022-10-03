@@ -53,7 +53,7 @@ class FlexDataDistribution(object):
         elif config_.client_names is not None:
             config_.n_clients = len(config_.client_names)
         elif config_.n_clients is not None:
-            config_.client_names = list(range(config_.n_clients))
+            config_.client_names = [f"client_{i}" for i in range(config_.n_clients)]
 
         fed_dataset = FlexDataset()
         remaining_data_indices = np.arange(len(cdata))
@@ -88,8 +88,7 @@ class FlexDataDistribution(object):
             federated_dataset (FlexDataset): The federated dataset.
         """
         config = FlexDatasetConfig(n_clients=n_clients)
-        flex_dataset = FlexDataDistribution.from_config(cdata, config)
-        return flex_dataset
+        return FlexDataDistribution.from_config(cdata, config)
 
     @classmethod
     def __sample(

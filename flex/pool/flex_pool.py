@@ -196,7 +196,8 @@ class FlexPool:
         """
         return self.filter(lambda a, b: FlexRoleManager.is_aggregator(b))
 
-    @functools.cached_property
+    # @functools.cached_property
+    @property
     def servers(self):
         """Property to get all the servers available in a pool.
 
@@ -257,6 +258,7 @@ class FlexPool:
             flex_actors=actors,
             flex_models=None,
         )
+        print(new_arch.servers)
         new_arch.servers.map(init_func, *args, **kwargs)
         return new_arch
 

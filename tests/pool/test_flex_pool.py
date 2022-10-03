@@ -8,7 +8,8 @@ from flex.data.flex_dataset import FlexDataObject, FlexDataset
 from flex.pool.actors import FlexActors, FlexRole, FlexRoleManager
 from flex.pool.flex_model import FlexModel
 from flex.pool.flex_pool import FlexPool
-
+from sklearn.datasets import load_iris
+from flex.data import FlexDataDistribution
 
 @pytest.fixture(name="fld")
 def fixture_flex_dataset():
@@ -52,12 +53,18 @@ class TestFlexPool(unittest.TestCase):
         self._only_clients = only_clients
 
     @pytest.fixture(autouse=True)
+    def _fixture_iris_dataset(self):
+        iris = load_iris()
+        tmp = FlexDataObject(X_data=iris.data, y_data=iris.target)
+        self._iris = FlexDataDistribution.iid_distribution(tmp, n_clients=2)
+
+    @pytest.fixture(autouse=True)
     def _fixture_flex_dataset(self, fld):
         self._fld = fld
 
     def test_len_property(self):
-        p = FlexPool.client_server_architecture(self._fld, lambda *args: None)
-        assert len(p) != len(self._fld)
+        p = FlexPool.client_server_architecture(self._iris, lambda *args: None)
+        assert len(p) != len(self._iris)
         assert len(p.filter(lambda *args: True)) == len(p)
         assert len(p._actors) == len(p)
 
