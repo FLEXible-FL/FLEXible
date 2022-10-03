@@ -3,7 +3,9 @@ from collections import defaultdict
 
 import numpy as np
 import pytest
+from sklearn.datasets import load_iris
 
+from flex.data import FlexDataDistribution
 from flex.data.flex_dataset import FlexDataObject, FlexDataset
 from flex.pool.actors import FlexActors, FlexRole, FlexRoleManager
 from flex.pool.flex_model import FlexModel
@@ -52,12 +54,18 @@ class TestFlexPool(unittest.TestCase):
         self._only_clients = only_clients
 
     @pytest.fixture(autouse=True)
+    def _fixture_iris_dataset(self):
+        iris = load_iris()
+        tmp = FlexDataObject(X_data=iris.data, y_data=iris.target)
+        self._iris = FlexDataDistribution.iid_distribution(tmp, n_clients=2)
+
+    @pytest.fixture(autouse=True)
     def _fixture_flex_dataset(self, fld):
         self._fld = fld
 
     def test_len_property(self):
-        p = FlexPool.client_server_architecture(self._fld, lambda *args: None)
-        assert len(p) != len(self._fld)
+        p = FlexPool.client_server_architecture(self._iris, lambda *args: None)
+        assert len(p) != len(self._iris)
         assert len(p.filter(lambda *args: True)) == len(p)
         assert len(p._actors) == len(p)
 
@@ -71,16 +79,14 @@ class TestFlexPool(unittest.TestCase):
         )  # Servers are also aggregators in this architecture
         assert FlexPool.check_compatibility(client_pool, client_pool) is False
 
-    def test_map_procedure(self):
+    def test_map(self):
         p = FlexPool.client_server_architecture(self._fld, lambda *args: None)
         server_pool = p.servers
         client_pool = p.clients
-        assert server_pool.map_procedure(lambda *args: True, client_pool) == [True]
-        assert client_pool.map_procedure(lambda *args: True) == len(client_pool) * [
-            True
-        ]
+        assert server_pool.map(lambda *args: True, client_pool) == [True]
+        assert client_pool.map(lambda *args: True) == len(client_pool) * [True]
         with pytest.raises(ValueError):
-            assert client_pool.map_procedure(lambda *args: True, client_pool)
+            assert client_pool.map(lambda *args: True, client_pool)
 
     def test_client_server_architecture(self):
         p = FlexPool.client_server_architecture(self._fld, lambda *args: None)
@@ -96,11 +102,9 @@ class TestFlexPool(unittest.TestCase):
         assert FlexRoleManager.is_aggregator(p._actors["client_3"]) is False
         assert FlexRoleManager.is_server(p._actors["client_3"]) is False
 
-        assert FlexRoleManager.is_client(p._actors[f"server_{id(FlexPool)}"]) is False
-        assert (
-            FlexRoleManager.is_aggregator(p._actors[f"server_{id(FlexPool)}"]) is True
-        )
-        assert FlexRoleManager.is_server(p._actors[f"server_{id(FlexPool)}"]) is True
+        assert FlexRoleManager.is_client(p._actors["server"]) is False
+        assert FlexRoleManager.is_aggregator(p._actors["server"]) is True
+        assert FlexRoleManager.is_server(p._actors["server"]) is True
 
     def test_p2p_architecture(self):
         p = FlexPool.p2p_architecture(self._fld, lambda *args: None)

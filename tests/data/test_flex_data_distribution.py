@@ -78,40 +78,46 @@ class TestFlexDataDistribution(unittest.TestCase):
         config = FlexDatasetConfig(n_clients=2)
         flex_dataset = FlexDataDistribution.from_config(self._fcd, config)
         assert len(flex_dataset) == config.n_clients
-        assert len(flex_dataset[0]) == len(flex_dataset[1])
-        assert len(flex_dataset[0]) + len(flex_dataset[1]) == len(self._fcd)
+        assert len(flex_dataset["client_0"]) == len(flex_dataset["client_1"])
+        assert len(flex_dataset["client_0"]) + len(flex_dataset["client_1"]) == len(
+            self._fcd
+        )
 
     def test_weights(self):
         config = FlexDatasetConfig(n_clients=2, weights=[1, 1], replacement=False)
         flex_dataset = FlexDataDistribution.from_config(self._fcd, config)
         assert len(flex_dataset) == config.n_clients
-        assert len(flex_dataset[0]) == len(flex_dataset[1])
-        assert len(np.unique(flex_dataset[0].y_data)) == 2
-        assert len(np.unique(flex_dataset[1].y_data)) == 2
+        assert len(flex_dataset["client_0"]) == len(flex_dataset["client_1"])
+        assert len(np.unique(flex_dataset["client_0"].y_data)) == 2
+        assert len(np.unique(flex_dataset["client_1"].y_data)) == 2
 
     def test_empty_weights(self):
         config = FlexDatasetConfig(n_clients=2, weights=None, replacement=False)
         flex_dataset = FlexDataDistribution.from_config(self._fcd, config)
         assert len(flex_dataset) == config.n_clients
-        assert len(flex_dataset[0]) == len(flex_dataset[1])
-        assert len(np.unique(flex_dataset[0].y_data)) == 2
-        assert len(np.unique(flex_dataset[1].y_data)) == 2
+        assert len(flex_dataset["client_1"]) == len(flex_dataset["client_0"])
+        assert len(np.unique(flex_dataset["client_1"].y_data)) == 2
+        assert len(np.unique(flex_dataset["client_0"].y_data)) == 2
 
     def test_classes_per_client_int_no_weights_no_replacement(self):
         config = FlexDatasetConfig(n_clients=2, classes_per_client=1, replacement=False)
         flex_dataset = FlexDataDistribution.from_config(self._fcd_ones_zeros, config)
         assert len(flex_dataset) == config.n_clients
-        assert len(flex_dataset[0]) + len(flex_dataset[1]) == len(self._fcd_ones_zeros)
-        assert len(np.unique(flex_dataset[0].y_data)) == 1
-        assert len(np.unique(flex_dataset[1].y_data)) == 1
+        assert len(flex_dataset["client_0"]) + len(flex_dataset["client_1"]) == len(
+            self._fcd_ones_zeros
+        )
+        assert len(np.unique(flex_dataset["client_0"].y_data)) == 1
+        assert len(np.unique(flex_dataset["client_1"].y_data)) == 1
 
     def test_classes_per_client_int_no_weights_with_replacements(self):
         config = FlexDatasetConfig(n_clients=2, classes_per_client=1, replacement=True)
         flex_dataset = FlexDataDistribution.from_config(self._fcd_ones_zeros, config)
         assert len(flex_dataset) == config.n_clients
-        assert len(flex_dataset[0]) + len(flex_dataset[1]) == len(self._fcd_ones_zeros)
-        assert len(np.unique(flex_dataset[0].y_data)) == 1
-        assert len(np.unique(flex_dataset[1].y_data)) == 1
+        assert len(flex_dataset["client_0"]) + len(flex_dataset["client_1"]) == len(
+            self._fcd_ones_zeros
+        )
+        assert len(np.unique(flex_dataset["client_0"].y_data)) == 1
+        assert len(np.unique(flex_dataset["client_1"].y_data)) == 1
 
     def test_classes_per_client_int_with_weigths_no_replacement(self):
         config = FlexDatasetConfig(
@@ -119,12 +125,14 @@ class TestFlexDataDistribution(unittest.TestCase):
         )
         flex_dataset = FlexDataDistribution.from_config(self._fcd_ones_zeros, config)
         assert len(flex_dataset) == config.n_clients
-        if np.unique(flex_dataset[0].y_data) == np.unique(flex_dataset[1].y_data):
-            assert len(flex_dataset[0]) + len(flex_dataset[1]) == 6
+        if np.unique(flex_dataset["client_0"].y_data) == np.unique(
+            flex_dataset["client_1"].y_data
+        ):
+            assert len(flex_dataset["client_0"]) + len(flex_dataset["client_1"]) == 6
         else:
-            assert len(flex_dataset[0]) + len(flex_dataset[1]) == 7
-        assert len(np.unique(flex_dataset[0].y_data)) == 1
-        assert len(np.unique(flex_dataset[1].y_data)) == 1
+            assert len(flex_dataset["client_0"]) + len(flex_dataset["client_1"]) == 7
+        assert len(np.unique(flex_dataset["client_0"].y_data)) == 1
+        assert len(np.unique(flex_dataset["client_1"].y_data)) == 1
 
     def test_classes_per_client_int_with_weigths_with_replacement(self):
         config = FlexDatasetConfig(
@@ -136,11 +144,11 @@ class TestFlexDataDistribution(unittest.TestCase):
         )
         flex_dataset = FlexDataDistribution.from_config(self._fcd_ones_zeros, config)
         assert len(flex_dataset) == config.n_clients
-        assert len(flex_dataset[0]) + len(flex_dataset[1]) == int(
+        assert len(flex_dataset["client_0"]) + len(flex_dataset["client_1"]) == int(
             sum(np.floor(np.array(config.weights) * 10))
         )
-        assert len(np.unique(flex_dataset[0].y_data)) == 1
-        assert len(np.unique(flex_dataset[1].y_data)) == 1
+        assert len(np.unique(flex_dataset["client_0"].y_data)) == 1
+        assert len(np.unique(flex_dataset["client_1"].y_data)) == 1
 
     def test_classes_per_client_tuple_with_weights_no_replacement(self):
         config = FlexDatasetConfig(
@@ -185,8 +193,8 @@ class TestFlexDataDistribution(unittest.TestCase):
             replacement=False,
         )
         flex_dataset = FlexDataDistribution.from_config(self._iris, config)
-        assert np.unique(flex_dataset[0].y_data)[0] == 0
-        assert np.unique(flex_dataset[1].y_data)[0] == 1
+        assert np.unique(flex_dataset["client_0"].y_data)[0] == 0
+        assert np.unique(flex_dataset["client_1"].y_data)[0] == 1
 
     def test_classes_per_client_arr_no_weights_with_replacement(self):
         config = FlexDatasetConfig(
@@ -198,8 +206,8 @@ class TestFlexDataDistribution(unittest.TestCase):
         )
         flex_dataset = FlexDataDistribution.from_config(self._iris, config)
         assert len(flex_dataset) == config.n_clients
-        assert np.unique(flex_dataset[0].y_data)[0] == 0
-        assert set(np.unique(flex_dataset[1].y_data)) == {0, 1}
+        assert np.unique(flex_dataset["client_0"].y_data)[0] == 0
+        assert set(np.unique(flex_dataset["client_1"].y_data)) == {0, 1}
 
     def test_classes_per_client_arr_with_weights_with_replacement(self):
         config = FlexDatasetConfig(
@@ -211,8 +219,8 @@ class TestFlexDataDistribution(unittest.TestCase):
         )
         flex_dataset = FlexDataDistribution.from_config(self._iris, config)
         assert len(flex_dataset) == config.n_clients
-        assert np.unique(flex_dataset[0].y_data)[0] == 0
-        assert set(np.unique(flex_dataset[1].y_data)) == {0, 1}
+        assert np.unique(flex_dataset["client_0"].y_data)[0] == 0
+        assert set(np.unique(flex_dataset["client_1"].y_data)) == {0, 1}
 
     def test_classes_per_client_arr_with_weights_no_replacement(self):
         config = FlexDatasetConfig(
@@ -224,8 +232,8 @@ class TestFlexDataDistribution(unittest.TestCase):
         )
         flex_dataset = FlexDataDistribution.from_config(self._iris, config)
         assert len(flex_dataset) == config.n_clients
-        assert np.unique(flex_dataset[0].y_data)[0] == 0
-        assert np.unique(flex_dataset[1].y_data)[0] == 1
+        assert np.unique(flex_dataset["client_0"].y_data)[0] == 0
+        assert np.unique(flex_dataset["client_1"].y_data)[0] == 1
 
     # Feature split testing
     def test_featutes_per_client_int(self):
@@ -258,22 +266,24 @@ class TestFlexDataDistribution(unittest.TestCase):
         )
         flex_dataset = FlexDataDistribution.from_config(self._iris, config)
         assert len(flex_dataset) == config.n_clients
-        assert flex_dataset[0].X_data.shape[1] == 2
-        assert flex_dataset[1].X_data.shape[1] == 2
+        assert flex_dataset["client_0"].X_data.shape[1] == 2
+        assert flex_dataset["client_1"].X_data.shape[1] == 2
 
     def test_iid_distribution(self):
         n_clients = 2
         flex_dataset = FlexDataDistribution.iid_distribution(self._iris, n_clients)
         assert len(flex_dataset) == n_clients
-        assert len(flex_dataset[0]) == len(flex_dataset[1])
-        assert len(flex_dataset[0]) + len(flex_dataset[1]) == len(self._iris)
+        assert len(flex_dataset["client_0"]) == len(flex_dataset["client_1"])
+        assert len(flex_dataset["client_0"]) + len(flex_dataset["client_1"]) == len(
+            self._iris
+        )
 
     def test_single_feature_data(self):
         single_feature_dataset = self._iris[:, 0]
         federated_iris = FlexDataDistribution.iid_distribution(
             cdata=single_feature_dataset
         )
-        assert len(federated_iris[0].X_data.shape) == 1
+        assert len(federated_iris["client_0"].X_data.shape) == 1
 
     def test_getitem_property(self):
         dataset = self._iris[:, :2]
