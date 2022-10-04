@@ -63,15 +63,20 @@ class FlexDataDistribution(object):
 
         config_ = copy.deepcopy(config)  # copy, because we might modify some components
 
-        if (  # normalize weights if no replacement
-            config.weights is not None
-            and not config.replacement
-            and sum(config.weights) > 1
-            and config.classes_per_client is None
-        ):
-            config_.weights = np.array(
-                [w / sum(config.weights) for w in config.weights]
-            )
+        if config.classes_per_client is None and not config.replacement:
+            if (  # normalize weights if no replacement
+                config.weights is not None and sum(config.weights) > 1
+            ):
+                config_.weights = np.array(
+                    [w / sum(config.weights) for w in config.weights]
+                )
+            if (  # normalize weights_per_class is no replacement
+                config.weights_per_class is not None
+                and any(np.sum(config.weights_per_class, axis=0) != 1)
+            ):
+                config_.weights_per_class = config.weights_per_class / np.sum(
+                    config.weights_per_class, axis=0
+                )
 
         if config_.client_names is not None and config_.n_clients is not None:
             common_min = min(config_.n_clients, len(config_.client_names))
@@ -79,7 +84,7 @@ class FlexDataDistribution(object):
             config_.client_names = config_.client_names[:common_min]
         elif config_.client_names is not None:
             config_.n_clients = len(config_.client_names)
-        elif config_.n_clients is not None:
+        elif config_.n_clients is not None:  # autofill client names
             config_.client_names = [f"client_{i}" for i in range(config_.n_clients)]
 
         fed_dataset = FlexDataset()
@@ -199,8 +204,9 @@ class FlexDataDistribution(object):
         client_i: int,
     ):
         """Especialized function to sample indices from a FlexDataObject as especified by a FlexDatasetConfig.
-            It takes into consideration the config.weights option and applies it. If no config.weights are
-            provided, then we consider that the weights are the same for all the clients.
+            It takes into consideration the config.weights and config.weights_per_class option and applies it. 
+            If no config.weights and no config.weights_per_class are provided, then we consider that the weights \
+            are the same for all the clients.
 
         Args:
             rng (np.random.Generator): Random number generator used to sample.
@@ -214,12 +220,33 @@ class FlexDataDistribution(object):
             the sampled data indices and all the feature indices.
         """
         # Sample data indices
-        if config.weights is None:  # No weights provided
+        if config.weights_per_class is not None:
+            data_proportion = None
+        elif (
+            config.weights is None and config.classes_per_client is None
+        ):  # No of any kind weights provided
             data_proportion = floor(len(data) / config.n_clients)
-        else:
+        elif config.weights is not None:
             data_proportion = floor(len(data) * config.weights[client_i])
 
-        sub_data_indices = rng.choice(data_indices, data_proportion, replace=False)
+        if data_proportion is not None:
+            sub_data_indices = rng.choice(data_indices, data_proportion, replace=False)
+        else:  # apply weights_per_class
+            sub_data_indices = np.array([], dtype="uint32")
+            sorted_classes = np.sort(np.unique(data.y_data))
+            all_indices = np.arange(len(data))
+            for j, c in enumerate(sorted_classes):
+                available_class_indices = all_indices[data.y_data == c]
+                proportion_per_class = floor(
+                    len(available_class_indices) * config.weights_per_class[client_i][j]
+                )
+                selected_class_indices = rng.choice(
+                    available_class_indices, proportion_per_class, replace=False
+                )
+                sub_data_indices = np.concatenate(
+                    (sub_data_indices, selected_class_indices)
+                )
+
         # Sample feature indices
         sub_features_indices = slice(
             None
@@ -280,7 +307,7 @@ class FlexDataDistribution(object):
         if config.weights is not None:
             len_all_data_available = len(sub_data_indices)
             sub_data_indices = np.array([], dtype="uint32")
-            if len(sub_y_classes.shape) > 0:
+            if len(sub_y_classes.shape) > 0:  # aquí es donde entro yo
                 for (
                     c
                 ) in (
@@ -306,7 +333,23 @@ class FlexDataDistribution(object):
                 sub_data_indices = rng.choice(
                     sub_data_indices, data_proportion, replace=False
                 )
-
+        elif config.weights_per_class is not None:
+            sub_data_indices = np.array([], dtype="uint32")
+            sorted_classes = np.sort(np.unique(data.y_data))
+            all_indices = np.arange(len(data))
+            for j, c in enumerate(sorted_classes):
+                if c in sub_y_classes:
+                    available_class_indices = all_indices[data.y_data == c]
+                    proportion_per_class = floor(
+                        len(available_class_indices)
+                        * config.weights_per_class[client_i][j]
+                    )
+                    selected_class_indices = rng.choice(
+                        available_class_indices, proportion_per_class, replace=False
+                    )
+                    sub_data_indices = np.concatenate(
+                        (sub_data_indices, selected_class_indices)
+                    )
         # Sample feature indices
         sub_features_indices = slice(
             None

@@ -257,7 +257,6 @@ class FlexPool:
             flex_actors=actors,
             flex_models=None,
         )
-        print(new_arch.servers)
         new_arch.servers.map(init_func, *args, **kwargs)
         return new_arch
 

@@ -3,7 +3,7 @@ import unittest
 import pytest
 
 from flex.data import FlexDatasetConfig
-
+import numpy as np
 
 class TestFlexDatasetConfig(unittest.TestCase):
     def test_missing_params(self):
@@ -93,5 +93,20 @@ class TestFlexDatasetConfig(unittest.TestCase):
         a = FlexDatasetConfig(
             client_names=["clarisa", "Randuin"], indexes_per_client=[]
         )
+        with pytest.raises(ValueError):
+            a.validate()
+
+    def test_weights_incompatibility(self):
+        a = FlexDatasetConfig(n_clients=2, weights=[1, 2], weights_per_class=np.ones((2, 2)))
+        with pytest.raises(ValueError):
+            a.validate()
+
+    def test_weights_per_class_shape(self):
+        a = FlexDatasetConfig(n_clients=2, weights_per_class=np.ones((1,)))
+        with pytest.raises(ValueError):
+            a.validate()
+
+    def test_weights_per_class_size(self):
+        a = FlexDatasetConfig(n_clients=2, weights_per_class=np.ones((1, 2)))
         with pytest.raises(ValueError):
             a.validate()

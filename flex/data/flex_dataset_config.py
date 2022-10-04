@@ -7,6 +7,18 @@ import numpy.typing as npt
 @dataclass
 class FlexDatasetConfig:
     """Class used to represent a configuration to federate a centralized dataset.
+    The following table shows the compatiblity of each option:
+
+    | Options compatibility   | **n_clients** | **client_names** | **weights** | **weights_per_class** | **replacement** | **classes_per_client** | **features_per_client** | **indexes_per_client** |
+    |-------------------------|---------------|------------------|-------------|-----------------------|-----------------|------------------------|-------------------------|------------------------|
+    | **n_clients**           | -             | Y                | Y           | Y                     | Y               | Y                      | Y                       | Y                      |
+    | **client_names**        | Y             | -                | Y           | Y                     | Y               | Y                      | Y                       | Y                      |
+    | **weights**             | Y             | Y                | -           | N                     | Y               | Y                      | Y                       | N                      |
+    | **weights_per_class**   | Y             | Y                | N           | -                     | Y               | Y                      | N                       | N                      |
+    | **replacement**         | Y             | Y                | Y           | Y                     | -               | Y                      | Y                       | N                      |
+    | **classes_per_client**  | Y             | Y                | Y           | Y                     | Y               | -                      | N                       | N                      |
+    | **features_per_client** | Y             | Y                | Y           | N                     | Y               | N                      | -                       | N                      |
+    | **indexes_per_client**  | Y             | Y                | N           | N                     | N               | N                      | N                       | -                      |
 
     Attributes
     ----------
@@ -17,27 +29,33 @@ class FlexDatasetConfig:
         of clients to be the minimun between n_clients and the length of client_names. Default None.
     client_names: Optional[List[Hashable]]
         Names to identifty each client, if not provided clients will be indexed using integers. If n_clients is also \
-            given, we consider the number of clients to be the minimun of n_clients and the length of client_names. Default None.
+        given, we consider the number of clients to be the minimun of n_clients and the length of client_names. Default None.
     weights: Optional[npt.NDArray]
-        A numpy.array which provides the proportion of data to give to each client. Default None.
+        A numpy.array which provides the proportion of data to give to each client. It is not compatible with weights_per_class. Default None.
+    weights_per_class: Optional[npt.NDArray]
+        A numpy.array which provides the proportion of data to give to each client and class of the dataset to federate. \
+        We expect a bidimensional array of shape (n, m) where "n" is the number of clients and "m" is the number of classes of \
+        the dataset to federate. It is not compatible with weights. Default None.
     replacement: bool
         Whether the samping procedure used to split a centralized dataset is with replacement or not. Default True
     classes_per_client: Optional[Union[int, npt.NDArray, Tuple[int]]]
         Classes to assign to each client, if provided as an int, it is the number classes per client, if provided as a \
         tuple of ints, it establishes a mininum and a maximum of number of classes per client, a random number sampled \
         in such interval decides the number of classes of each client. If provided as a list, it establishes the classes \
-        assigned to each client. Default None.
+        assigned to each client. It is not compatible with features_per_client. Default None.
     features_per_client: Optional[Union[int, npt.NDArray, Tuple[int]]]
-        Features to assign to each client, it share the same interface as classes_per_client.
+        Features to assign to each client, it share the same interface as classes_per_client. It is not complatible with classes_per_client and weights_per_class \
+        Default None.
     indexes_per_client: Optional[npt.NDArray]
         Data indexes to assign to each client, note that this option is incompatible with classes_per_client, \
-        features_per_client options. If replacement and weights are speficied, they are ignored.
+        features_per_client options. If replacement, weights or weights_per_class are speficied, they are ignored. Default None.
     """
 
     seed: Optional[int] = None
     n_clients: Optional[int] = None
     client_names: Optional[List[Hashable]] = None
     weights: Optional[npt.NDArray] = None
+    weights_per_class: Optional[npt.NDArray] = None
     replacement: bool = True
     classes_per_client: Optional[Union[int, npt.NDArray, Tuple[int]]] = None
     features_per_client: Optional[Union[int, npt.NDArray, Tuple[int]]] = None
@@ -91,8 +109,8 @@ class FlexDatasetConfig:
                 and self.n_clients != len(self.weights)
             )
             or (
-                self.client_names is not None
-                and self.n_clients is None
+                self.n_clients is None
+                and self.client_names is not None
                 and len(self.client_names) != len(self.weights)
             )
             or (
@@ -102,6 +120,43 @@ class FlexDatasetConfig:
             )
         ):
             raise ValueError("The number of weights must equal the number of clients.")
+
+        if self.weights is not None and self.weights_per_class is not None:
+            raise ValueError(
+                "weights and weights_per_class are not compatible, please provide only one of them."
+            )
+
+        if (
+            self.weights_per_class is not None
+            and len(self.weights_per_class.shape) != 2
+        ):
+            raise ValueError(
+                (
+                    "weights_per_class must be a two dimensional array where the first dimension is the number of clients and the second is the number of classes of the dataset to federate."
+                )
+            )
+
+        if self.weights_per_class is not None and (
+            (
+                self.n_clients is not None
+                and self.client_names is None
+                and self.n_clients != len(self.weights_per_class)
+            )
+            or (
+                self.n_clients is None
+                and self.client_names is not None
+                and len(self.client_names) != len(self.weights_per_class)
+            )
+            or (
+                self.n_clients is not None
+                and self.client_names is not None
+                and min(self.n_clients, len(self.client_names))
+                != len(self.weights_per_class)
+            )
+        ):
+            raise ValueError(
+                "The length of weights_per_class must equal the number of clients."
+            )
 
         if self.weights is not None and max(self.weights) > 1:
             raise ValueError(
