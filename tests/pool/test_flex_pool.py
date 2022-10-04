@@ -223,5 +223,3 @@ class TestFlexPool(unittest.TestCase):
         )
         with pytest.raises(ValueError):
             FlexPool.client_server_architecture(fld, init_func=lambda *args: None)
-    
-    

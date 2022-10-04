@@ -204,7 +204,7 @@ class FlexDataDistribution(object):
         client_i: int,
     ):
         """Especialized function to sample indices from a FlexDataObject as especified by a FlexDatasetConfig.
-            It takes into consideration the config.weights and config.weights_per_class option and applies it. 
+            It takes into consideration the config.weights and config.weights_per_class option and applies it.
             If no config.weights and no config.weights_per_class are provided, then we consider that the weights \
             are the same for all the clients.
 

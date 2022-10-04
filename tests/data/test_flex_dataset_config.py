@@ -1,9 +1,10 @@
 import unittest
 
+import numpy as np
 import pytest
 
 from flex.data import FlexDatasetConfig
-import numpy as np
+
 
 class TestFlexDatasetConfig(unittest.TestCase):
     def test_missing_params(self):
@@ -97,7 +98,9 @@ class TestFlexDatasetConfig(unittest.TestCase):
             a.validate()
 
     def test_weights_incompatibility(self):
-        a = FlexDatasetConfig(n_clients=2, weights=[1, 2], weights_per_class=np.ones((2, 2)))
+        a = FlexDatasetConfig(
+            n_clients=2, weights=[1, 2], weights_per_class=np.ones((2, 2))
+        )
         with pytest.raises(ValueError):
             a.validate()
 
