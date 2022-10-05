@@ -5,7 +5,9 @@ from typing import Callable, Tuple
 
 import numpy as np
 import numpy.typing as npt
+from datasets.arrow_dataset import Dataset as DatasetHF
 from numpy.random import default_rng
+from torch.utils.data import Dataset
 
 from flex.data import FlexDataObject, FlexDataset, FlexDatasetConfig
 
@@ -18,6 +20,38 @@ class FlexDataDistribution(object):
             create_key == FlexDataDistribution.__create_key
         ), """FlexDataDistribution objects must be created using FlexDataDistribution.from_config or
         FlexDataDistribution.iid_distribution"""
+
+    @classmethod
+    def from_pytorch_text_dataset(cls, data: Dataset, config: FlexDatasetConfig):
+        """This function federates a centralized pytorch dataset given a FlexDatasetConfig.
+        This function will transform the Pytorch Dataset into a FlexDataObject and then it will
+        federate it.
+
+        Args:
+            data (Dataset): The Pytorch dataset
+            config (FlexDatasetConfig): FlexDatasetConfig with the configuration to federate the centralized dataset.
+        """
+        cdata = FlexDataObject.from_torchtext_dataset(data)
+        return cls.from_config(cdata, config)
+
+    @classmethod
+    def from_huggingface_dataset(
+        cls,
+        data: DatasetHF,
+        config: FlexDatasetConfig,
+        X_columns: list,
+        label_column: str,
+    ):
+        """This function federates a centralized pytorch dataset given a FlexDatasetConfig.
+        This function will transform a dataset from the HuggingFace Hub datasets into a FlexDataObject
+        and then it will federate it.
+
+        Args:
+            data (Dataset): The Pytorch dataset
+            config (FlexDatasetConfig): FlexDatasetConfig with the configuration to federate the centralized dataset.
+        """
+        cdata = FlexDataObject.from_huggingface_datasets(data, X_columns, label_column)
+        return cls.from_config(cdata, config)
 
     @classmethod
     def from_clustering_func(cls, cdata: FlexDataObject, clustering_func: Callable):

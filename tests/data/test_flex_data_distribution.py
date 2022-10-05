@@ -4,6 +4,7 @@ import numpy as np
 import pytest
 from sklearn.cluster import KMeans
 from sklearn.datasets import load_iris
+from yaml import load
 
 from flex.data import FlexDataDistribution, FlexDataObject, FlexDatasetConfig
 
@@ -409,3 +410,39 @@ class TestFlexDataDistribution(unittest.TestCase):
         )
         assert sum(self._iris.y_data == 0) == sum(flex_dataset[clients[0]].y_data == 0)
         assert sum(self._iris.y_data == 1) == sum(flex_dataset[clients[1]].y_data == 1)
+
+    def test_from_pytorch_text_dataset(self):
+        from torchtext.datasets import AG_NEWS
+
+        data = AG_NEWS(split="train")
+        config = FlexDatasetConfig(
+            seed=0,
+            n_clients=2,
+            replacement=False,
+            client_names=["client_0", "client_1"],
+        )
+        flex_dataset = FlexDataDistribution.from_pytorch_text_dataset(data, config)
+        assert len(flex_dataset) == config.n_clients
+        assert len(flex_dataset["client_0"]) == len(flex_dataset["client_1"])
+
+    def test_from_huggingface_text_dataset(self):
+        from datasets import load_dataset
+
+        data = load_dataset("ag_news", split="train")
+        X_columns = "text"
+        label_column = "label"
+        config = FlexDatasetConfig(
+            seed=0,
+            n_clients=2,
+            replacement=False,
+            client_names=["client_0", "client_1"],
+        )
+        flex_dataset = FlexDataDistribution.from_huggingface_dataset(
+            data, config, X_columns, label_column
+        )
+        assert len(flex_dataset) == config.n_clients
+        assert len(flex_dataset["client_0"]) == len(flex_dataset["client_1"])
+        assert (
+            len(flex_dataset["client_0"]) + len(flex_dataset["client_1"])
+            == data.num_rows
+        )
