@@ -38,6 +38,54 @@ class FlexDataObject:
             self.y_data if self.y_data is not None else [None] * len(self.X_data),
         )
 
+    @classmethod
+    def from_torchvision_dataset(cls, pytorch_dataset):
+        """Function to convert an object from torchvision.datasets.* to a FlexDataObject.
+            It is mandatory that the dataset contains at least the following transform:
+            torchvision.transforms.ToTensor()
+
+        Args:
+            pytorch_dataset (torchvision.datasets.VisionDataset): a torchvision dataset
+            that inherits from torchvision.datasets.VisionDataset.
+
+        Returns:
+            FlexDataObject: a FlexDataObject which encapsulates the dataset.
+        """
+        from torch.utils.data import DataLoader
+
+        loader = DataLoader(pytorch_dataset, batch_size=len(pytorch_dataset))
+        try:
+            X_data = next(iter(loader))[0].numpy()
+            y_data = next(iter(loader))[1].numpy()
+        except TypeError as e:
+            raise ValueError(
+                "When loading a torchvision dataset, provide it with at least \
+                torchvision.transforms.ToTensor() in the tranform field."
+            ) from e
+
+        return cls(X_data=X_data, y_data=y_data)
+
+    @classmethod
+    def from_tfds_dataset(cls, tdfs_dataset):
+        """Function to convert a dataset from tensorflow_datasets to a FlexDataObject.
+            It is mandatory that the dataset is loaded with batch_size=-1 in tensorflow_datasets.load function.
+
+        Args:
+            tdfs_dataset (tf.data.Datasets): a tf dataset
+
+        Returns:
+            FlexDataObject: a FlexDataObject which encapsulates the dataset.
+        """
+        from tensorflow.python.data.ops.dataset_ops import PrefetchDataset
+        from tensorflow_datasets import as_numpy
+
+        if isinstance(tdfs_dataset, PrefetchDataset):
+            raise ValueError(
+                "When loading a tensorflow_dataset, provide it with option batch_size=-1 in tensorflow_datasets.load function."
+            )
+        X_data, y_data = as_numpy(tdfs_dataset)
+        return cls(X_data=X_data, y_data=y_data)
+
     def validate(self):
         """Function that checks whether the object is correct or not."""
         if self.y_data is not None and len(self.X_data) != len(self.y_data):
