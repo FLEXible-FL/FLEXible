@@ -67,7 +67,7 @@ class TestFlexPool(unittest.TestCase):
         p = FlexPool.client_server_architecture(self._iris, lambda *args: None)
         assert len(p) != len(self._iris)
         assert len(p.filter(lambda *args: True)) == len(p)
-        assert len(p._actors) == len(p)
+        assert len(p.actor_ids) == len(p)
 
     def test_check_compatibility(self):
         p = FlexPool.client_server_architecture(self._fld, lambda *args: None)
@@ -216,3 +216,10 @@ class TestFlexPool(unittest.TestCase):
         for i in p.servers._models:
             with pytest.raises(KeyError):
                 p.servers._models[i]["model"] = 0
+
+    def test_reserved_server_id(self):
+        fld = FlexDataset(
+            {"server": self._fld["client_1"], "client_2": self._fld["client_2"]}
+        )
+        with pytest.raises(ValueError):
+            FlexPool.client_server_architecture(fld, init_func=lambda *args: None)

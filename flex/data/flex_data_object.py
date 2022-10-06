@@ -38,6 +38,108 @@ class FlexDataObject:
             self.y_data if self.y_data is not None else [None] * len(self.X_data),
         )
 
+    @classmethod
+    def from_torchvision_dataset(cls, pytorch_dataset):
+        """Function to convert an object from torchvision.datasets.* to a FlexDataObject.
+            It is mandatory that the dataset contains at least the following transform:
+            torchvision.transforms.ToTensor()
+
+        Args:
+            pytorch_dataset (torchvision.datasets.VisionDataset): a torchvision dataset
+            that inherits from torchvision.datasets.VisionDataset.
+
+        Returns:
+            FlexDataObject: a FlexDataObject which encapsulates the dataset.
+        """
+        from torch.utils.data import DataLoader
+
+        loader = DataLoader(pytorch_dataset, batch_size=len(pytorch_dataset))
+        try:
+            X_data = next(iter(loader))[0].numpy()
+            y_data = next(iter(loader))[1].numpy()
+        except TypeError as e:
+            raise ValueError(
+                "When loading a torchvision dataset, provide it with at least \
+                torchvision.transforms.ToTensor() in the tranform field."
+            ) from e
+
+        return cls(X_data=X_data, y_data=y_data)
+
+    @classmethod
+    def from_tfds_dataset(cls, tdfs_dataset):
+        """Function to convert a dataset from tensorflow_datasets to a FlexDataObject.
+            It is mandatory that the dataset is loaded with batch_size=-1 in tensorflow_datasets.load function.
+
+        Args:
+            tdfs_dataset (tf.data.Datasets): a tf dataset
+
+        Returns:
+            FlexDataObject: a FlexDataObject which encapsulates the dataset.
+        """
+        from tensorflow.python.data.ops.dataset_ops import PrefetchDataset
+        from tensorflow_datasets import as_numpy
+
+        if isinstance(tdfs_dataset, PrefetchDataset):
+            raise ValueError(
+                "When loading a tensorflow_dataset, provide it with option batch_size=-1 in tensorflow_datasets.load function."
+            )
+        X_data, y_data = as_numpy(tdfs_dataset)
+        return cls(X_data=X_data, y_data=y_data)
+
+    @classmethod
+    def from_huggingface_datasets(cls, hf_dataset, X_columns, label_column):
+        """Function to conver a dataset from the Datasets package (HuggingFace datasets library)
+        to a FlexDataObject.
+
+        Args:
+            hf_dataset (datasets.arrow_dataset.Dataset): a dataset from the dataset library
+            X_columns (str, list):
+            label_column (str): name of the label column
+
+        Returns:
+            FlexDataObject: a FlexDataObject which encapsulates the dataset.
+        """
+        from datasets.arrow_dataset import Dataset
+
+        if not isinstance(hf_dataset, Dataset):
+            raise ValueError(
+                "When loading a huggingface_dataset, provide it with the default format: datasets.arrow_dataset.Dataset."
+            )
+        df = hf_dataset.to_pandas()
+        X_data = df[X_columns].to_numpy()
+        y_data = df[label_column].to_numpy()
+        return cls(X_data=X_data, y_data=y_data)
+
+    @classmethod
+    def from_torchtext_dataset(cls, pytorch_text_dataset):
+        """Function to convert an object from torchvision.datasets.* to a FlexDataObject.
+            It is mandatory that the dataset contains at least the following transform:
+            torchvision.transforms.ToTensor()
+
+        Args:
+            pytorch_dataset (torchvision.datasets.VisionDataset): a torchvision dataset
+            that inherits from torchvision.datasets.VisionDataset.
+
+        Returns:
+            FlexDataObject: a FlexDataObject which encapsulates the dataset.
+        """
+        import numpy as np
+        from torch.utils.data import DataLoader, Dataset
+
+        if not isinstance(pytorch_text_dataset, Dataset):
+            raise ValueError(
+                "When loading a pytorch text dataset, it must be an instance of torch.utils.data.Dataset."
+            )
+        loader = list(iter(DataLoader(pytorch_text_dataset, batch_size=1)))
+        X_data, y_data = [], []
+        for label, text in loader:
+            y_data.append(label.numpy()[0])
+            X_data.append(text[0])
+        X_data = np.array(X_data)
+        y_data = np.array(y_data)
+
+        return cls(X_data=X_data, y_data=y_data)
+
     def validate(self):
         """Function that checks whether the object is correct or not."""
         if self.y_data is not None and len(self.X_data) != len(self.y_data):
