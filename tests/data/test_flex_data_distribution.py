@@ -4,7 +4,6 @@ import numpy as np
 import pytest
 from sklearn.cluster import KMeans
 from sklearn.datasets import load_iris
-from yaml import load
 
 from flex.data import FlexDataDistribution, FlexDataObject, FlexDatasetConfig
 
