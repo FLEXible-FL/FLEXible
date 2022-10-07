@@ -410,7 +410,7 @@ class TestFlexDataDistribution(unittest.TestCase):
         assert sum(self._iris.y_data == 0) == sum(flex_dataset[clients[0]].y_data == 0)
         assert sum(self._iris.y_data == 1) == sum(flex_dataset[clients[1]].y_data == 1)
 
-    def test_from_pytorch_text_dataset(self):
+    def test_from_torchtext_dataset(self):
         from torchtext.datasets import AG_NEWS
 
         data = AG_NEWS(split="train")
@@ -420,7 +420,9 @@ class TestFlexDataDistribution(unittest.TestCase):
             replacement=False,
             client_names=["client_0", "client_1"],
         )
-        flex_dataset = FlexDataDistribution.from_pytorch_text_dataset(data, config)
+        flex_dataset = FlexDataDistribution.from_config_with_torchtext_dataset(
+            data, config
+        )
         assert len(flex_dataset) == config.n_clients
         assert len(flex_dataset["client_0"]) == len(flex_dataset["client_1"])
 
@@ -436,7 +438,7 @@ class TestFlexDataDistribution(unittest.TestCase):
             replacement=False,
             client_names=["client_0", "client_1"],
         )
-        flex_dataset = FlexDataDistribution.from_huggingface_dataset(
+        flex_dataset = FlexDataDistribution.from_config_with_huggingface_dataset(
             data, config, X_columns, label_column
         )
         assert len(flex_dataset) == config.n_clients
