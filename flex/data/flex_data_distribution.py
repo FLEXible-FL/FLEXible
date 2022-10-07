@@ -5,9 +5,7 @@ from typing import Callable, Tuple
 
 import numpy as np
 import numpy.typing as npt
-from datasets.arrow_dataset import Dataset as DatasetHF
 from numpy.random import default_rng
-from torch.utils.data import Dataset
 
 from flex.data import FlexDataObject, FlexDataset, FlexDatasetConfig
 
@@ -22,35 +20,61 @@ class FlexDataDistribution(object):
         FlexDataDistribution.iid_distribution"""
 
     @classmethod
-    def from_pytorch_text_dataset(cls, data: Dataset, config: FlexDatasetConfig):
-        """This function federates a centralized pytorch dataset given a FlexDatasetConfig.
-        This function will transform the Pytorch Dataset into a FlexDataObject and then it will
+    def from_config_with_torchtext_dataset(cls, data, config: FlexDatasetConfig):
+        """This function federates a centralized torchtext dataset given a FlexDatasetConfig.
+        This function will transform the torchtext dataset into a FlexDataObject and then it will
         federate it.
 
         Args:
-            data (Dataset): The Pytorch dataset
+            data (Dataset): The torchtext dataset
             config (FlexDatasetConfig): FlexDatasetConfig with the configuration to federate the centralized dataset.
         """
         cdata = FlexDataObject.from_torchtext_dataset(data)
         return cls.from_config(cdata, config)
 
     @classmethod
-    def from_huggingface_dataset(
+    def from_config_with_tfds_dataset(cls, data, config: FlexDatasetConfig):
+        """This function federates a centralized tensorflow dataset given a FlexDatasetConfig.
+        This function will transform a dataset from the tensorflow_datasets module into a FlexDataObject
+        and then it will federate it.
+
+        Args:
+            data (Dataset): The tensorflow dataset
+            config (FlexDatasetConfig): FlexDatasetConfig with the configuration to federate the centralized dataset.
+        """
+        cdata = FlexDataObject.from_tfds_dataset(data)
+        return cls.from_config(cdata, config)
+
+    @classmethod
+    def from_config_with_torchvision_dataset(cls, data, config: FlexDatasetConfig):
+        """This function federates a centralized torchvision dataset given a FlexDatasetConfig.
+        This function will transform a dataset from the torchvision module into a FlexDataObject
+        and then it will federate it.
+
+        Args:
+            data (Dataset): The torchvision dataset
+            config (FlexDatasetConfig): FlexDatasetConfig with the configuration to federate the centralized dataset.
+        """
+        cdata = FlexDataObject.from_torchvision_dataset(data)
+        return cls.from_config(cdata, config)
+
+    @classmethod
+    def from_config_with_huggingface_dataset(
         cls,
-        data: DatasetHF,
+        data,
         config: FlexDatasetConfig,
         X_columns: list,
         label_column: str,
     ):
-        """This function federates a centralized pytorch dataset given a FlexDatasetConfig.
+        """This function federates a centralized hugginface dataset given a FlexDatasetConfig.
         This function will transform a dataset from the HuggingFace Hub datasets into a FlexDataObject
         and then it will federate it.
 
         Args:
-            data (Dataset): The Pytorch dataset
+            data (Dataset): The hugginface dataset
             config (FlexDatasetConfig): FlexDatasetConfig with the configuration to federate the centralized dataset.
         """
-        cdata = FlexDataObject.from_huggingface_datasets(data, X_columns, label_column)
+        cdata = FlexDataObject.from_huggingface_dataset(data, X_columns, label_column)
         return cls.from_config(cdata, config)
 
     @classmethod
