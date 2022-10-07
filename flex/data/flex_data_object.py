@@ -83,11 +83,13 @@ class FlexDataObject:
             raise ValueError(
                 "When loading a tensorflow_dataset, provide it with option batch_size=-1 in tensorflow_datasets.load function."
             )
+        if isinstance(tdfs_dataset, list) and len(tdfs_dataset) == 1:
+            tdfs_dataset = tdfs_dataset[0]
         X_data, y_data = as_numpy(tdfs_dataset)
         return cls(X_data=X_data, y_data=y_data)
 
     @classmethod
-    def from_huggingface_datasets(cls, hf_dataset, X_columns, label_column):
+    def from_huggingface_dataset(cls, hf_dataset, X_columns, label_column):
         """Function to conver a dataset from the Datasets package (HuggingFace datasets library)
         to a FlexDataObject.
 
@@ -112,13 +114,13 @@ class FlexDataObject:
 
     @classmethod
     def from_torchtext_dataset(cls, pytorch_text_dataset):
-        """Function to convert an object from torchvision.datasets.* to a FlexDataObject.
+        """Function to convert an object from torchtext.datasets.* to a FlexDataObject.
             It is mandatory that the dataset contains at least the following transform:
-            torchvision.transforms.ToTensor()
+            torchtext.transforms.ToTensor()
 
         Args:
-            pytorch_dataset (torchvision.datasets.VisionDataset): a torchvision dataset
-            that inherits from torchvision.datasets.VisionDataset.
+            pytorch_dataset (torchtext.datasets.VisionDataset): a torchtext dataset
+            that inherits from torchtext.datasets.VisionDataset.
 
         Returns:
             FlexDataObject: a FlexDataObject which encapsulates the dataset.
@@ -130,7 +132,7 @@ class FlexDataObject:
             raise ValueError(
                 "When loading a pytorch text dataset, it must be an instance of torch.utils.data.Dataset."
             )
-        loader = list(iter(DataLoader(pytorch_text_dataset, batch_size=1)))
+        loader = DataLoader(pytorch_text_dataset, batch_size=1)
         X_data, y_data = [], []
         for label, text in loader:
             y_data.append(label.numpy()[0])
