@@ -1,20 +1,19 @@
-from enum import auto
 import unittest
 
-import numpy as np
 import pytest
 
-from flex.data import FlexDataDistribution, FlexDataObject, FlexDatasetConfig
+from flex.data import FlexDataDistribution, FlexDatasetConfig
 
 
 @pytest.fixture(name="basic_config")
 def fixture_simple_fex_data_object():
     return FlexDatasetConfig(
-            seed=0,
-            n_clients=2,
-            replacement=False,
-            client_names=["client_0", "client_1"],
-        )
+        seed=0,
+        n_clients=2,
+        replacement=False,
+        client_names=["client_0", "client_1"],
+    )
+
 
 class TestFlexDataDistribution(unittest.TestCase):
     @pytest.fixture(autouse=True)
@@ -25,7 +24,9 @@ class TestFlexDataDistribution(unittest.TestCase):
         from torchtext.datasets import AG_NEWS
 
         data = AG_NEWS(split="train")
-        flex_dataset = FlexDataDistribution.from_pytorch_text_dataset(data, self._config)
+        flex_dataset = FlexDataDistribution.from_pytorch_text_dataset(
+            data, self._config
+        )
         assert len(flex_dataset) == self._config.n_clients
         assert len(flex_dataset["client_0"]) == len(flex_dataset["client_1"])
 

@@ -1,15 +1,14 @@
 """File that contains some utils functions to test help us testing the datasets that works with FLEXible.
 """
 
-from operator import mod
-from flex.data import FlexDataObject, FlexDataDistribution, FlexDatasetConfig
+from flex.data import FlexDataDistribution, FlexDataObject, FlexDatasetConfig
 
 config = FlexDatasetConfig(
-            seed=0,
-            n_clients=2,
-            replacement=False,
-            client_names=["client_0", "client_1"],
-        )
+    seed=0,
+    n_clients=2,
+    replacement=False,
+    client_names=["client_0", "client_1"],
+)
 
 
 def iterate_module_functions_torchtext(module):
@@ -19,10 +18,11 @@ def iterate_module_functions_torchtext(module):
         module (module): torchtext.datasets
 
     Returns:
-        List: A list that contains the name and the function of the 
+        List: A list that contains the name and the function of the
         datasets available in torchtext.datasets.
     """
     return [[name, val] for name, val in module.__dict__.items() if callable(val)]
+
 
 def check_if_can_load_torch_dataset(list_datasets):
     """Function that recieve a list of datasets and check whether or not
@@ -47,12 +47,16 @@ def check_if_can_load_torch_dataset(list_datasets):
     for name, func in list_datasets:
         print(f"Testing dataset: {name}")
         try:
-            data = func(split='train')
+            data = func(split="train")
             fld = FlexDataObject.from_torchtext_dataset(data)
             fld.validate()
             flex_dataset = FlexDataDistribution.from_pytorch_text_dataset(data, config)
+            del flex_dataset
             flex_dataset = FlexDataDistribution.from_config(fld, config)
-            valid_datasets.append([name, func, '-'])
+            del flex_dataset
+            valid_datasets.append([name, func, "-"])
+            del data
+            del fld
         except Exception as e:
             wrong_datasets.append([name, func, e])
     return valid_datasets, wrong_datasets
