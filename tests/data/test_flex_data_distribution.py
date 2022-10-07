@@ -420,7 +420,9 @@ class TestFlexDataDistribution(unittest.TestCase):
             replacement=False,
             client_names=["client_0", "client_1"],
         )
-        flex_dataset = FlexDataDistribution.from_config_with_torchtext_dataset(data, config)
+        flex_dataset = FlexDataDistribution.from_config_with_torchtext_dataset(
+            data, config
+        )
         assert len(flex_dataset) == config.n_clients
         assert len(flex_dataset["client_0"]) == len(flex_dataset["client_1"])
 
