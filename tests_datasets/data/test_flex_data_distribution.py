@@ -24,7 +24,7 @@ class TestFlexDataDistribution(unittest.TestCase):
         from torchtext.datasets import AG_NEWS
 
         data = AG_NEWS(split="train")
-        flex_dataset = FlexDataDistribution.from_pytorch_text_dataset(
+        flex_dataset = FlexDataDistribution.from_config_with_torchtext_dataset(
             data, self._config
         )
         assert len(flex_dataset) == self._config.n_clients
@@ -36,7 +36,7 @@ class TestFlexDataDistribution(unittest.TestCase):
         data = load_dataset("ag_news", split="train")
         X_columns = "text"
         label_column = "label"
-        flex_dataset = FlexDataDistribution.from_huggingface_dataset(
+        flex_dataset = FlexDataDistribution.from_config_with_huggingface_dataset(
             data, self._config, X_columns, label_column
         )
         assert len(flex_dataset) == self._config.n_clients

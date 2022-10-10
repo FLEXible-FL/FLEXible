@@ -25,7 +25,7 @@ class TestFlexDataObject(unittest.TestCase):
         data = load_dataset("ag_news", split="train")
         X_columns = "text"
         label_column = "label"
-        fcd = FlexDataObject.from_huggingface_datasets(
+        fcd = FlexDataObject.from_huggingface_dataset(
             data, X_columns=X_columns, label_column=label_column
         )
         fcd.validate()
@@ -35,4 +35,4 @@ class TestFlexDataObject(unittest.TestCase):
         X_columns = "text"
         label_column = "label"
         with pytest.raises(ValueError):
-            FlexDataObject.from_huggingface_datasets(data, X_columns, label_column)
+            FlexDataObject.from_huggingface_dataset(data, X_columns, label_column)
