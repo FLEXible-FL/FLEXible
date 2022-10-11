@@ -2,26 +2,27 @@ from dataclasses import dataclass, field
 from typing import Optional
 
 import numpy.typing as npt
+import numpy as np
+from cardinality import count
+from lazyarray import larray
 
-
-@dataclass(frozen=True)
+@dataclass(frozen=False)
 class FlexDataObject:
     """Class used to represent the dataset from a client in a Federated Learning enviroment.
 
     Attributes
     ----------
-    _X_data: numpy.typing.ArrayLike
+    X_data: numpy.typing.ArrayLike
         A numpy.array containing the data for the client.
-    _y_data: numpy.typing.ArrayLike
+    y_data: numpy.typing.ArrayLike
         A numpy.array containing the labels for the training data. Can be None if working
         on an unsupervised learning task. Default None.
     """
-
     X_data: npt.NDArray = field(init=True)
     y_data: Optional[npt.NDArray] = field(default=None, init=True)
 
     def __len__(self):
-        return len(self.X_data)
+        return self.X_data.shape[0]
 
     def __getitem__(self, pos):
         if self.y_data is None:
@@ -35,7 +36,7 @@ class FlexDataObject:
     def __iter__(self):
         return zip(
             self.X_data,
-            self.y_data if self.y_data is not None else [None] * len(self.X_data),
+            self.y_data if self.y_data is not None else [None] * self.X_data.shape[0],
         )
 
     @classmethod
@@ -51,18 +52,26 @@ class FlexDataObject:
         Returns:
             FlexDataObject: a FlexDataObject which encapsulates the dataset.
         """
-        from torch.utils.data import DataLoader
+        from torchvision.datasets import ImageFolder, VisionDataset
+        length = count(pytorch_dataset)
+        if length > 60.000 or isinstance(pytorch_dataset, ImageFolder):
+            def lazy_index(indices, ds, extra_dim=1):
+                try:
+                    iter(indices)
+                except TypeError: # not iterable
+                    return ds[indices][extra_dim] 
+                else: # iterable
+                    return larray(lambda a: lazy_index(indices[a], ds, extra_dim), shape=(len(indices),))
 
-        loader = DataLoader(pytorch_dataset, batch_size=len(pytorch_dataset))
-        try:
-            X_data = next(iter(loader))[0].numpy()
-            y_data = next(iter(loader))[1].numpy()
-        except TypeError as e:
-            raise ValueError(
-                "When loading a torchvision dataset, provide it with at least \
-                torchvision.transforms.ToTensor() in the tranform field."
-            ) from e
-
+            X_data = larray(lambda a: lazy_index(a, pytorch_dataset, extra_dim=0), shape=(length, ))
+            y_data = larray(lambda a: lazy_index(a, pytorch_dataset, extra_dim=1), shape=(length, ))
+        elif isinstance(pytorch_dataset, VisionDataset):
+            X_data, y_data = [], []
+            for x, y in pytorch_dataset:
+                y_data.append(x)
+                X_data.append(y)
+            X_data = np.asarray(X_data)
+            y_data = np.asarray(y_data)
         return cls(X_data=X_data, y_data=y_data)
 
     @classmethod
@@ -137,18 +146,18 @@ class FlexDataObject:
         for label, text in loader:
             y_data.append(label.numpy()[0])
             X_data.append(text[0])
-        X_data = np.array(X_data)
-        y_data = np.array(y_data)
+        X_data = np.asarray(X_data)
+        y_data = np.asarray(y_data)
 
         return cls(X_data=X_data, y_data=y_data)
 
     def validate(self):
         """Function that checks whether the object is correct or not."""
-        if self.y_data is not None and len(self.X_data) != len(self.y_data):
+        if self.y_data is not None and self.X_data.shape[0] != self.y_data.shape[0]:
             raise ValueError(
-                f"X_data and y_data must have equal lenght. X_data has {len(self.X_data)} elements and y_data has {len(self.y_data)} elements."
+                f"X_data and y_data must have equal lenght. X_data has {self.X_data.shape[0]} elements and y_data has {self.y_data.shape[0]} elements."
             )
-        if self.y_data is not None and self.y_data.ndim > 1:
+        if self.y_data is not None and len(self.y_data.shape) > 1:
             raise ValueError(
                 "y_data is multidimensional and we only support unidimensional labels."
             )
