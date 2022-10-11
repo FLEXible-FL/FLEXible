@@ -1,10 +1,11 @@
 from dataclasses import dataclass, field
 from typing import Optional
 
-import numpy.typing as npt
 import numpy as np
+import numpy.typing as npt
 from cardinality import count
 from lazyarray import larray
+
 
 @dataclass(frozen=False)
 class FlexDataObject:
@@ -18,6 +19,7 @@ class FlexDataObject:
         A numpy.array containing the labels for the training data. Can be None if working
         on an unsupervised learning task. Default None.
     """
+
     X_data: npt.NDArray = field(init=True)
     y_data: Optional[npt.NDArray] = field(default=None, init=True)
 
@@ -53,18 +55,27 @@ class FlexDataObject:
             FlexDataObject: a FlexDataObject which encapsulates the dataset.
         """
         from torchvision.datasets import ImageFolder, VisionDataset
+
         length = count(pytorch_dataset)
         if length > 60.000 or isinstance(pytorch_dataset, ImageFolder):
+
             def lazy_index(indices, ds, extra_dim=1):
                 try:
                     iter(indices)
-                except TypeError: # not iterable
-                    return ds[indices][extra_dim] 
-                else: # iterable
-                    return larray(lambda a: lazy_index(indices[a], ds, extra_dim), shape=(len(indices),))
+                except TypeError:  # not iterable
+                    return ds[indices][extra_dim]
+                else:  # iterable
+                    return larray(
+                        lambda a: lazy_index(indices[a], ds, extra_dim),
+                        shape=(len(indices),),
+                    )
 
-            X_data = larray(lambda a: lazy_index(a, pytorch_dataset, extra_dim=0), shape=(length, ))
-            y_data = larray(lambda a: lazy_index(a, pytorch_dataset, extra_dim=1), shape=(length, ))
+            X_data = larray(
+                lambda a: lazy_index(a, pytorch_dataset, extra_dim=0), shape=(length,)
+            )
+            y_data = larray(
+                lambda a: lazy_index(a, pytorch_dataset, extra_dim=1), shape=(length,)
+            )
         elif isinstance(pytorch_dataset, VisionDataset):
             X_data, y_data = [], []
             for x, y in pytorch_dataset:
