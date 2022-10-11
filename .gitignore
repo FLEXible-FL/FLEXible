@@ -146,3 +146,4 @@ pytest-coverage.txt
 notebooks/.vector_cache/wiki.en.vec
 notebooks/.vector_cache/wiki.en.vec.pt
 notebooks/~/
+~/

@@ -109,6 +109,43 @@ class FlexDataObject:
         return cls(X_data=X_data, y_data=y_data)
 
     @classmethod
+    def from_tfds_dataset_with_args(cls, tfds_dataset, X_columns, label_column):
+        """Function to convert a dataset from tensorflow_datasets to a FlexDataObject.
+            It is mandatory that the dataset is loaded with batch_size=-1 in tensorflow_datasets.load function.
+
+        Args:
+            tdfs_dataset (tf.data.Datasets): a tf dataset loaded with batch_size=-1.
+            X_columns (list): List containing the features (input) of the model.
+            label_column (list): List containing the targets of the model.
+
+        Returns:
+            FlexDataObject: a FlexDataObject which encapsulates the dataset.
+        """
+        import pandas as pd
+        from tensorflow.python.data.ops.dataset_ops import PrefetchDataset
+        from tensorflow_datasets import as_dataframe
+
+        if isinstance(tfds_dataset, PrefetchDataset):
+            # First case: Users used load func with batch_size != -1 or without indicating the batch_size
+            if list(tfds_dataset.element_spec.values())[0].shape == [None]:
+                # Batch_size specified -> We can unbach it so we can easy-manage it
+                tfds_dataset = tfds_dataset.unbatch()
+            X_data = as_dataframe(tfds_dataset)[X_columns].to_numpy()
+            y_data = as_dataframe(tfds_dataset)[label_column].to_numpy()
+            if len(y_data.shape) == 2 and y_data.shape[1] == 1:
+                y_data = y_data.reshape((len(y_data),))
+        else:  # User used batch_size=-1 when using the load function
+            if isinstance(tfds_dataset, list) and len(tfds_dataset) == 1:
+                tfds_dataset = tfds_dataset[0]
+            X_data = pd.DataFrame.from_dict(
+                {col: tfds_dataset[col].numpy() for col in X_columns}
+            ).to_numpy()
+            y_data = pd.DataFrame.from_dict(
+                {col: tfds_dataset[col].numpy() for col in label_column}
+            ).to_numpy()
+        return cls(X_data=X_data, y_data=y_data)
+
+    @classmethod
     def from_huggingface_dataset(cls, hf_dataset, X_columns, label_column):
         """Function to conver a dataset from the Datasets package (HuggingFace datasets library)
         to a FlexDataObject.
