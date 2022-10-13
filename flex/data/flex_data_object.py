@@ -44,12 +44,9 @@ class FlexDataObject:
     @classmethod
     def from_torchvision_dataset(cls, pytorch_dataset):
         """Function to convert an object from torchvision.datasets.* to a FlexDataObject.
-            It is mandatory that the dataset contains at least the following transform:
-            torchvision.transforms.ToTensor()
 
         Args:
-            pytorch_dataset (torchvision.datasets.VisionDataset): a torchvision dataset
-            that inherits from torchvision.datasets.VisionDataset.
+            pytorch_dataset (torchvision.datasets.*): a torchvision dataset.
 
         Returns:
             FlexDataObject: a FlexDataObject which encapsulates the dataset.
@@ -57,24 +54,28 @@ class FlexDataObject:
         from torchvision.datasets import ImageFolder, VisionDataset
 
         length = count(pytorch_dataset)
-        if length > 60.000 or isinstance(pytorch_dataset, ImageFolder):
+        if length > 60.000 or isinstance(
+            pytorch_dataset, ImageFolder
+        ):  # skip loading dataset in memory
 
-            def lazy_index(indices, ds, extra_dim=1):
+            def lazy_1d_index(indices, ds, extra_dim=1):
                 try:
                     iter(indices)
                 except TypeError:  # not iterable
                     return ds[indices][extra_dim]
                 else:  # iterable
                     return larray(
-                        lambda a: lazy_index(indices[a], ds, extra_dim),
+                        lambda a: lazy_1d_index(indices[a], ds, extra_dim),
                         shape=(len(indices),),
                     )
 
             X_data = larray(
-                lambda a: lazy_index(a, pytorch_dataset, extra_dim=0), shape=(length,)
+                lambda a: lazy_1d_index(a, pytorch_dataset, extra_dim=0),
+                shape=(length,),
             )
             y_data = larray(
-                lambda a: lazy_index(a, pytorch_dataset, extra_dim=1), shape=(length,)
+                lambda a: lazy_1d_index(a, pytorch_dataset, extra_dim=1),
+                shape=(length,),
             )
         elif isinstance(pytorch_dataset, VisionDataset):
             X_data, y_data = [], []
