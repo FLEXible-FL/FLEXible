@@ -5,11 +5,6 @@ and some dectorators functions that will help the user to create the training lo
 """
 
 from copy import deepcopy
-from http import client
-from pydoc import cli
-from select import KQ_NOTE_LOWAT
-
-from numpy import flexible, isin
 
 
 def initialize_server_model(flex_model, *args, **kwargs):
@@ -183,7 +178,7 @@ def train(client_model, client_data, *args, **kwargs):
 
     model = client_model["model"]
     X_data = client_data.X_data
-    y_data = client.y_data
+    y_data = client_data.y_data
     if "func" in kwargs:
         # PyTorch models need it's own function
         func = kwargs["func"]
@@ -324,7 +319,8 @@ def aggregate_weights(agg_model, *args, **kwargs):
 
     aggregated_weights = kwargs["func_aggregate"](agg_model["weights"])
 
-    if func in kwargs:
+    if "func" in kwargs:
+        func = kwargs["func"]
         func(agg_model["model"], aggregated_weights)
     else:
         import tensorflow as tf
