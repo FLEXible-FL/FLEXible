@@ -1,6 +1,8 @@
 """File that contains some utils functions to test help us testing the datasets that works with FLEXible.
 """
 
+import gc
+
 from flex.data import FlexDataDistribution, FlexDataObject, FlexDatasetConfig
 
 config = FlexDatasetConfig(
@@ -11,7 +13,7 @@ config = FlexDatasetConfig(
 )
 
 
-def iterate_module_functions_torchtext(module):
+def iterate_module_functions(module):
     """Function to get the functions that load a torchtext dataset.
 
     Args:
@@ -151,4 +153,46 @@ def check_if_can_load_text_tfds():
             valid_datasets.append([name, "-"])
         except Exception as e:
             wrong_datasets.append([name, e])
+    return valid_datasets, wrong_datasets
+
+
+def check_if_can_load_torchvision_dataset(list_datasets, **kwargs):
+    """Function that recieve a list of datasets and check whether or not
+    can be loaded to FLEXible with the methods available. For those that
+    gives error, we keep the error.
+
+    Args:
+        list_datasets (list): List of list (name, func) containing the datasets
+        that will be tested.
+
+    Returns:
+        list, list: The first list contains the names of each database that
+        can be loaded into FLEXible. The second list contains the names of
+        each database that gives error while trying to load it to FLEXible.
+
+    Raises:
+        - Gives error if the database can't be loaded to FLEXible.
+        - Gives error if the database can't be loaded as: func(split='train')
+    """
+    valid_datasets = []
+    wrong_datasets = []
+    for name, func in list_datasets:
+        print(f"Testing dataset: {name}")
+        try:
+            data = func(**kwargs)
+            fld = FlexDataObject.from_torchvision_dataset(data)
+            fld.validate()
+            flex_dataset = FlexDataDistribution.from_config(fld, config)
+            del flex_dataset
+            gc.collect()
+            flex_dataset = FlexDataDistribution.from_config_with_torchvision_dataset(
+                data, config
+            )
+            del flex_dataset
+            del data
+            del fld
+            valid_datasets.append([name, func, "-"])
+        except Exception as e:
+            wrong_datasets.append([name, func, e])
+        gc.collect()
     return valid_datasets, wrong_datasets
