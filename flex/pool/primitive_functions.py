@@ -40,7 +40,7 @@ def initialize_server_model(flex_model, *args, **kwargs):
             from flex.pool.primitive_functions import initialize_server_model
 
         3- Create the client-server architecture:
-            flex_pool = FlexPool.client_server_architecture(fed_dataset=flex_dataset, init_func=initialize_server_model, model=define_model, verbose=1)
+            flex_pool = FlexPool.client_server_architecture(fed_dataset=flex_dataset, init_func=initialize_server_model, model=define_model, verbose=1, model_params=[])
 
     In this example we are not using the *args argument as we have fixed params on our model, but we could use them to initialize it.
 
@@ -142,7 +142,7 @@ def deploy_model_to_clients(server_model, clients_model, *args, **kwargs):
         model that will be copied to the clients.
         clients_model (List[FlexModel]): A list of FlexModel that represent each client.
     """
-    if kwargs["verbose"] == 1:
+    if "verbose" in kwargs and kwargs["verbose"] == 1:
         print("Initializing model at a client")
         del kwargs["verbose"]
 
@@ -242,7 +242,7 @@ def collect_weights(client_model, aggregator_model, **kwargs):
 
     if "func" in kwargs:
         func = kwargs["func"]
-        client_weights = func(client_model["model"].get_model())
+        client_weights = func(client_model["model"])
     else:
         import tensorflow as tf
         import torch.nn as nn
@@ -465,7 +465,7 @@ def evaluate_model(model, data, *args, **kwargs):
 
         def eval_func(model, X_test, y_test, **kwargs):
             """Basic evaluate function for a TensorFlow Model"""
-            return model.evaluate(X_test, data.y_test)
+            return model["model"].evaluate(X_test, y_test)
 
     else:
         eval_func = kwargs["eval_func"]
