@@ -1,7 +1,11 @@
+import contextlib
 from dataclasses import dataclass, field
 from typing import Optional
 
+import numpy as np
 import numpy.typing as npt
+from cardinality import count
+from lazyarray import larray
 
 
 @dataclass(frozen=True)
@@ -10,9 +14,9 @@ class FlexDataObject:
 
     Attributes
     ----------
-    _X_data: numpy.typing.ArrayLike
+    X_data: numpy.typing.ArrayLike
         A numpy.array containing the data for the client.
-    _y_data: numpy.typing.ArrayLike
+    y_data: numpy.typing.ArrayLike
         A numpy.array containing the labels for the training data. Can be None if working
         on an unsupervised learning task. Default None.
     """
@@ -21,7 +25,7 @@ class FlexDataObject:
     y_data: Optional[npt.NDArray] = field(default=None, init=True)
 
     def __len__(self):
-        return len(self.X_data)
+        return self.X_data.shape[0]
 
     def __getitem__(self, pos):
         if self.y_data is None:
@@ -35,38 +39,56 @@ class FlexDataObject:
     def __iter__(self):
         return zip(
             self.X_data,
-            self.y_data if self.y_data is not None else [None] * len(self.X_data),
+            self.y_data if self.y_data is not None else [None] * self.X_data.shape[0],
         )
 
     @classmethod
     def from_torchvision_dataset(cls, pytorch_dataset):
         """Function to convert an object from torchvision.datasets.* to a FlexDataObject.
-            It is mandatory that the dataset contains at least the following transform:
-            torchvision.transforms.ToTensor()
 
         Args:
-            pytorch_dataset (torchvision.datasets.VisionDataset): a torchvision dataset
-            that inherits from torchvision.datasets.VisionDataset.
+            pytorch_dataset (torchvision.datasets.*): a torchvision dataset.
 
         Returns:
             FlexDataObject: a FlexDataObject which encapsulates the dataset.
         """
-        from torch.utils.data import DataLoader
+        from torchvision.datasets import ImageFolder, VisionDataset
 
-        loader = DataLoader(pytorch_dataset, batch_size=len(pytorch_dataset))
-        try:
-            X_data = next(iter(loader))[0].numpy()
-            y_data = next(iter(loader))[1].numpy()
-        except TypeError as e:
-            raise ValueError(
-                "When loading a torchvision dataset, provide it with at least \
-                torchvision.transforms.ToTensor() in the tranform field."
-            ) from e
+        length = count(pytorch_dataset)
+        if length > 60.000 or isinstance(
+            pytorch_dataset, ImageFolder
+        ):  # skip loading dataset in memory
 
+            def lazy_1d_index(indices, ds, extra_dim=1):
+                try:
+                    iter(indices)
+                except TypeError:  # not iterable
+                    return ds[indices][extra_dim]
+                else:  # iterable
+                    return larray(
+                        lambda a: lazy_1d_index(indices[a], ds, extra_dim),
+                        shape=(len(indices),),
+                    )
+
+            X_data = larray(
+                lambda a: lazy_1d_index(a, pytorch_dataset, extra_dim=0),
+                shape=(length,),
+            )
+            y_data = larray(
+                lambda a: lazy_1d_index(a, pytorch_dataset, extra_dim=1),
+                shape=(length,),
+            )
+        elif isinstance(pytorch_dataset, VisionDataset):
+            X_data, y_data = [], []
+            for x, y in pytorch_dataset:
+                y_data.append(x)
+                X_data.append(y)
+            X_data = np.asarray(X_data)
+            y_data = np.asarray(y_data)
         return cls(X_data=X_data, y_data=y_data)
 
     @classmethod
-    def from_tfds_dataset(cls, tdfs_dataset):
+    def from_tfds_image_dataset(cls, tfds_dataset):
         """Function to convert a dataset from tensorflow_datasets to a FlexDataObject.
             It is mandatory that the dataset is loaded with batch_size=-1 in tensorflow_datasets.load function.
 
@@ -76,16 +98,55 @@ class FlexDataObject:
         Returns:
             FlexDataObject: a FlexDataObject which encapsulates the dataset.
         """
-        from tensorflow.python.data.ops.dataset_ops import PrefetchDataset
         from tensorflow_datasets import as_numpy
 
-        if isinstance(tdfs_dataset, PrefetchDataset):
-            raise ValueError(
-                "When loading a tensorflow_dataset, provide it with option batch_size=-1 in tensorflow_datasets.load function."
-            )
-        if isinstance(tdfs_dataset, list) and len(tdfs_dataset) == 1:
-            tdfs_dataset = tdfs_dataset[0]
+        if isinstance(tfds_dataset, list):
+            tdfs_dataset = tfds_dataset[0]
+
+        # unbatch if possible
+        if not isinstance(tfds_dataset, tuple):
+            with contextlib.supress(ValueError()):
+                tfds_dataset.unbatch()
+
         X_data, y_data = as_numpy(tdfs_dataset)
+        return cls(X_data=X_data, y_data=y_data)
+
+    @classmethod
+    def from_tfds_text_dataset(cls, tfds_dataset, X_columns=None, label_column=None):
+        """Function to convert a dataset from tensorflow_datasets to a FlexDataObject.
+            It is mandatory that the dataset is loaded with batch_size=-1 in tensorflow_datasets.load function.
+
+        Args:
+            tdfs_dataset (tf.data.Datasets): a tf dataset loaded with batch_size=-1.
+            X_columns (list): List containing the features (input) of the model.
+            label_column (list): List containing the targets of the model.
+
+        Returns:
+            FlexDataObject: a FlexDataObject which encapsulates the dataset.
+        """
+        from pandas.DataFrame import from_dict
+        from tensorflow.python.data.ops.dataset_ops import PrefetchDataset
+        from tensorflow_datasets import as_dataframe
+
+        if isinstance(tfds_dataset, list):
+            tfds_dataset = tfds_dataset[0]
+
+        if isinstance(tfds_dataset, PrefetchDataset):
+            # First case: Users used load func with batch_size != -1 or without indicating the batch_size
+            if not isinstance(tfds_dataset, tuple):
+                with contextlib.supress(ValueError()):
+                    tfds_dataset.unbatch()
+            X_data = as_dataframe(tfds_dataset)[X_columns].to_numpy()
+            y_data = as_dataframe(tfds_dataset)[label_column].to_numpy()
+            if len(y_data.shape) == 2 and y_data.shape[1] == 1:
+                y_data = y_data.reshape((len(y_data),))
+        else:  # User used batch_size=-1 when using the load function
+            X_data = from_dict(
+                {col: tfds_dataset[col].numpy() for col in X_columns}
+            ).to_numpy()
+            y_data = from_dict(
+                {col: tfds_dataset[col].numpy() for col in label_column}
+            ).to_numpy()
         return cls(X_data=X_data, y_data=y_data)
 
     @classmethod
@@ -137,18 +198,18 @@ class FlexDataObject:
         for label, text in loader:
             y_data.append(label.numpy()[0])
             X_data.append(text[0])
-        X_data = np.array(X_data)
-        y_data = np.array(y_data)
+        X_data = np.asarray(X_data)
+        y_data = np.asarray(y_data)
 
         return cls(X_data=X_data, y_data=y_data)
 
     def validate(self):
         """Function that checks whether the object is correct or not."""
-        if self.y_data is not None and len(self.X_data) != len(self.y_data):
+        if self.y_data is not None and self.X_data.shape[0] != self.y_data.shape[0]:
             raise ValueError(
-                f"X_data and y_data must have equal lenght. X_data has {len(self.X_data)} elements and y_data has {len(self.y_data)} elements."
+                f"X_data and y_data must have equal lenght. X_data has {self.X_data.shape[0]} elements and y_data has {self.y_data.shape[0]} elements."
             )
-        if self.y_data is not None and self.y_data.ndim > 1:
+        if self.y_data is not None and len(self.y_data.shape) > 1:
             raise ValueError(
                 "y_data is multidimensional and we only support unidimensional labels."
             )
