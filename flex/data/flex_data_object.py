@@ -1,3 +1,4 @@
+import contextlib
 from dataclasses import dataclass, field
 from typing import Optional
 
@@ -5,7 +6,6 @@ import numpy as np
 import numpy.typing as npt
 from cardinality import count
 from lazyarray import larray
-import contextlib
 
 
 @dataclass(frozen=True)
