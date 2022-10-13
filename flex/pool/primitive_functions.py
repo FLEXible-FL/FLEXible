@@ -186,6 +186,7 @@ def train(client_model, client_data, *args, **kwargs):
         for item in client_model:
             if item not in ["model", "weights"]:
                 kwargs.append(item)
+        func(model, X_data, y_data, *args, **kwargs)
 
         def wrapper(func, model, client_data, *args, **kwargs):
             func(model, client_data, args, kwargs)
