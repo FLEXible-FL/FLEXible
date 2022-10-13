@@ -91,3 +91,22 @@ class PluggableHuggingFace(Enum, metaclass=PluggableDataset):
     SQUAD_HF = ("squad", ["context", "question"], "answers")
     APPREVIEWS_HF = ("app_reviews", "review", "star")
     AMAZON_POLARITY_HF = ("amazon_polarity", ["title", "content"], "label")
+
+
+class PluggableDatasetsTensorFlowText(Enum):
+    """Class containing some datasets that can be loaded to FLEXible. Other datasets
+    can be plugged in, but it requires a special configuration, i.e., glue-cola. This
+    is more about the user using correctly the arguments on the load_dataset function
+    from huggingface datasets than a problem of our platform, so the user can easy-use
+    other datasets.
+
+    Args:
+        Enum (enum): Tuple containing name, X_columns and y_columns to use in the
+        load_dataset function.
+    """
+
+    AG_NEWS_TF = ("ag_news_subset", ["title", "description"], ["label"])
+    GLUE_TF = ("glue", ["sentence"], ["label"])
+    ASSET_TF = ("asset", ["original"], ["simplifications"])
+    SQUAD_TF = ("squad", ["title", "question", "context"], ["answers"])  # Wonk work
+    COQA_TF = ("coqa", ["questions", "source", "story"], ["answers"])  # Won't work

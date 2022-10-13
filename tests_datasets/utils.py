@@ -63,21 +63,13 @@ def check_if_can_load_torchtext_dataset(list_datasets):
 
 
 def check_if_can_load_hf_dataset():
-    """Function that recieve a list of huggingface datasets and check whether
+    """Function that takes a list of huggingface datasets and check whether
     or not can be loaded to FLEXible with the methods available. For those
     that gives error, we keep the error. Also, the user may indicate a list of
     columns that will be the features of the model (X_column) and the columns
     that will be the label (y_column) of the model.
 
-    Args:
-        list_datasets (list): List of strings containing the names of the datasets
-        that will be tested.
-        list_X_columns (List[Union[List, String]]): List where each element is
-        a list or a string and represents the features that will be used in the
-        model.
-        list_y_columns (List[Union[List, String]]): List where each element is
-        a list or a string and represents the labels that will be used in the
-        model.
+    To check the datasets, refer to PluggableDatasetsHuggingFace
 
     Returns:
         list, list: The first list contains the names of each database that
@@ -104,6 +96,53 @@ def check_if_can_load_hf_dataset():
             )
             del flex_dataset
             fld = FlexDataObject.from_huggingface_dataset(data, X_columns, y_column)
+            fld.validate()
+            flex_dataset = FlexDataDistribution.from_config(fld, config)
+            del flex_dataset
+            del data
+            del fld
+            valid_datasets.append([name, "-"])
+        except Exception as e:
+            wrong_datasets.append([name, e])
+    return valid_datasets, wrong_datasets
+
+
+def check_if_can_load_text_tfds():
+    """Function that take a list of tensorflow datasets and check whether
+    or not can be loaded to FLEXible with the methods available. For those
+    that gives error, we keep the error. Also, the user may indicate a list of
+    columns that will be the features of the model (X_column) and the columns
+    that will be the label (y_column) of the model.
+
+    To check the datasets refer to PluggableDatasetsTensorFlowText
+
+    Returns:
+        list, list: The first list contains the names of each database that
+        can be loaded into FLEXible. The second list contains the names of
+        each database that gives error while trying to load it to FLEXible.
+
+    Raises:
+        - Gives error if the database can't be loaded to FLEXible.
+        - Gives error with Question Answering datasets. Probably because
+        they needs further preprocessing than other tasks.
+            -> Example of an error:  AttributeError("'dict' object has no attribute 'shape'")
+    """
+    import tensorflow_datasets as tfds
+
+    from flex.data import PluggableDatasetsTensorFlowText
+
+    valid_datasets = []
+    wrong_datasets = []
+    for dataset in PluggableDatasetsTensorFlowText:
+        name, X_columns, y_column = dataset.value
+        print(f"Testing dataset: {name}")
+        try:
+            split = "train" if name != "asset" else "validation"
+            data = tfds.load(name, split=split)
+            flex_dataset = FlexDataDistribution.from_config_with_tfds_dataset_args(
+                data, config, X_columns, y_column
+            )
+            fld = FlexDataObject.from_tfds_dataset_with_args(data, X_columns, y_column)
             fld.validate()
             flex_dataset = FlexDataDistribution.from_config(fld, config)
             del flex_dataset
