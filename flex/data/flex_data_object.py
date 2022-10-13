@@ -5,9 +5,10 @@ import numpy as np
 import numpy.typing as npt
 from cardinality import count
 from lazyarray import larray
+import contextlib
 
 
-@dataclass(frozen=False)
+@dataclass(frozen=True)
 class FlexDataObject:
     """Class used to represent the dataset from a client in a Federated Learning enviroment.
 
@@ -87,7 +88,7 @@ class FlexDataObject:
         return cls(X_data=X_data, y_data=y_data)
 
     @classmethod
-    def from_tfds_dataset(cls, tdfs_dataset):
+    def from_tfds_image_dataset(cls, tfds_dataset):
         """Function to convert a dataset from tensorflow_datasets to a FlexDataObject.
             It is mandatory that the dataset is loaded with batch_size=-1 in tensorflow_datasets.load function.
 
@@ -97,20 +98,21 @@ class FlexDataObject:
         Returns:
             FlexDataObject: a FlexDataObject which encapsulates the dataset.
         """
-        from tensorflow.python.data.ops.dataset_ops import PrefetchDataset
         from tensorflow_datasets import as_numpy
 
-        if isinstance(tdfs_dataset, PrefetchDataset):
-            raise ValueError(
-                "When loading a tensorflow_dataset, provide it with option batch_size=-1 in tensorflow_datasets.load function."
-            )
-        if isinstance(tdfs_dataset, list) and len(tdfs_dataset) == 1:
-            tdfs_dataset = tdfs_dataset[0]
+        if isinstance(tfds_dataset, list):
+            tdfs_dataset = tfds_dataset[0]
+
+        # unbatch if possible
+        if not isinstance(tfds_dataset, tuple):
+            with contextlib.supress(ValueError()):
+                tfds_dataset.unbatch()
+
         X_data, y_data = as_numpy(tdfs_dataset)
         return cls(X_data=X_data, y_data=y_data)
 
     @classmethod
-    def from_tfds_dataset_with_args(cls, tfds_dataset, X_columns, label_column):
+    def from_tfds_text_dataset(cls, tfds_dataset, X_columns=None, label_column=None):
         """Function to convert a dataset from tensorflow_datasets to a FlexDataObject.
             It is mandatory that the dataset is loaded with batch_size=-1 in tensorflow_datasets.load function.
 
@@ -122,26 +124,27 @@ class FlexDataObject:
         Returns:
             FlexDataObject: a FlexDataObject which encapsulates the dataset.
         """
-        import pandas as pd
+        from pandas.DataFrame import from_dict
         from tensorflow.python.data.ops.dataset_ops import PrefetchDataset
         from tensorflow_datasets import as_dataframe
 
+        if isinstance(tfds_dataset, list):
+            tfds_dataset = tfds_dataset[0]
+
         if isinstance(tfds_dataset, PrefetchDataset):
             # First case: Users used load func with batch_size != -1 or without indicating the batch_size
-            if list(tfds_dataset.element_spec.values())[0].shape == [None]:
-                # Batch_size specified -> We can unbach it so we can easy-manage it
-                tfds_dataset = tfds_dataset.unbatch()
+            if not isinstance(tfds_dataset, tuple):
+                with contextlib.supress(ValueError()):
+                    tfds_dataset.unbatch()
             X_data = as_dataframe(tfds_dataset)[X_columns].to_numpy()
             y_data = as_dataframe(tfds_dataset)[label_column].to_numpy()
             if len(y_data.shape) == 2 and y_data.shape[1] == 1:
                 y_data = y_data.reshape((len(y_data),))
         else:  # User used batch_size=-1 when using the load function
-            if isinstance(tfds_dataset, list) and len(tfds_dataset) == 1:
-                tfds_dataset = tfds_dataset[0]
-            X_data = pd.DataFrame.from_dict(
+            X_data = from_dict(
                 {col: tfds_dataset[col].numpy() for col in X_columns}
             ).to_numpy()
-            y_data = pd.DataFrame.from_dict(
+            y_data = from_dict(
                 {col: tfds_dataset[col].numpy() for col in label_column}
             ).to_numpy()
         return cls(X_data=X_data, y_data=y_data)
