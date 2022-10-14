@@ -1,11 +1,21 @@
 version: 0.1
+runtimes:
+  enabled:
+    - go@1.18.3
+    - node@16.14.2
+    - python@3.10.3
 cli:
   version: 0.18.1-beta
 lint:
+  disabled:
+    - gitleaks
   enabled:
-    - black@22.3.0
-    - flake8@4.0.1
-    - gitleaks@8.8.7
+    - actionlint@1.6.21
+    - git-diff-check
+    - markdownlint@0.32.2
+    - prettier@2.7.1
+    - black@22.10.0
+    - flake8@5.0.4
     - isort@5.10.1
   ignore:    
     - linters: [ALL]      
