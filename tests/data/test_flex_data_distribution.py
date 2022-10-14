@@ -436,16 +436,14 @@ class TestFlexDataDistribution(unittest.TestCase):
             )
             assert len(flex_dataset) == config.n_clients
             assert len(flex_dataset["client_0"]) == len(flex_dataset["client_1"])
+
         other_options = {
-            "split": 'train',
+            "split": "train",
             "shuffle_files": True,
             "as_supervised": True,
-            "batch_size": -1
-            }
-        data = tfds.load(
-            'mnist',
-            **other_options
-            )
+            "batch_size": -1,
+        }
+        data = tfds.load("mnist", **other_options)
         config = FlexDatasetConfig(
             seed=0,
             n_clients=2,
@@ -455,17 +453,11 @@ class TestFlexDataDistribution(unittest.TestCase):
         build_data_and_check(data, config)
         # With batch_size = 20
         other_options["batch_size"] = 20
-        data = tfds.load(
-            'mnist',
-            **other_options
-            )
+        data = tfds.load("mnist", **other_options)
         build_data_and_check(data, config)
         # Without batch_size
         del other_options["batch_size"]
-        data = tfds.load(
-            'mnist',
-            **other_options
-            )
+        data = tfds.load("mnist", **other_options)
         build_data_and_check(data, config)
 
     def test_from_tfds_text_dataset(self):
@@ -478,16 +470,11 @@ class TestFlexDataDistribution(unittest.TestCase):
             )
             assert len(flex_dataset) == config.n_clients
             assert len(flex_dataset["client_0"]) == len(flex_dataset["client_1"])
-        other_options = {
-            "split": 'train',
-            "batch_size": -1
-            }
+
+        other_options = {"split": "train", "batch_size": -1}
         X_columns = ["title", "description"]
         labels = ["label"]
-        data = tfds.load(
-            'ag_news_subset',
-            **other_options
-            )
+        data = tfds.load("ag_news_subset", **other_options)
         config = FlexDatasetConfig(
             seed=0,
             n_clients=2,
@@ -497,17 +484,11 @@ class TestFlexDataDistribution(unittest.TestCase):
         build_data_and_check(data, config, X_columns, labels)
         # With batch_size
         other_options["batch_size"] = 20
-        data = tfds.load(
-            'ag_news_subset',
-            **other_options
-            )
+        data = tfds.load("ag_news_subset", **other_options)
         build_data_and_check(data, config, X_columns, labels)
         # Without batch_size
         del other_options["batch_size"]
-        data = tfds.load(
-            'ag_news_subset',
-            **other_options
-            )
+        data = tfds.load("ag_news_subset", **other_options)
         build_data_and_check(data, config, X_columns, labels)
 
     def test_from_torchvision_dataset(self):
@@ -541,7 +522,9 @@ class TestFlexDataDistribution(unittest.TestCase):
         )
         assert len(flex_dataset) == config.n_clients
         assert len(flex_dataset["client_0"]) == len(flex_dataset["client_1"])
-        assert not np.array_equal(flex_dataset["client_0"].X_data[1], flex_dataset["client_1"].X_data[1])
+        assert not np.array_equal(
+            flex_dataset["client_0"].X_data[1], flex_dataset["client_1"].X_data[1]
+        )
 
     def test_from_huggingface_text_dataset(self):
         from datasets import load_dataset
