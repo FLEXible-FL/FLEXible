@@ -55,9 +55,9 @@ class FlexDataObject:
         from torchvision.datasets import ImageFolder, VisionDataset
 
         length = count(pytorch_dataset)
-        if (length > 60_000 or isinstance(
+        if length > 60_000 or isinstance(
             pytorch_dataset, ImageFolder
-        )):  # skip loading dataset in memory
+        ):  # skip loading dataset in memory
 
             def lazy_1d_index(indices, ds, extra_dim=1):
                 try:
@@ -143,8 +143,8 @@ class FlexDataObject:
             y_data = pd.DataFrame.from_dict(
                 {col: tfds_dataset[col].numpy() for col in label_column}
             ).to_numpy()
-        #if len(y_data.shape) == 2 and y_data.shape[1] == 1:
-        y_data = np.squeeze(y_data)#.reshape((len(y_data),))
+        # if len(y_data.shape) == 2 and y_data.shape[1] == 1:
+        y_data = np.squeeze(y_data)  # .reshape((len(y_data),))
         return cls(X_data=X_data, y_data=y_data)
 
     @classmethod

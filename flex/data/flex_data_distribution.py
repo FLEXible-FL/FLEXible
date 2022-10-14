@@ -59,9 +59,7 @@ class FlexDataDistribution(object):
             X_columns (List): List that contains the columns names for the input features.
             label_column (List): List that contains the columns names for the output features.
         """
-        cdata = FlexDataObject.from_tfds_text_dataset(
-            data, X_columns, label_column
-        )
+        cdata = FlexDataObject.from_tfds_text_dataset(data, X_columns, label_column)
         return cls.from_config(cdata, config)
 
     @classmethod
