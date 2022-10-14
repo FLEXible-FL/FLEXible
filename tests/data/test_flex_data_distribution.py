@@ -426,6 +426,123 @@ class TestFlexDataDistribution(unittest.TestCase):
         assert len(flex_dataset) == config.n_clients
         assert len(flex_dataset["client_0"]) == len(flex_dataset["client_1"])
 
+    def test_from_tfds_image_dataset(self):
+        import tensorflow_datasets as tfds
+
+        # With batch_size -1
+        def build_data_and_check(data, config):
+            flex_dataset = FlexDataDistribution.from_config_with_tfds_image_dataset(
+                data, config
+            )
+            assert len(flex_dataset) == config.n_clients
+            assert len(flex_dataset["client_0"]) == len(flex_dataset["client_1"])
+        other_options = {
+            "split": 'train',
+            "shuffle_files": True,
+            "as_supervised": True,
+            "batch_size": -1
+            }
+        data = tfds.load(
+            'mnist',
+            **other_options
+            )
+        config = FlexDatasetConfig(
+            seed=0,
+            n_clients=2,
+            replacement=False,
+            client_names=["client_0", "client_1"],
+        )
+        build_data_and_check(data, config)
+        # With batch_size = 20
+        other_options["batch_size"] = 20
+        data = tfds.load(
+            'mnist',
+            **other_options
+            )
+        build_data_and_check(data, config)
+        # Without batch_size
+        del other_options["batch_size"]
+        data = tfds.load(
+            'mnist',
+            **other_options
+            )
+        build_data_and_check(data, config)
+
+    def test_from_tfds_text_dataset(self):
+        import tensorflow_datasets as tfds
+
+        # With batch_size -1
+        def build_data_and_check(data, config, X_columns, labels):
+            flex_dataset = FlexDataDistribution.from_config_with_tfds_text_dataset(
+                data, config, X_columns, labels
+            )
+            assert len(flex_dataset) == config.n_clients
+            assert len(flex_dataset["client_0"]) == len(flex_dataset["client_1"])
+        other_options = {
+            "split": 'train',
+            "batch_size": -1
+            }
+        X_columns = ["title", "description"]
+        labels = ["label"]
+        data = tfds.load(
+            'ag_news_subset',
+            **other_options
+            )
+        config = FlexDatasetConfig(
+            seed=0,
+            n_clients=2,
+            replacement=False,
+            client_names=["client_0", "client_1"],
+        )
+        build_data_and_check(data, config, X_columns, labels)
+        # With batch_size
+        other_options["batch_size"] = 20
+        data = tfds.load(
+            'ag_news_subset',
+            **other_options
+            )
+        build_data_and_check(data, config, X_columns, labels)
+        # Without batch_size
+        del other_options["batch_size"]
+        data = tfds.load(
+            'ag_news_subset',
+            **other_options
+            )
+        build_data_and_check(data, config, X_columns, labels)
+
+    def test_from_torchvision_dataset(self):
+        from torchvision.datasets import MNIST
+
+        data = MNIST(root="./torch_datasets", train=True, download=True)
+        config = FlexDatasetConfig(
+            seed=0,
+            n_clients=2,
+            replacement=False,
+            client_names=["client_0", "client_1"],
+        )
+        flex_dataset = FlexDataDistribution.from_config_with_torchvision_dataset(
+            data, config
+        )
+        assert len(flex_dataset) == config.n_clients
+        assert len(flex_dataset["client_0"]) == len(flex_dataset["client_1"])
+
+    def test_from_torchvision_dataset_w_lazy_array(self):
+        from torchvision.datasets import Food101
+
+        data = Food101(root="./torch_datasets", download=True)
+        config = FlexDatasetConfig(
+            seed=0,
+            n_clients=2,
+            replacement=False,
+            client_names=["client_0", "client_1"],
+        )
+        flex_dataset = FlexDataDistribution.from_config_with_torchvision_dataset(
+            data, config
+        )
+        assert len(flex_dataset) == config.n_clients
+        assert len(flex_dataset["client_0"]) == len(flex_dataset["client_1"])
+        assert not np.array_equal(flex_dataset["client_0"].X_data[1], flex_dataset["client_1"].X_data[1])
+
     def test_from_huggingface_text_dataset(self):
         from datasets import load_dataset
 

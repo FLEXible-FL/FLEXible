@@ -55,9 +55,9 @@ class FlexDataObject:
         from torchvision.datasets import ImageFolder, VisionDataset
 
         length = count(pytorch_dataset)
-        if length > 60.000 or isinstance(
+        if (length > 60_000 or isinstance(
             pytorch_dataset, ImageFolder
-        ):  # skip loading dataset in memory
+        )):  # skip loading dataset in memory
 
             def lazy_1d_index(indices, ds, extra_dim=1):
                 try:
@@ -78,6 +78,7 @@ class FlexDataObject:
                 lambda a: lazy_1d_index(a, pytorch_dataset, extra_dim=1),
                 shape=(length,),
             )
+        # cehquear esto
         elif isinstance(pytorch_dataset, VisionDataset):
             X_data, y_data = [], []
             for x, y in pytorch_dataset:
@@ -90,7 +91,6 @@ class FlexDataObject:
     @classmethod
     def from_tfds_image_dataset(cls, tfds_dataset):
         """Function to convert a dataset from tensorflow_datasets to a FlexDataObject.
-            It is mandatory that the dataset is loaded with batch_size=-1 in tensorflow_datasets.load function.
 
         Args:
             tdfs_dataset (tf.data.Datasets): a tf dataset
@@ -100,53 +100,51 @@ class FlexDataObject:
         """
         from tensorflow_datasets import as_numpy
 
-        if isinstance(tfds_dataset, list):
-            tdfs_dataset = tfds_dataset[0]
-
         # unbatch if possible
         if not isinstance(tfds_dataset, tuple):
-            with contextlib.supress(ValueError()):
-                tfds_dataset.unbatch()
+            with contextlib.suppress(ValueError):
+                tfds_dataset = tfds_dataset.unbatch()
+            X_data, y_data = [], []
+            for x, y in tfds_dataset.as_numpy_iterator():
+                X_data.append(x)
+                y_data.append(y)
+        else:
+            X_data, y_data = as_numpy(tfds_dataset)
 
-        X_data, y_data = as_numpy(tdfs_dataset)
-        return cls(X_data=X_data, y_data=y_data)
+        return cls(X_data=np.asarray(X_data), y_data=np.asarray(y_data))
 
     @classmethod
     def from_tfds_text_dataset(cls, tfds_dataset, X_columns=None, label_column=None):
         """Function to convert a dataset from tensorflow_datasets to a FlexDataObject.
-            It is mandatory that the dataset is loaded with batch_size=-1 in tensorflow_datasets.load function.
 
         Args:
-            tdfs_dataset (tf.data.Datasets): a tf dataset loaded with batch_size=-1.
+            tdfs_dataset (tf.data.Datasets): a tf dataset loaded.
             X_columns (list): List containing the features (input) of the model.
             label_column (list): List containing the targets of the model.
 
         Returns:
             FlexDataObject: a FlexDataObject which encapsulates the dataset.
         """
-        from pandas.DataFrame import from_dict
+        import pandas as pd
         from tensorflow.python.data.ops.dataset_ops import PrefetchDataset
         from tensorflow_datasets import as_dataframe
-
-        if isinstance(tfds_dataset, list):
-            tfds_dataset = tfds_dataset[0]
 
         if isinstance(tfds_dataset, PrefetchDataset):
             # First case: Users used load func with batch_size != -1 or without indicating the batch_size
             if not isinstance(tfds_dataset, tuple):
-                with contextlib.supress(ValueError()):
+                with contextlib.suppress(ValueError):
                     tfds_dataset.unbatch()
             X_data = as_dataframe(tfds_dataset)[X_columns].to_numpy()
             y_data = as_dataframe(tfds_dataset)[label_column].to_numpy()
-            if len(y_data.shape) == 2 and y_data.shape[1] == 1:
-                y_data = y_data.reshape((len(y_data),))
         else:  # User used batch_size=-1 when using the load function
-            X_data = from_dict(
+            X_data = pd.DataFrame.from_dict(
                 {col: tfds_dataset[col].numpy() for col in X_columns}
             ).to_numpy()
-            y_data = from_dict(
+            y_data = pd.DataFrame.from_dict(
                 {col: tfds_dataset[col].numpy() for col in label_column}
             ).to_numpy()
+        #if len(y_data.shape) == 2 and y_data.shape[1] == 1:
+        y_data = np.squeeze(y_data)#.reshape((len(y_data),))
         return cls(X_data=X_data, y_data=y_data)
 
     @classmethod
