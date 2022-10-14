@@ -13,6 +13,16 @@ setup(
     keywords="FL federated-learning flexible",
     url="https://github.com/FLEXible-FL/FLEX-framework",
     packages=find_packages(),
-    install_requires=["numpy", "multiprocess", "pytest", "sklearn", "cardinality", "lazyarray"],
+    install_requires=["numpy",
+                    "multiprocess",
+                    "pytest",
+                    "sklearn",
+                    "cardinality",
+                    "lazyarray",
+                    "torchtext",
+                    "torchvision",
+                    "tensorflow_datasets",
+                    "torch"
+                    ],
     python_requires=">=3.9.0",
 )
