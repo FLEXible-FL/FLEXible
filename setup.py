@@ -22,7 +22,9 @@ setup(
                     "torchtext",
                     "torchvision",
                     "tensorflow_datasets",
-                    "torch"
+                    "torch",
+                    "datasets",
+                    "tensorflow"
                     ],
     python_requires=">=3.9.0",
 )
