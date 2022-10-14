@@ -8,11 +8,11 @@ cli:
   version: 0.18.1-beta
 lint:
   disabled:
+    - markdownlint
     - gitleaks
   enabled:
     - actionlint@1.6.21
     - git-diff-check
-    - markdownlint@0.32.2
     - prettier@2.7.1
     - black@22.10.0
     - flake8@5.0.4
