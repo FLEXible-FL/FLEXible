@@ -19,6 +19,8 @@ setup(
                     "sklearn",
                     "cardinality",
                     "lazyarray",
+                    "torchdata",
+                    "jinja2",
                     "torchtext",
                     "torchvision",
                     "tensorflow_datasets",
