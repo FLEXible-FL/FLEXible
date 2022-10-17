@@ -69,11 +69,6 @@ class TestFlexDataObject(unittest.TestCase):
         fcd = FlexDataObject.from_torchtext_dataset(data)
         fcd.validate()
 
-    def test_validate_from_torchtext_dataset_raise_error(self):
-        data = np.random.rand(100).reshape([20, 5])
-        with pytest.raises(ValueError):
-            FlexDataObject.from_torchtext_dataset(data)
-
     def test_validate_from_huggingface_dataset(self):
         from datasets import load_dataset
 
@@ -85,9 +80,16 @@ class TestFlexDataObject(unittest.TestCase):
         )
         fcd.validate()
 
-    def test_validate_from_huggingface_dataset_error(self):
-        data = np.random.rand(100).reshape([20, 5])
-        X_columns = "text"
-        label_column = "label"
-        with pytest.raises(ValueError):
-            FlexDataObject.from_huggingface_dataset(data, X_columns, label_column)
+    def test_pluggable_datasets_in_property(self):
+        from torchtext.datasets import AG_NEWS
+        from torchvision.datasets import MNIST
+
+        from flex.data.pluggable_datasets import (
+            PluggableTorchtext,
+            PluggableTorchvision,
+        )
+
+        assert AG_NEWS.__name__ in PluggableTorchtext
+        assert "random_string" not in PluggableTorchtext
+        assert MNIST.__name__ in PluggableTorchvision
+        assert "random_string" not in PluggableTorchvision
