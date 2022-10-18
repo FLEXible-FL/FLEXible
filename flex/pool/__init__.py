@@ -15,9 +15,8 @@ from flex.pool.flex_primitives import aggregate_weights
 from flex.pool.flex_primitives import evaluate_model
 from flex.pool.flex_primitives import train
 
-from flex.pool.flex_decorators import init_server_model_decorator
-from flex.pool.flex_decorators import collector_decorator
-from flex.pool.flex_decorators import aggregator_decorator_tf
-from flex.pool.flex_decorators import aggregator_decorator_pt
-from flex.pool.flex_decorators import train_decorator
-from flex.pool.flex_decorators import deploy_decorator
+from flex.pool.flex_decorators import init_server_model
+from flex.pool.flex_decorators import deploy_server_model
+from flex.pool.flex_decorators import collect_clients_weights
+from flex.pool.flex_decorators import aggregate_weights
+from flex.pool.flex_decorators import set_aggregated_weights
