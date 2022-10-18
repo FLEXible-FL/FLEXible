@@ -20,3 +20,4 @@ from flex.pool.flex_decorators import deploy_server_model
 from flex.pool.flex_decorators import collect_clients_weights
 from flex.pool.flex_decorators import aggregate_weights
 from flex.pool.flex_decorators import set_aggregated_weights
+from flex.pool.flex_decorators import evaluate_server_model
