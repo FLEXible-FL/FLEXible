@@ -147,3 +147,6 @@ notebooks/.vector_cache/wiki.en.vec
 notebooks/.vector_cache/wiki.en.vec.pt
 notebooks/~/
 ~/
+
+# Datasets
+torch_datasets/
