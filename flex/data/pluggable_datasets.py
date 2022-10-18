@@ -86,13 +86,15 @@ class PluggableHuggingFace(Enum, metaclass=PluggableDataset):
     FlexDataDistribution.from_config_with_huggingface_dataset just giving a config
     and the string associated to each dataset from the Enum defined.
 
-    We don't give direct support to all the datasets from the HuggingFace Hub
-    as everyone can upload their own dataset, there are different versions of the
-    same dataset, etc.
+    We selected this dataset as we can automatice the process of loading this datasets,
+    but our framework support almost all the datasets, as they can be loaded as numpy
+    arrays. We only show supports to this datasets as we can load the dataset
+    as follows: dataset = load_dataset(name, split='train').
 
-    Even thought we don't give fully support, loading a dataset from the HuggingFace
-    Hub to FLEXible might be very easy, look at the tutorials from FLEXible, so you can
-    see how to load a custom dataset from scratch.
+    There are some datasets that need extra parameters like the version of the dataset,
+    or that don't have any split. This must be used by the user previously to load
+    the dataset into FLEXible, but it will be easy and fast, as the user just
+    need to select the X_train-y_train as np.arrays.
 
     Args:
         Enum (enum): Tuple containing name, X_columns and y_columns to use in the
