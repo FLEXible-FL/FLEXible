@@ -20,6 +20,5 @@ lint:
       paths:
       - flex/**/__init__.py
       - test/**/__init__.py
-      - setup.py  
-      - torch_datasets
+      - setup.py
       - notebooks/
