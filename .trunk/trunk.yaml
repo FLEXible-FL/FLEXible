@@ -1,10 +1,8 @@
 version: 0.1
 runtimes:
   enabled:
-    - go@1.18.3
-    - node@16.14.2
     - python@3.10.3
-cli:
+cli: 
   version: 0.18.1-beta
 lint:
   disabled:
@@ -16,10 +14,11 @@ lint:
     - git-diff-check
     - black@22.10.0
     - flake8@5.0.4
-    - isort@5.10.1
-  ignore:    
-    - linters: [ALL]      
+    - isort@5.10.1 
+  ignore:   
+    - linters: [ALL]
       paths:
       - flex/**/__init__.py
       - test/**/__init__.py
       - setup.py
+      - notebooks/
