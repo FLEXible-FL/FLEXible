@@ -1,86 +1,69 @@
 import functools
 
 
-class decorator_base(object):
-    def __init__(self, *deco_args, **deco_kwargs):  # Args provided to the decorator
-        self.deco_args = deco_args
-        self.deco_kwargs = deco_kwargs
-        self.aggregated_weights_key = deco_kwargs.get(
-            "aggregated_weights_key", "aggregated_weights"
+def init_server_model(func):
+    @functools.wraps(func)
+    def _init_server_model_(server_flex_model, _, *args, **kwargs):
+        server_flex_model |= func(*args, **kwargs)
+
+    return _init_server_model_
+
+
+def deploy_server_model(func):
+    @functools.wraps(func)
+    def _deploy_model_(server_flex_model, clients_flex_models, *args, **kwargs):
+        for k in clients_flex_models:
+            # Reminder, it is not possible to make assignements here
+            clients_flex_models[k] |= func(server_flex_model, *args, **kwargs)
+
+    return _deploy_model_
+
+
+def collect_clients_weights(func):
+    @functools.wraps(func)
+    def _collect_weights_(aggregator_flex_model, clients_flex_models, *args, **kwargs):
+        if "weights" not in aggregator_flex_model:
+            aggregator_flex_model["weights"] = []
+        for k in clients_flex_models:
+            client_weights = func(clients_flex_models[k], *args, **kwargs)
+            aggregator_flex_model["weights"].append(client_weights)
+
+    return _collect_weights_
+
+
+def aggregate_weights(func):
+    @functools.wraps(func)
+    def _aggregate_weights_(aggregator_flex_model, _, *args, **kwargs):
+        aggregator_flex_model["aggregated_weights"] = func(
+            aggregator_flex_model["weights"], *args, **kwargs
         )
-        self.weights_key = deco_kwargs.get("weights_key", "weights")
+        aggregator_flex_model["weights"] = []
 
-    def __call__(self, func):
-        def _wrap_(self, *args, **kwargs):  # Args when the decorated function is called
-            return func(
-                *args, **kwargs
-            )  # Actual args provided to the function that is decorated
-
-        return _wrap_
+    return _aggregate_weights_
 
 
-class init_server_model(decorator_base):
-    def __call__(self, func):
-        @functools.wraps(func)
-        def _init_server_model_(server_flex_model, _, *args, **kwargs):
-            server_flex_model |= func(*args, **kwargs)
-
-        return _init_server_model_
-
-
-class deploy_server_model(decorator_base):
-    def __call__(self, func):
-        @functools.wraps(func)
-        def _deploy_model_(server_flex_model, clients_flex_models, *args, **kwargs):
-            for k in clients_flex_models:
-                # Reminder, it is not possible to make assignements here
-                clients_flex_models[k] |= func(server_flex_model, *args, **kwargs)
-
-        return _deploy_model_
-
-
-class collect_clients_weights(decorator_base):
-    def __call__(self, func):
-        @functools.wraps(func)
-        def _collect_weights_(
-            aggregator_flex_model, clients_flex_models, *args, **kwargs
-        ):
-            if self.weights_key not in aggregator_flex_model:
-                aggregator_flex_model[self.weights_key] = []
-            for k in clients_flex_models:
-                client_weights = func(clients_flex_models[k], *args, **kwargs)
-                aggregator_flex_model[self.weights_key].append(client_weights)
-
-        return _collect_weights_
-
-
-class aggregate_weights(decorator_base):
-    def __call__(self, func):
-        @functools.wraps(func)
-        def _aggregate_weights_(aggregator_flex_model, _, *args, **kwargs):
-            aggregator_flex_model[self.aggregated_weights_key] = func(
-                aggregator_flex_model[self.weights_key], *args, **kwargs
+def set_aggregated_weights(func):
+    @functools.wraps(func)
+    def _deploy_aggregated_weights_(
+        aggregator_flex_model, servers_flex_models, *args, **kwargs
+    ):
+        for k in servers_flex_models:
+            func(
+                servers_flex_models[k],
+                aggregator_flex_model["aggregated_weights"],
+                *args,
+                **kwargs
             )
-            aggregator_flex_model[self.weights_key] = []
 
-        return _aggregate_weights_
+    return _deploy_aggregated_weights_
 
 
-class set_aggregated_weights(decorator_base):
-    def __call__(self, func):
-        @functools.wraps(func)
-        def _deploy_aggregated_weights_(
-            aggregator_flex_model, servers_flex_models, *args, **kwargs
-        ):
-            for k in servers_flex_models:
-                func(
-                    servers_flex_models[k],
-                    aggregator_flex_model[self.aggregated_weights_key],
-                    *args,
-                    **kwargs
-                )
+def evaluate_server_model(func):
+    @functools.wraps(func)
+    def _evaluate_server_model_(server_flex_model, _, *args, **kwargs):
+        return func(server_flex_model, *args, **kwargs)
 
-        return _deploy_aggregated_weights_
+    return _evaluate_server_model_
 
 
 # def aggregate_weights_tf(func):
