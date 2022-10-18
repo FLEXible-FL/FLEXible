@@ -2,9 +2,6 @@ version: 0.1
 runtimes:
   enabled:
     - python@3.10.3
-  disabled:
-    - node
-    - go
 cli: 
   version: 0.18.1-beta
 lint:
