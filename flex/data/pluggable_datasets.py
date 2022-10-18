@@ -75,22 +75,34 @@ class PluggableTorchvision(Enum, metaclass=PluggableDataset):
     EMNIST_PT = datasets.EMNIST.__name__
 
 
-# class PluggableHuggingFace(Enum, metaclass=PluggableDataset):
-#     """Class containing some datasets that can be loaded to FLEXible. Other datasets
-#     can be plugged in, but it requires a special configuration, i.e., glue-cola. This
-#     is more about the user using correctly the arguments on the load_dataset function
-#     from huggingface datasets than a problem of our platform, so the user can easy-use
-#     other datasets.
+class PluggableHuggingFace(Enum, metaclass=PluggableDataset):
+    """Class containing some datasets that can be loaded to FLEXible. Other datasets
+    can be plugged in, but it requires a special configuration, i.e., glue-cola. This
+    is more about the user using correctly the arguments on the load_dataset function
+    from huggingface datasets than a problem of our platform, so the user can easy-use
+    other datasets.
 
-#     Args:
-#         Enum (enum): Tuple containing name, X_columns and y_columns to use in the
-#         load_dataset function.
-#     """
+    We show some example datasets that can be loaded using the function
+    FlexDataDistribution.from_config_with_huggingface_dataset just giving a config
+    and the string associated to each dataset from the Enum defined.
 
-#     IMDB_HF = ("imdb", "text", "label")
-#     SQUAD_HF = ("squad", ["context", "question"], "answers")
-#     APPREVIEWS_HF = ("app_reviews", "review", "star")
-#     AMAZON_POLARITY_HF = ("amazon_polarity", ["title", "content"], "label")
+    We don't give direct support to all the datasets from the HuggingFace Hub
+    as everyone can upload their own dataset, there are different versions of the
+    same dataset, etc.
+
+    Even thought we don't give fully support, loading a dataset from the HuggingFace
+    Hub to FLEXible might be very easy, look at the tutorials from FLEXible, so you can
+    see how to load a custom dataset from scratch.
+
+    Args:
+        Enum (enum): Tuple containing name, X_columns and y_columns to use in the
+        load_dataset function.
+    """
+
+    IMDB_HF = ("imdb", "text", "label")
+    SQUAD_HF = ("squad", ["context", "question"], "answers")
+    APPREVIEWS_HF = ("app_reviews", "review", "star")
+    AMAZON_POLARITY_HF = ("amazon_polarity", ["title", "content"], "label")
 
 
 # class PluggableDatasetsTensorFlowText(Enum, metaclass=PluggableDataset):

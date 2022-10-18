@@ -84,11 +84,11 @@ def check_if_can_load_hf_dataset():
     """
     from datasets import load_dataset
 
-    from flex.data.pluggable_datasets import PluggableDatasetsHuggingFace
+    from flex.data.pluggable_datasets import PluggableHuggingFace
 
     valid_datasets = []
     wrong_datasets = []
-    for dataset in PluggableDatasetsHuggingFace:
+    for dataset in PluggableHuggingFace:
         name, X_columns, y_column = dataset.value
         print(f"Testing dataset: {name}")
         try:
