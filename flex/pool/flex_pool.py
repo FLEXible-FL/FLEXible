@@ -124,7 +124,7 @@ class FlexPool:
             raise ValueError(
                 "Source and destination pools are not allowed to comunicate, ensure that their actors can communicate."
             )
-        if all(ele != None for ele in res):
+        if all(ele is not None for ele in res):
             return res
 
     def filter(
