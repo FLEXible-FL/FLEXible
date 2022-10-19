@@ -170,9 +170,15 @@ class FlexDataObject:
         """
         from flex.data.pluggable_datasets import PluggableHuggingFace
 
-        if hf_dataset.info.builder_name not in PluggableHuggingFace:
+        try:
+            if hf_dataset.info.builder_name not in PluggableHuggingFace:
+                warnings.warn(
+                    "The input dataset and arguments are not explicitly supported, therefore they might not work as expected.",
+                    RuntimeWarning,
+                )
+        except Exception:
             warnings.warn(
-                "The input dataset and arguments are not explicitly supported, therefore they might not work as expected.",
+                "The input dataset doesn't have the property dataset.info.builder_name, so we can't check if is supported or not. Therefore, it might not work as expected.",
                 RuntimeWarning,
             )
 
