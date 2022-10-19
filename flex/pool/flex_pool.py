@@ -111,12 +111,12 @@ class FlexPool:
             length of the returned values equals the number of actors in the source pool.
         """
         if dst_pool is None:
-            return [
+            res = [
                 func(self._models.get(i), self._data.get(i), *args, **kwargs)
                 for i in self._actors
             ]
         elif FlexPool.check_compatibility(self, dst_pool):
-            return [
+            res = [
                 func(self._models.get(i), dst_pool._models, *args, **kwargs)
                 for i in self._actors
             ]
@@ -124,6 +124,8 @@ class FlexPool:
             raise ValueError(
                 "Source and destination pools are not allowed to comunicate, ensure that their actors can communicate."
             )
+        if all(ele != None for ele in res):
+            return res
 
     def filter(
         self, func: Callable = None, clients_dropout: float = 0.0, *args, **kwargs
