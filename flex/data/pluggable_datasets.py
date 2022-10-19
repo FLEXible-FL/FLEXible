@@ -11,6 +11,11 @@ class PluggableDataset(EnumMeta):
             return True
 
 
+class PluggableDatasetString(EnumMeta):
+    def __contains__(self, item):
+        return item in [k.value[0] for k in self.__members__.values()]
+
+
 class PluggableTorchtext(Enum, metaclass=PluggableDataset):
     from torchtext import datasets
 
@@ -75,7 +80,7 @@ class PluggableTorchvision(Enum, metaclass=PluggableDataset):
     EMNIST_PT = datasets.EMNIST.__name__
 
 
-class PluggableHuggingFace(Enum, metaclass=PluggableDataset):
+class PluggableHuggingFace(Enum, metaclass=PluggableDatasetString):
     """Class containing some datasets that can be loaded to FLEXible. Other datasets
     can be plugged in, but it requires a special configuration, i.e., glue-cola. This
     is more about the user using correctly the arguments on the load_dataset function
