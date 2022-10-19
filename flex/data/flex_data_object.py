@@ -168,6 +168,14 @@ class FlexDataObject:
         Returns:
             FlexDataObject: a FlexDataObject which encapsulates the dataset.
         """
+        from flex.data.pluggable_datasets import PluggableHuggingFace
+
+        if hf_dataset.info.builder_name not in PluggableHuggingFace:
+            warnings.warn(
+                "The input dataset and arguments are not explicitly supported, therefore they might not work as expected.",
+                RuntimeWarning,
+            )
+
         df = hf_dataset.to_pandas()
         X_data = df[X_columns].to_numpy()
         y_data = df[label_column].to_numpy()
