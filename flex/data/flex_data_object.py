@@ -90,8 +90,8 @@ class FlexDataObject:
         else:
             X_data, y_data = [], []
             for x, y in pytorch_dataset:
-                y_data.append(x)
-                X_data.append(y)
+                X_data.append(x)
+                y_data.append(y)
             X_data = np.asarray(X_data)
             y_data = np.asarray(y_data)
         return cls(X_data=X_data, y_data=y_data)
