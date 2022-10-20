@@ -127,9 +127,7 @@ class FlexPool:
         if all(ele is not None for ele in res):
             return res
 
-    def filter(
-        self, func: Callable = None, clients_dropout: float = 0.0, **kwargs
-    ):
+    def filter(self, func: Callable = None, clients_dropout: float = 0.0, **kwargs):
         """Function that filter the PoolManager by actors given a function.
         The function must return True/False, and it recieves the args and kwargs arguments
         for its internal uses. Also, the function recieves an actor_id and an actor_role.
@@ -263,9 +261,7 @@ class FlexPool:
         return new_arch
 
     @classmethod
-    def p2p_architecture(
-        cls, fed_dataset: FlexDataset, init_func: Callable, **kwargs
-    ):
+    def p2p_architecture(cls, fed_dataset: FlexDataset, init_func: Callable, **kwargs):
         """Method to create a peer-to-peer (p2p) architecture for a FlexDataset given.
         This method is used when you have a FlexDataset and you want to start the
         learning phase following a p2p architecture.
