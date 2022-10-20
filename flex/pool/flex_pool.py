@@ -77,7 +77,7 @@ class FlexPool:
             for _, dst in dst_pool._actors.items()
         )
 
-    def map(self, func: Callable, dst_pool: FlexPool = None, *args, **kwargs):
+    def map(self, func: Callable, dst_pool: FlexPool = None, **kwargs):
         """Method used to send messages from one pool to another. The pool using
         this method is the source pool, and it will send a message, apply a function,
         to the destination pool. If no destination pool is provided, then the function is applied
@@ -112,12 +112,12 @@ class FlexPool:
         """
         if dst_pool is None:
             res = [
-                func(self._models.get(i), self._data.get(i), *args, **kwargs)
+                func(self._models.get(i), self._data.get(i), **kwargs)
                 for i in self._actors
             ]
         elif FlexPool.check_compatibility(self, dst_pool):
             res = [
-                func(self._models.get(i), dst_pool._models, *args, **kwargs)
+                func(self._models.get(i), dst_pool._models, **kwargs)
                 for i in self._actors
             ]
         else:
@@ -128,7 +128,7 @@ class FlexPool:
             return res
 
     def filter(
-        self, func: Callable = None, clients_dropout: float = 0.0, *args, **kwargs
+        self, func: Callable = None, clients_dropout: float = 0.0, **kwargs
     ):
         """Function that filter the PoolManager by actors given a function.
         The function must return True/False, and it recieves the args and kwargs arguments
@@ -162,7 +162,7 @@ class FlexPool:
         new_data = FlexDataset()
         new_models = {}
         for actor_id in training_clients:
-            if func(actor_id, self._actors[actor_id], *args, **kwargs):
+            if func(actor_id, self._actors[actor_id], **kwargs):
                 new_actors[actor_id] = self._actors[actor_id]
                 new_models[actor_id] = self._models[actor_id]
                 if actor_id in self._data:
@@ -229,7 +229,7 @@ class FlexPool:
 
     @classmethod
     def client_server_architecture(
-        cls, fed_dataset: FlexDataset, init_func: Callable, *args, **kwargs
+        cls, fed_dataset: FlexDataset, init_func: Callable, **kwargs
     ):
         """Method to create a client-server architeture for a FlexDataset given.
         This functions is used when you have a FlexDataset and you want to start
@@ -259,12 +259,12 @@ class FlexPool:
             flex_actors=actors,
             flex_models=None,
         )
-        new_arch.servers.map(init_func, *args, **kwargs)
+        new_arch.servers.map(init_func, **kwargs)
         return new_arch
 
     @classmethod
     def p2p_architecture(
-        cls, fed_dataset: FlexDataset, init_func: Callable, *args, **kwargs
+        cls, fed_dataset: FlexDataset, init_func: Callable, **kwargs
     ):
         """Method to create a peer-to-peer (p2p) architecture for a FlexDataset given.
         This method is used when you have a FlexDataset and you want to start the
@@ -285,7 +285,7 @@ class FlexPool:
             flex_actors=cls.__create_actors_all_privileges(fed_dataset),
             flex_models=None,
         )
-        new_arch.servers.map(init_func, *args, **kwargs)
+        new_arch.servers.map(init_func, **kwargs)
         return new_arch
 
     @classmethod
