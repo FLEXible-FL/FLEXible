@@ -27,7 +27,7 @@ class TestFlexPoolPrimitives(unittest.TestCase):
             client_names=["client_0", "client_1"],
         )
         self.config = config
-        train_data, test_data = load_dataset("ag_news", split=["train", "test"])
+        train_data, test_data = load_dataset("imdb", split=["train", "test"])
         self.test_data = test_data
         X_columns = "text"
         label_column = "label"
