@@ -49,7 +49,7 @@ def initialize_server_model_tf(
     if model._is_compiled:
         server_flex_model["optimizer"] = deepcopy(model.optimizer)
         server_flex_model["loss"] = deepcopy(model.loss)
-        server_flex_model["metrics"] = deepcopy(model.metrics)
+        server_flex_model["metrics"] = deepcopy(model.compiled_metrics._metrics)
         server_flex_model["model"] = model
     else:
         if any([optimizer, loss, metrics] is None):
@@ -97,13 +97,12 @@ def deploy_server_model_to_clients_tf(server_flex_model, *args, **kwargs):
     model.compile(
         optimizer=server_flex_model["optimizer"],
         loss=server_flex_model["loss"],
-        metrics=server_flex_model["metrics"],
-        **kwargs
+        metrics=server_flex_model["metrics"]
     )
     client_flex_model = FlexModel()
     for k, v in server_flex_model.items():
         if k != "model":
-            client_flex_model[k] = v
+            client_flex_model[k] = deepcopy(v)
     client_flex_model["model"] = model
     return client_flex_model
 
