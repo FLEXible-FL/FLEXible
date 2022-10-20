@@ -97,12 +97,9 @@ def deploy_server_model_to_clients_tf(server_flex_model, *args, **kwargs):
     model.compile(
         optimizer=server_flex_model["optimizer"],
         loss=server_flex_model["loss"],
-        metrics=server_flex_model["metrics"]
+        metrics=server_flex_model["metrics"],
     )
     client_flex_model = FlexModel()
-    for k, v in server_flex_model.items():
-        if k != "model":
-            client_flex_model[k] = deepcopy(v)
     client_flex_model["model"] = model
     return client_flex_model
 
