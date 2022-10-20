@@ -8,11 +8,11 @@ from flex.pool.actors import FlexRoleManager
 from flex.pool.actors import FlexActors
 from flex.pool.flex_model import FlexModel
 
-from flex.pool.flex_primitives import initialize_server_model_tf
-from flex.pool.flex_primitives import deploy_server_model_to_clients_tf
+from flex.pool.flex_primitives import init_server_model_tf
+from flex.pool.flex_primitives import deploy_server_model_tf
 from flex.pool.flex_primitives import train_tf
-from flex.pool.flex_primitives import collect_weithts_tf
-from flex.pool.flex_primitives import collect_weights_pt
+from flex.pool.flex_primitives import collect_clients_weights_tf
+from flex.pool.flex_primitives import collect_clients_weights_pt
 from flex.pool.flex_primitives import set_aggregated_weights_tf
 from flex.pool.flex_primitives import set_aggregated_weights_pt
 from flex.pool.flex_primitives import evaluate_server_model_tf

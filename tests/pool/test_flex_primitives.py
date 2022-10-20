@@ -6,10 +6,10 @@ from flex.data import FlexDataDistribution, FlexDatasetConfig
 from flex.pool.flex_aggregators import fed_avg
 from flex.pool.flex_pool import FlexPool
 from flex.pool.flex_primitives import (  # collect_weights_pt,; set_aggregated_weights_pt,
-    collect_weithts_tf,
-    deploy_server_model_to_clients_tf,
+    collect_clients_weights_tf,
+    deploy_server_model_tf,
     evaluate_server_model_tf,
-    initialize_server_model_tf,
+    init_server_model_tf,
     set_aggregated_weights_tf,
     train_tf,
 )
@@ -57,11 +57,11 @@ class TestFlexPoolPrimitives(unittest.TestCase):
             return model
 
         p = FlexPool.client_server_architecture(
-            self.f_imdb, init_func=initialize_server_model_tf, model=define_model()
+            self.f_imdb, init_func=init_server_model_tf, model=define_model()
         )
         reference_model = define_model()
         reference_model_params = reference_model.get_weights()
-        p.servers.map(deploy_server_model_to_clients_tf, p.clients)
+        p.servers.map(deploy_server_model_tf, p.clients)
         assert all(
             np.all(
                 np.equal(
@@ -73,7 +73,7 @@ class TestFlexPoolPrimitives(unittest.TestCase):
         # Train the model
         p.clients.map(train_tf, batch_size=512, epochs=1)
         # Collect weights
-        p.aggregators.map(collect_weithts_tf, p.clients)
+        p.aggregators.map(collect_clients_weights_tf, p.clients)
         # Aggregate weights
         p.aggregators.map(fed_avg)
         assert np.any(
@@ -84,7 +84,7 @@ class TestFlexPoolPrimitives(unittest.TestCase):
         # Transfer weights from aggregators to servers
         p.aggregators.map(set_aggregated_weights_tf, p.servers)
         # Deploy new model to clients
-        p.servers.map(deploy_server_model_to_clients_tf, p.clients)
+        p.servers.map(deploy_server_model_tf, p.clients)
         reference_value = p._models["server"]["model"].get_weights()
         assert all(
             np.all(np.equal(p._models[k]["model"].get_weights()[0], reference_value[0]))

@@ -20,8 +20,8 @@ from flex.pool.flex_decorators import (
 
 
 @init_server_model
-def initialize_server_model_tf(
-    model, optimizer=None, loss=None, metrics=None, *args, **kwargs
+def init_server_model_tf(
+    model=None, optimizer=None, loss=None, metrics=None, *args, **kwargs
 ):
     """Function that initialize a model in the server side for the TensorFlow framework.
 
@@ -70,7 +70,7 @@ def initialize_server_model_tf(
 
 
 @deploy_server_model
-def deploy_server_model_to_clients_tf(server_flex_model, *args, **kwargs):
+def deploy_server_model_tf(server_flex_model, *args, **kwargs):
     """Function the deploy a TensorFlow model from the server to a client.
 
     The function will make a deepcopy for a TensorFlow model, as it needs
@@ -179,7 +179,7 @@ def train_tf(client_flex_model, client_data, *args, **kwargs):
 
 
 @collect_clients_weights
-def collect_weithts_tf(client_flex_model, *args, **kwargs):
+def collect_clients_weights_tf(client_flex_model, *args, **kwargs):
     """Function that collect the weights for a TensorFlow model.
 
     This function returns all the weights of the model.
@@ -210,7 +210,7 @@ def collect_weithts_tf(client_flex_model, *args, **kwargs):
 
 
 @collect_clients_weights
-def collect_weights_pt(client_flex_mode, *args, **kwargs):
+def collect_clients_weights_pt(client_flex_mode, *args, **kwargs):
     """Function that collect the weights for a PyTorch model.
 
     This function returns all the weights of the model.
