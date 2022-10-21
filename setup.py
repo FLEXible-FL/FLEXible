@@ -1,9 +1,5 @@
 from setuptools import find_packages, setup
 
-_deps = ["numpy"]
-
-install_requires = _deps
-
 setup(
     name="flex",
     version="0.0.1.dev0",
