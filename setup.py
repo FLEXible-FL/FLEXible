@@ -30,7 +30,7 @@ setup(
                 "torchdata"
                 ],
         "hugginface": ["datasets"],
-        "all": ["pytest",
+        "develop": ["pytest",
                 "pytest-cov",
                 "jinja2",
                 "tensorflow",
