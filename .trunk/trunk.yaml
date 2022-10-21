@@ -3,7 +3,7 @@ runtimes:
   enabled:
     - python@3.10.3
 cli: 
-  version: 0.18.1-beta
+  version: 1.0.1
 lint:
   disabled:
     - prettier
@@ -22,3 +22,11 @@ lint:
       - test/**/__init__.py
       - setup.py
       - notebooks/
+actions:
+  enabled:
+    - trunk-upgrade-available
+plugins:
+  sources:
+    - id: trunk
+      ref: v0.0.5
+      uri: https://github.com/trunk-io/plugins
