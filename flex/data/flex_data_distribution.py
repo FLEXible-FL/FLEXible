@@ -152,9 +152,15 @@ class FlexDataDistribution(object):
                 config_.weights = np.array(
                     [w / sum(config.weights) for w in config.weights]
                 )
-            if config.classes_per_client is not None and isinstance(config.classes_per_client, list) and isinstance(config.classes_per_client[0], list):
+            if (
+                config.classes_per_client is not None
+                and isinstance(config.classes_per_client, list)
+                and isinstance(config.classes_per_client[0], list)
+            ):
                 sorted_classes = np.sort(np.unique(cdata.y_data))
-                config_.weights_per_class = np.zeros((config_.n_clients, len(sorted_classes)))
+                config_.weights_per_class = np.zeros(
+                    (config_.n_clients, len(sorted_classes))
+                )
 
                 for i, one_client in enumerate(config.classes_per_client):
                     for j, label in enumerate(sorted_classes):
@@ -164,7 +170,9 @@ class FlexDataDistribution(object):
             config_.weights_per_class is not None
             and any(np.sum(config_.weights_per_class, axis=0) != 1)
         ):
-            config_.weights_per_class = cls.__normalize_weights_per_class(config_.weights_per_class)
+            config_.weights_per_class = cls.__normalize_weights_per_class(
+                config_.weights_per_class
+            )
 
         fed_dataset = FlexDataset()
         if config_.indexes_per_client is not None:
@@ -192,10 +200,8 @@ class FlexDataDistribution(object):
 
     @classmethod
     def __normalize_weights_per_class(cls, weights_per_class):
-        with np.errstate(divide='ignore', invalid='ignore'):
-            tmp = weights_per_class / np.sum(
-                weights_per_class, axis=0
-            )
+        with np.errstate(divide="ignore", invalid="ignore"):
+            tmp = weights_per_class / np.sum(weights_per_class, axis=0)
         # Note that weights equal to 0 produce NaNs, so we replace them with 0 again
         return np.nan_to_num(tmp)
 

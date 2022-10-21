@@ -1,8 +1,9 @@
 from dataclasses import dataclass
 from typing import Hashable, List, Optional, Tuple, Union
 
-import numpy.typing as npt
 import numpy as np
+import numpy.typing as npt
+
 
 @dataclass
 class FlexDatasetConfig:

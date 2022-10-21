@@ -470,7 +470,7 @@ class TestFlexDataDistribution(unittest.TestCase):
             n_clients=2,
             replacement=False,
             client_names=["client_0", "client_1"],
-            classes_per_client=[[2, 3], [2]]
+            classes_per_client=[[2, 3], [2]],
         )
         flex_dataset = FlexDataDistribution.from_config_with_torchvision_dataset(
             data, config

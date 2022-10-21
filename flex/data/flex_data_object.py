@@ -84,7 +84,9 @@ class FlexDataObject:
                 shape=(length,),
             )
             dtype = type(pytorch_dataset[0][1])
-            y_data = np.fromiter((y for _, y in pytorch_dataset), dtype=dtype, count=length)
+            y_data = np.fromiter(
+                (y for _, y in pytorch_dataset), dtype=dtype, count=length
+            )
         else:
             X_data, y_data = [], []
             for x, y in pytorch_dataset:
