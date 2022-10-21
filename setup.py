@@ -15,18 +15,33 @@ setup(
     packages=find_packages(),
     install_requires=["numpy",
                     "multiprocess",
-                    "pytest",
                     "sklearn",
                     "cardinality",
-                    "lazyarray",
-                    "torchdata",
-                    "jinja2",
-                    "torchtext",
-                    "torchvision",
-                    "tensorflow_datasets",
-                    "torch",
-                    "datasets",
-                    "tensorflow"
+                    "lazyarray"
                     ],
+    extras_require={
+        "tensorflow": ["tensorflow", 
+                "tensorflow_datasets", 
+                "tensorflow_hub"
+                ],
+        "pytorch": ["torch", 
+                "torchvision", 
+                "torchtext", 
+                "torchdata"
+                ],
+        "hugginface": ["datasets"],
+        "all": ["pytest",
+                "pytest-cov",
+                "jinja2",
+                "tensorflow",
+                "tensorflow_datasets",
+                "tensorflow_hub",
+                "torch",
+                "torchvision",
+                "torchtext",
+                "torchdata",
+                "datasets"
+                ],
+    },
     python_requires=">=3.9.0",
 )
