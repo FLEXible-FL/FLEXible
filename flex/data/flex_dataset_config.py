@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Hashable, List, Optional, Tuple, Union
 
 import numpy.typing as npt
-
+import numpy as np
 
 @dataclass
 class FlexDatasetConfig:
@@ -14,9 +14,9 @@ class FlexDatasetConfig:
     | **n_clients**           | -             | Y                | Y           | Y                     | Y               | Y                      | Y                       | Y                      |
     | **client_names**        | Y             | -                | Y           | Y                     | Y               | Y                      | Y                       | Y                      |
     | **weights**             | Y             | Y                | -           | N                     | Y               | Y                      | Y                       | N                      |
-    | **weights_per_class**   | Y             | Y                | N           | -                     | Y               | Y                      | N                       | N                      |
+    | **weights_per_class**   | Y             | Y                | N           | -                     | Y               | N                      | N                       | N                      |
     | **replacement**         | Y             | Y                | Y           | Y                     | -               | Y                      | Y                       | N                      |
-    | **classes_per_client**  | Y             | Y                | Y           | Y                     | Y               | -                      | N                       | N                      |
+    | **classes_per_client**  | Y             | Y                | Y           | N                     | Y               | -                      | N                       | N                      |
     | **features_per_client** | Y             | Y                | Y           | N                     | Y               | N                      | -                       | N                      |
     | **indexes_per_client**  | Y             | Y                | N           | N                     | N               | N                      | N                       | -                      |
 
@@ -126,9 +126,13 @@ class FlexDatasetConfig:
                 "weights and weights_per_class are not compatible, please provide only one of them."
             )
 
+        if self.weights_per_class is not None and self.classes_per_client is not None:
+            raise ValueError(
+                "weights_per_class and classes_per_clients are not compatible, please provide only one of them."
+            )
         if (
             self.weights_per_class is not None
-            and len(self.weights_per_class.shape) != 2
+            and len(np.asarray(self.weights_per_class).shape) != 2
         ):
             raise ValueError(
                 (

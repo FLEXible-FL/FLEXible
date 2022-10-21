@@ -137,22 +137,7 @@ class FlexDataDistribution(object):
         rng = default_rng(seed=config.seed)
 
         config_ = copy.deepcopy(config)  # copy, because we might modify some components
-
-        if config.classes_per_client is None and not config.replacement:
-            if (  # normalize weights if no replacement
-                config.weights is not None and sum(config.weights) > 1
-            ):
-                config_.weights = np.array(
-                    [w / sum(config.weights) for w in config.weights]
-                )
-            if (  # normalize weights_per_class is no replacement
-                config.weights_per_class is not None
-                and any(np.sum(config.weights_per_class, axis=0) != 1)
-            ):
-                config_.weights_per_class = config.weights_per_class / np.sum(
-                    config.weights_per_class, axis=0
-                )
-
+        # Ensure that n_clients and client_names have the same length
         if config_.client_names is not None and config_.n_clients is not None:
             common_min = min(config_.n_clients, len(config_.client_names))
             config_.n_clients = common_min
@@ -161,6 +146,25 @@ class FlexDataDistribution(object):
             config_.n_clients = len(config_.client_names)
         elif config_.n_clients is not None:  # autofill client names
             config_.client_names = [f"client_{i}" for i in range(config_.n_clients)]
+        # Ensure that weights and weights_per_class are properly instanced
+        if not config.replacement:
+            if config.weights is not None and sum(config.weights) > 1:
+                config_.weights = np.array(
+                    [w / sum(config.weights) for w in config.weights]
+                )
+            if config.classes_per_client is not None and isinstance(config.classes_per_client, list) and isinstance(config.classes_per_client[0], list):
+                sorted_classes = np.sort(np.unique(cdata.y_data))
+                config_.weights_per_class = np.zeros((config_.n_clients, len(sorted_classes)))
+
+                for i, one_client in enumerate(config.classes_per_client):
+                    for j, label in enumerate(sorted_classes):
+                        if label in one_client:
+                            config_.weights_per_class[i, j] = 1
+        if (  # normalize weights_per_class with no replacement
+            config_.weights_per_class is not None
+            and any(np.sum(config_.weights_per_class, axis=0) != 1)
+        ):
+            config_.weights_per_class = cls.__normalize_weights_per_class(config_.weights_per_class)
 
         fed_dataset = FlexDataset()
         if config_.indexes_per_client is not None:
@@ -185,6 +189,15 @@ class FlexDataDistribution(object):
                 )
 
         return fed_dataset
+
+    @classmethod
+    def __normalize_weights_per_class(cls, weights_per_class):
+        with np.errstate(divide='ignore', invalid='ignore'):
+            tmp = weights_per_class / np.sum(
+                weights_per_class, axis=0
+            )
+        # Note that weights equal to 0 produce NaNs, so we replace them with 0 again
+        return np.nan_to_num(tmp)
 
     @classmethod
     def iid_distribution(cls, cdata: FlexDataObject, n_clients: int = 2):
