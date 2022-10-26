@@ -311,6 +311,22 @@ class TestFlexDataDistribution(unittest.TestCase):
             for idx, client in enumerate(kmeans.labels_)
         )
 
+    def test_weight_per_classes_random_assigment(self):
+        classes = np.unique(self._iris.y_data)
+        config = FlexDatasetConfig(
+            seed=2,
+            n_clients=len(classes),
+            weights_per_class=[[1, 2, 3, 4], [0, 0, 0, 1], [0, 1, 0, 0]],
+            replacement=False,
+        )
+        flex_dataset = FlexDataDistribution.from_config(self._iris, config)
+        clients = list(flex_dataset.keys())
+        assert all(
+            sum(flex_dataset[clients[0]].y_data == i)
+            != sum(flex_dataset[clients[1]].y_data == i)
+            for i in classes
+        )
+
     def test_weight_per_class_alone_w_replacement(self):
         classes = np.unique(self._iris.y_data)
         config = FlexDatasetConfig(
@@ -347,68 +363,6 @@ class TestFlexDataDistribution(unittest.TestCase):
             != np.sum(flex_dataset[clients[1]].X_data[i])
             for i in range(len(flex_dataset))
         )
-
-    def test_weight_per_class_w_classes_per_client_w_replacement(self):
-        classes = np.unique(self._iris.y_data)
-        config = FlexDatasetConfig(
-            seed=2,
-            n_clients=2,
-            weights_per_class=np.ones((2, len(classes))),
-            classes_per_client=[[0], [1]],
-            replacement=True,
-        )
-        flex_dataset = FlexDataDistribution.from_config(self._iris, config)
-        clients = list(flex_dataset.keys())
-        assert all(
-            sum(flex_dataset[clients[0]].y_data == i)
-            != sum(flex_dataset[clients[1]].y_data == i)
-            for i in [0, 1]
-        )
-        assert (
-            0 in flex_dataset[clients[0]].y_data
-            and 0 not in flex_dataset[clients[1]].y_data
-        )
-        assert (
-            1 not in flex_dataset[clients[0]].y_data
-            and 1 in flex_dataset[clients[1]].y_data
-        )
-        assert (
-            2 not in flex_dataset[clients[0]].y_data
-            and 2 not in flex_dataset[clients[1]].y_data
-        )
-        assert sum(self._iris.y_data == 0) == sum(flex_dataset[clients[0]].y_data == 0)
-        assert sum(self._iris.y_data == 1) == sum(flex_dataset[clients[1]].y_data == 1)
-
-    def test_weight_per_class_w_classes_per_client_without_replacement(self):
-        classes = np.unique(self._iris.y_data)
-        config = FlexDatasetConfig(
-            seed=2,
-            n_clients=2,
-            weights_per_class=np.ones((2, len(classes))),
-            classes_per_client=[[0], [1]],
-            replacement=False,
-        )
-        flex_dataset = FlexDataDistribution.from_config(self._iris, config)
-        clients = list(flex_dataset.keys())
-        assert all(
-            sum(flex_dataset[clients[0]].y_data == i)
-            != sum(flex_dataset[clients[1]].y_data == i)
-            for i in [0, 1]
-        )
-        assert (
-            0 in flex_dataset[clients[0]].y_data
-            and 0 not in flex_dataset[clients[1]].y_data
-        )
-        assert (
-            1 not in flex_dataset[clients[0]].y_data
-            and 1 in flex_dataset[clients[1]].y_data
-        )
-        assert (
-            2 not in flex_dataset[clients[0]].y_data
-            and 2 not in flex_dataset[clients[1]].y_data
-        )
-        assert sum(self._iris.y_data == 0) == sum(flex_dataset[clients[0]].y_data == 0)
-        assert sum(self._iris.y_data == 1) == sum(flex_dataset[clients[1]].y_data == 1)
 
     def test_from_torchtext_dataset(self):
         from torchtext.datasets import AG_NEWS
@@ -516,12 +470,12 @@ class TestFlexDataDistribution(unittest.TestCase):
             n_clients=2,
             replacement=False,
             client_names=["client_0", "client_1"],
+            classes_per_client=[[2, 3], [2]],
         )
         flex_dataset = FlexDataDistribution.from_config_with_torchvision_dataset(
             data, config
         )
         assert len(flex_dataset) == config.n_clients
-        assert len(flex_dataset["client_0"]) == len(flex_dataset["client_1"])
         assert not np.array_equal(
             flex_dataset["client_0"].X_data[1], flex_dataset["client_1"].X_data[1]
         )

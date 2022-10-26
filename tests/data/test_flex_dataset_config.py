@@ -104,6 +104,13 @@ class TestFlexDatasetConfig(unittest.TestCase):
         with pytest.raises(ValueError):
             a.validate()
 
+    def test_weights_per_class_incompatibility(self):
+        a = FlexDatasetConfig(
+            n_clients=2, classes_per_client=2, weights_per_class=np.ones((2, 2))
+        )
+        with pytest.raises(ValueError):
+            a.validate()
+
     def test_weights_per_class_shape(self):
         a = FlexDatasetConfig(n_clients=2, weights_per_class=np.ones((1,)))
         with pytest.raises(ValueError):

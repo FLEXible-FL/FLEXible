@@ -83,9 +83,9 @@ class FlexDataObject:
                 lambda a: lazy_1d_index(a, pytorch_dataset, extra_dim=0),
                 shape=(length,),
             )
-            y_data = larray(
-                lambda a: lazy_1d_index(a, pytorch_dataset, extra_dim=1),
-                shape=(length,),
+            dtype = type(pytorch_dataset[0][1])
+            y_data = np.fromiter(
+                (y for _, y in pytorch_dataset), dtype=dtype, count=length
             )
         else:
             X_data, y_data = [], []
