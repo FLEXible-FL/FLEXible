@@ -1,7 +1,6 @@
 import zipfile
 from sultan.api import Sultan
 from tqdm import tqdm
-# Import hashlib library (md5 method is part of it)
 from hashlib import md5
 import os
 
@@ -9,6 +8,7 @@ import os
 MNIST_URL = "http://www.itl.nist.gov/iaui/vip/cs_links/EMNIST/matlab.zip"
 MNIST_MD5 = "1bbb49fdf3462bb70c240eac93fff0e4"
 MNIST_FILE = "mnist.zip"
+
 
 def check_hash(filename: str, md5_hash: str) -> bool:
     with open(filename, 'rb') as file_to_check:
@@ -25,10 +25,11 @@ def check_dir_exists(filename: str) -> bool:
     return os.path.exists(filename)
 
 
-def extract_zip(filename: str):
+def extract_zip(filename: str, output: bool = True):
     with zipfile.ZipFile(filename, "r") as ref:
         ref.extractall()
-        return ref.namelist()
+        if output:
+            return ref.namelist()
 
 
 def download_file(url: str, filename: str, out_dir: str = "."):
@@ -51,18 +52,16 @@ def download_file(url: str, filename: str, out_dir: str = "."):
 
 
 # Example: download_dataset(MNIST_URL, MNIST_FILE, MNIST_MD5, extract=True)
-def download_dataset(url, filename, md5_hash, out_dir=".", extract=False):
+def download_dataset(url: str, filename: str, md5_hash: str, out_dir: str = ".", extract: bool = False, max_trials: int = 3, output: bool = True):
     full_path = os.path.join(out_dir, filename)
     check_dir_exists(out_dir)
-    trials = 3
     i = 0
     while not (check_file_exists(full_path) and check_hash(full_path, md5_hash)):
         download_file(url, filename, out_dir)
         i += 1
-        if i > trials:
+        if i > max_trials:
             raise ValueError("Either we are unable the download the file or the provided md5 hash is not correct.")
-
-    if not extract:
-        return full_path
-    extracted_files = extract_zip(full_path)
-    return [os.path.join(out_dir, i) for i in extracted_files]
+    if extract:
+        extracted_files = extract_zip(full_path, output=output)
+    if output:
+        return [os.path.join(out_dir, i) for i in extracted_files] if extract else full_path
