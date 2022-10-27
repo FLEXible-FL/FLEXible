@@ -11,4 +11,5 @@ from flex.data.flex_preprocessing_utils import one_hot_encoding
 from flex.data.pluggable_datasets import PluggableTorchtext
 from flex.data.pluggable_datasets import PluggableTorchvision
 from flex.data.pluggable_datasets import PluggableHuggingFace
+from flex.data.flex_utils import download_dataset
 # from flex.data.pluggable_datasets import PluggableDatasetsTensorFlowText
