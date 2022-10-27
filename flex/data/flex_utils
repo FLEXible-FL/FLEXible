@@ -8,7 +8,7 @@ import os
 
 MNIST_URL = "http://www.itl.nist.gov/iaui/vip/cs_links/EMNIST/matlab.zip"
 MNIST_MD5 = "1bbb49fdf3462bb70c240eac93fff0e4"
-
+MNIST_FILE = "mnist.zip"
 
 def check_hash(filename: str, md5_hash: str) -> bool:
     with open(filename, 'rb') as file_to_check:
@@ -31,13 +31,12 @@ def extract_zip(filename: str):
         return ref.namelist()
 
 
-def download_file(url: str, filename: str = None, out_dir: str = "."):
+def download_file(url: str, filename: str, out_dir: str = "."):
     additional_args = ()
-    if filename:
-        out_path = os.path.join(out_dir, filename)
-        additional_args = ("-O", out_path)
+    out_path = os.path.join(out_dir, filename)
+    additional_args = ("-#", "-L", "--output", out_path)
     with Sultan.load() as s:
-        result = s.wget(url, "-q", "--show-progress", *additional_args).run(streaming=True)
+        result = s.curl(url, *additional_args).run(streaming=True)
 
         def generator():
             while True:
@@ -51,7 +50,8 @@ def download_file(url: str, filename: str = None, out_dir: str = "."):
             pbar.set_description(i)
 
 
-def download_dataset(url, filename, out_dir, md5_hash, extract=False):
+# Example: download_dataset(MNIST_URL, MNIST_FILE, MNIST_MD5, extract=True)
+def download_dataset(url, filename, md5_hash, out_dir=".", extract=False):
     full_path = os.path.join(out_dir, filename)
     check_dir_exists(out_dir)
     trials = 3
@@ -60,7 +60,7 @@ def download_dataset(url, filename, out_dir, md5_hash, extract=False):
         download_file(url, filename, out_dir)
         i += 1
         if i > trials:
-            raise ValueError("Either we are unable the download the file or the provided md5hash is not correct.")
+            raise ValueError("Either we are unable the download the file or the provided md5 hash is not correct.")
 
     if not extract:
         return full_path
