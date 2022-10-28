@@ -13,7 +13,10 @@ setup(
                     "multiprocess",
                     "sklearn",
                     "cardinality",
-                    "lazyarray"
+                    "lazyarray",
+                    "sultan",
+                    "tqdm",
+                    "scipy"
                     ],
     extras_require={
         "tensorflow": ["tensorflow", 
