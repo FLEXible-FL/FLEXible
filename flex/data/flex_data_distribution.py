@@ -6,8 +6,16 @@ from typing import Callable, Tuple
 import numpy as np
 import numpy.typing as npt
 from numpy.random import default_rng
+from scipy.io import loadmat
 
 from flex.data import FlexDataObject, FlexDataset, FlexDatasetConfig
+from flex.data.flex_utils import (
+    MNIST_DIGITS,
+    MNIST_FILE,
+    MNIST_MD5,
+    MNIST_URL,
+    download_dataset,
+)
 
 
 class FlexDataDistribution(object):
@@ -18,6 +26,78 @@ class FlexDataDistribution(object):
             create_key == FlexDataDistribution.__create_key
         ), """FlexDataDistribution objects must be created using FlexDataDistribution.from_config or
         FlexDataDistribution.iid_distribution"""
+
+    @classmethod
+    def load_femnist(cls, out_dir: str = ".", return_test=False):
+        """Function that load MNIST (digits).
+
+        Args:
+            out_dir (str, optional): Output dir to download the dataset. Defaults to ".".
+            return_test (bool, optional): True/False if the user wants the test data or not. Defaults to False.
+
+        Returns:
+            FlexDataset, Optional[FlexDataObjbect]: Returns the federated
+            mnist (digits) and if return_test = True, returns the test dataset too.
+        """
+        # , one_hot_output=False): # Uncomment in a future if necessary
+        mnist_files = download_dataset(
+            MNIST_URL, MNIST_FILE, MNIST_MD5, extract=True, output=True
+        )
+        dataset = [
+            loadmat(mat)["dataset"] for mat in mnist_files if MNIST_DIGITS in mat
+        ][0]
+        writers = dataset["train"][0, 0]["writers"][0, 0]
+        data = np.reshape(
+            dataset["train"][0, 0]["images"][0, 0], (-1, 28, 28), order="F"
+        )
+        # train_data = np.array([(writers[i][0], v) for i, v in enumerate(data)])
+        # NEW --> Simple array
+        # if not one_hot_output:
+        train_labels = np.squeeze(dataset["train"][0, 0]["labels"][0, 0])
+        # NEW
+        # OLD --> Multilabel not supported yet
+        # else:
+        #     train_labels = np.reshape(
+        #         np.eye(10)[dataset['train'][0, 0]['labels'][0, 0]],
+        #         (len(train_data), 10))
+        # OLD
+        train_data_by_writers = {}
+        train_labels_by_writers = {}
+        for i, v in enumerate(data):
+            writer_key = writers[i][0]
+            if writer_key not in train_data_by_writers:
+                train_data_by_writers[writer_key] = []
+                train_labels_by_writers[writer_key] = []
+            train_data_by_writers[writer_key].append(v)
+            train_labels_by_writers[writer_key].append(train_labels[i])
+
+        fed_mnist = FlexDataset(
+            {
+                k: FlexDataObject(
+                    X_data=np.asarray(train_data_by_writers[k]),
+                    y_data=np.asarray(train_labels_by_writers[k]),
+                )
+                for k in train_data_by_writers.keys()
+            }
+        )
+
+        if return_test:
+            test_data = np.reshape(
+                dataset["test"][0, 0]["images"][0, 0], (-1, 28, 28), order="F"
+            )
+            # NEW --> Simple array
+            # if not one_hot_output:
+            test_labels = np.squeeze(dataset["test"][0, 0]["labels"][0, 0])
+            # NEW
+            # OLD --> Multilabel not supported yet
+            # else:
+            #     test_labels = np.reshape(
+            #         np.eye(10)[dataset['test'][0, 0]['labels'][0, 0]],
+            #         (test_data.shape[0], 10))
+            # OLD
+            flo_test = FlexDataObject(X_data=test_data, y_data=test_labels)
+            return fed_mnist, flo_test
+        return fed_mnist
 
     @classmethod
     def from_config_with_torchtext_dataset(cls, data, config: FlexDatasetConfig):
