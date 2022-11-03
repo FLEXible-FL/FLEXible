@@ -73,7 +73,7 @@ class FlexDataDistribution(object):
 
         fed_mnist = FlexDataset(
             {
-                k: FlexDataObject(
+                f"client_{k}": FlexDataObject(
                     X_data=np.asarray(train_data_by_writers[k]),
                     y_data=np.asarray(train_labels_by_writers[k]),
                 )
