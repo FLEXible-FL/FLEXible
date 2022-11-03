@@ -3,7 +3,7 @@ from __future__ import annotations
 import functools
 from typing import Callable, Hashable
 
-import numpy as np
+import random
 
 from flex.data import FlexDataset
 from flex.pool.actors import FlexActors, FlexRole, FlexRoleManager
@@ -151,10 +151,11 @@ class FlexPool:
             raise ValueError(
                 "The clients dropout can't be negative. Please check use a value in the range [0, 1]"
             )
+        breakpoint()
         clients_dropout = max(1 - min(clients_dropout, 1), 0)
         clients_dropout = int(len(self._actors) * clients_dropout)
-        training_clients = np.random.choice(
-            list(self._actors.keys()), clients_dropout, replace=False
+        training_clients = random.sample(
+            list(self._actors.keys()), clients_dropout
         )
         new_actors = FlexActors()
         new_data = FlexDataset()
