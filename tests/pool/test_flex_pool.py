@@ -187,14 +187,14 @@ class TestFlexPool(unittest.TestCase):
     def test_filter_dropout_correct(self):
         p = FlexPool.p2p_architecture(self._fld, init_func=lambda *args: None)
         clients = p.filter(
-            lambda a, b: FlexRoleManager.is_client(b), clients_dropout=0.33
+            lambda a, b: FlexRoleManager.is_client(b), node_dropout=0.33
         )
         assert len(clients._actors) == 2
 
     def test_filter_dropout_greater_one(self):
         p = FlexPool.p2p_architecture(self._fld, init_func=lambda *args: None)
         clients = p.filter(
-            lambda a, b: FlexRoleManager.is_client(b), clients_dropout=10
+            lambda a, b: FlexRoleManager.is_client(b), node_dropout=10
         )
         assert len(clients._actors) == 0
 
