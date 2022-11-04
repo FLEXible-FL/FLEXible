@@ -1,9 +1,8 @@
 from __future__ import annotations
 
 import functools
-from typing import Callable, Hashable
-
 import random
+from typing import Callable, Hashable
 
 from flex.data import FlexDataset
 from flex.pool.actors import FlexActors, FlexRole, FlexRoleManager
@@ -139,33 +138,29 @@ class FlexPool:
             func (Callable): Function to filter the pool by. The function must return True/False.
             clients_dropout (float): Percentage of clients to drop from the training phase. This param
             must be a value in the range [0, 1]. If the clients_dropout > 1, it will return all the
-            pool without any changes. For negative values the funcion raises an error.
+            pool without any changes. For negative values are ignored.
         Returns:
             FlexPool: New filtered pool.
         """
-        if func is None:
-            raise ValueError(
-                "Function to filter can't be None. Please, provide a function."
-            )
-        if clients_dropout < 0:
-            raise ValueError(
-                "The clients dropout can't be negative. Please check use a value in the range [0, 1]"
-            )
-        breakpoint()
+        clients_dropout = max(0, clients_dropout)
         clients_dropout = max(1 - min(clients_dropout, 1), 0)
         clients_dropout = int(len(self._actors) * clients_dropout)
-        training_clients = random.sample(
-            list(self._actors.keys()), clients_dropout
-        )
+        training_clients = random.sample(list(self._actors.keys()), clients_dropout)
         new_actors = FlexActors()
         new_data = FlexDataset()
         new_models = {}
         for actor_id in training_clients:
-            if func(actor_id, self._actors[actor_id], **kwargs):
+            cond = (
+                True
+                if func is None
+                else func(actor_id, self._actors[actor_id], **kwargs)
+            )
+            if cond:
                 new_actors[actor_id] = self._actors[actor_id]
                 new_models[actor_id] = self._models[actor_id]
                 if actor_id in self._data:
                     new_data[actor_id] = self._data[actor_id]
+
         return FlexPool(
             flex_actors=new_actors, flex_data=new_data, flex_models=new_models
         )

@@ -184,22 +184,12 @@ class TestFlexPool(unittest.TestCase):
             for _, actor_role in new_p._actors.items()
         )
 
-    def test_filter_func_none(self):
-        p = FlexPool.p2p_architecture(self._fld, init_func=lambda *args: None)
-        with pytest.raises(ValueError):
-            p.filter(None)
-
     def test_filter_dropout_correct(self):
         p = FlexPool.p2p_architecture(self._fld, init_func=lambda *args: None)
         clients = p.filter(
             lambda a, b: FlexRoleManager.is_client(b), clients_dropout=0.33
         )
         assert len(clients._actors) == 2
-
-    def test_filter_dropout_negative(self):
-        p = FlexPool.p2p_architecture(self._fld, lambda *args: None)
-        with pytest.raises(ValueError):
-            p.filter(lambda a, b: FlexRoleManager.is_client(b), clients_dropout=-10)
 
     def test_filter_dropout_greater_one(self):
         p = FlexPool.p2p_architecture(self._fld, init_func=lambda *args: None)
