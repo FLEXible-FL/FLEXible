@@ -10,16 +10,17 @@ class FlexDatasetConfig:
     """Class used to represent a configuration to federate a centralized dataset.
     The following table shows the compatiblity of each option:
 
-    | Options compatibility   | **n_clients** | **client_names** | **weights** | **weights_per_class** | **replacement** | **classes_per_client** | **features_per_client** | **indexes_per_client** |
-    |-------------------------|---------------|------------------|-------------|-----------------------|-----------------|------------------------|-------------------------|------------------------|
-    | **n_clients**           | -             | Y                | Y           | Y                     | Y               | Y                      | Y                       | Y                      |
-    | **client_names**        | Y             | -                | Y           | Y                     | Y               | Y                      | Y                       | Y                      |
-    | **weights**             | Y             | Y                | -           | N                     | Y               | Y                      | Y                       | N                      |
-    | **weights_per_class**   | Y             | Y                | N           | -                     | Y               | N                      | N                       | N                      |
-    | **replacement**         | Y             | Y                | Y           | Y                     | -               | Y                      | Y                       | N                      |
-    | **classes_per_client**  | Y             | Y                | Y           | N                     | Y               | -                      | N                       | N                      |
-    | **features_per_client** | Y             | Y                | Y           | N                     | Y               | N                      | -                       | N                      |
-    | **indexes_per_client**  | Y             | Y                | N           | N                     | N               | N                      | N                       | -                      |
+    | Options compatibility   | **n_clients** | **client_names** | **weights** | **weights_per_class** | **replacement** | **classes_per_client** | **features_per_client** | **indexes_per_client** | **group_by_feature** |
+    |-------------------------|---------------|------------------|-------------|-----------------------|-----------------|------------------------|-------------------------|------------------------|----------------------|
+    | **n_clients**           | -             | Y                | Y           | Y                     | Y               | Y                      | Y                       | Y                      | N                    |
+    | **client_names**        | Y             | -                | Y           | Y                     | Y               | Y                      | Y                       | Y                      | Y                    |
+    | **weights**             | Y             | Y                | -           | N                     | Y               | Y                      | Y                       | N                      | N                    |
+    | **weights_per_class**   | Y             | Y                | N           | -                     | Y               | N                      | N                       | N                      | N                    |
+    | **replacement**         | Y             | Y                | Y           | Y                     | -               | Y                      | Y                       | N                      | N                    |
+    | **classes_per_client**  | Y             | Y                | Y           | N                     | Y               | -                      | N                       | N                      | N                    |
+    | **features_per_client** | Y             | Y                | Y           | N                     | Y               | N                      | -                       | N                      | N                    |
+    | **indexes_per_client**  | Y             | Y                | N           | N                     | N               | N                      | N                       | -                      | N                    |
+    | **group_by_feature**    | N             | Y                | N           | N                     | N               | N                      | N                       | N                      | -                    |
 
     Attributes
     ----------
@@ -32,7 +33,7 @@ class FlexDatasetConfig:
         Names to identifty each client, if not provided clients will be indexed using integers. If n_clients is also \
         given, we consider the number of clients to be the minimun of n_clients and the length of client_names. Default None.
     weights: Optional[npt.NDArray]
-        A numpy.array which provides the proportion of data to give to each client. It is not compatible with weights_per_class. Default None.
+        A numpy.array which provides the proportion of data to give to each client. It is not compatible with weights_per_class, indexes_per_client and group_by_feature. Default None.
     weights_per_class: Optional[npt.NDArray]
         A numpy.array which provides the proportion of data to give to each client and class of the dataset to federate. \
         We expect a bidimensional array of shape (n, m) where "n" is the number of clients and "m" is the number of classes of \
@@ -50,6 +51,8 @@ class FlexDatasetConfig:
     indexes_per_client: Optional[npt.NDArray]
         Data indexes to assign to each client, note that this option is incompatible with classes_per_client, \
         features_per_client options. If replacement, weights or weights_per_class are speficied, they are ignored. Default None.
+    group_by_feature: Optional[int]
+        Index which indicates which feature unique values will be used to generate federated clients. Default None.
     """
 
     seed: Optional[int] = None
@@ -61,6 +64,7 @@ class FlexDatasetConfig:
     classes_per_client: Optional[Union[int, npt.NDArray, Tuple[int]]] = None
     features_per_client: Optional[Union[int, npt.NDArray, Tuple[int]]] = None
     indexes_per_client: Optional[npt.NDArray] = None
+    group_by_feature: Optional[int] = None
 
     def validate(self):
         """This function checks whether the configuration to federate a dataset is correct."""

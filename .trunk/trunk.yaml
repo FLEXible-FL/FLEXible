@@ -10,7 +10,7 @@ lint:
     - markdownlint
     - gitleaks
   enabled:
-    - actionlint@1.6.21
+    - actionlint@1.6.22
     - git-diff-check
     - black@22.10.0
     - flake8@5.0.4
@@ -28,5 +28,5 @@ actions:
 plugins:
   sources:
     - id: trunk
-      ref: v0.0.5
+      ref: v0.0.6
       uri: https://github.com/trunk-io/plugins
