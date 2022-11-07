@@ -253,7 +253,7 @@ class FlexDataDistribution(object):
         if (
             not config_.replacement
             and config_.weights_per_class is not None
-            and any(np.sum(config_.weights_per_class, axis=0) != 1)
+            and any(np.sum(config_.weights_per_class, axis=0) > 1)
         ):
             with np.errstate(divide="ignore", invalid="ignore"):  # raise no warnings
                 config_.weights_per_class = config_.weights_per_class / np.sum(
@@ -452,18 +452,15 @@ class FlexDataDistribution(object):
             config.classes_per_client = assigned_classes
 
         config.weights_per_class = np.zeros((config.n_clients, len(sorted_classes)))
-        if config.weights is None:  # compute weights per class
-            for i, one_client in enumerate(config.classes_per_client):
-                for j, label in enumerate(sorted_classes):
-                    if label in one_client:
-                        config.weights_per_class[i, j] = 1
-        else:  # ensure that each class has the same amount of data
-            for client_i, clasess_at_client_i in enumerate(config.classes_per_client):
-                length = len(clasess_at_client_i)
-                for j in clasess_at_client_i:
-                    config.weights_per_class[client_i, j] = (
-                        config.weights[client_i] / length
-                    )
+        for client_i, clasess_at_client_i in enumerate(config.classes_per_client):
+            for class_j, label in enumerate(sorted_classes):
+                if label in clasess_at_client_i:
+                    if config.weights is None:
+                        config.weights_per_class[client_i, class_j] = 1
+                    else:
+                        config.weights_per_class[client_i, class_j] = config.weights[
+                            client_i
+                        ] / len(clasess_at_client_i)
 
     @classmethod
     def __sample_with_features(

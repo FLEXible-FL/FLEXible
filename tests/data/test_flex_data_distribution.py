@@ -98,7 +98,9 @@ class TestFlexDataDistribution(unittest.TestCase):
         assert len(np.unique(flex_dataset[0].y_data)) == 2
 
     def test_classes_per_client_int_no_weights_no_replacement(self):
-        config = FlexDatasetConfig(n_clients=2, classes_per_client=1, replacement=False)
+        config = FlexDatasetConfig(
+            seed=1, n_clients=2, classes_per_client=1, replacement=False
+        )
         flex_dataset = FlexDataDistribution.from_config(self._fcd_ones_zeros, config)
         assert len(flex_dataset) == config.n_clients
         assert len(flex_dataset[0]) + len(flex_dataset[1]) == len(self._fcd_ones_zeros)
@@ -119,10 +121,8 @@ class TestFlexDataDistribution(unittest.TestCase):
         )
         flex_dataset = FlexDataDistribution.from_config(self._fcd_ones_zeros, config)
         assert len(flex_dataset) == config.n_clients
-        if np.unique(flex_dataset[0].y_data) == np.unique(flex_dataset[1].y_data):
-            assert len(flex_dataset[0]) + len(flex_dataset[1]) == 6
-        else:
-            assert len(flex_dataset[0]) + len(flex_dataset[1]) == 7
+        assert len(flex_dataset[0]) == 2
+        assert len(flex_dataset[1]) == 5
         assert len(np.unique(flex_dataset[0].y_data)) == 1
         assert len(np.unique(flex_dataset[1].y_data)) == 1
 
@@ -146,8 +146,8 @@ class TestFlexDataDistribution(unittest.TestCase):
         config = FlexDatasetConfig(
             seed=1,
             n_clients=2,
-            classes_per_client=(2, 3),
-            weights=[0.25, 1],
+            classes_per_client=(1, 2),
+            weights=[0.5, 0.5],
             replacement=False,
         )
 
@@ -156,15 +156,15 @@ class TestFlexDataDistribution(unittest.TestCase):
         )
         assert len(flex_dataset) == config.n_clients
         for k in flex_dataset:
-            assert len(np.unique(flex_dataset[k].y_data)) <= 3
-            assert len(np.unique(flex_dataset[k].y_data)) >= 2
+            assert len(np.unique(flex_dataset[k].y_data)) <= 2
+            assert len(np.unique(flex_dataset[k].y_data)) >= 1
 
     def test_classes_per_client_tuple_with_weights_with_replacement(self):
         config = FlexDatasetConfig(
             seed=1,
             n_clients=2,
             classes_per_client=(2, 3),
-            weights=[0.25, 1],
+            weights=[0.5, 1],
             replacement=True,
         )
 
@@ -181,7 +181,7 @@ class TestFlexDataDistribution(unittest.TestCase):
             seed=2,
             n_clients=2,
             client_names=["client_0", "client_1"],
-            classes_per_client=[0, 1],
+            classes_per_client=[[0], [1]],
             weights=None,
             replacement=False,
         )
@@ -194,7 +194,7 @@ class TestFlexDataDistribution(unittest.TestCase):
             seed=2,
             n_clients=2,
             client_names=["client_0", "client_1"],
-            classes_per_client=[0, [0, 1]],
+            classes_per_client=[[0], [0, 1]],
             weights=None,
             replacement=True,
         )
@@ -208,7 +208,7 @@ class TestFlexDataDistribution(unittest.TestCase):
             seed=2,
             n_clients=2,
             client_names=["client_0", "client_1"],
-            classes_per_client=[0, [1, 0]],
+            classes_per_client=[[0], [1, 0]],
             weights=[0.25, 0.5],
             replacement=True,
         )
@@ -222,7 +222,7 @@ class TestFlexDataDistribution(unittest.TestCase):
             seed=2,
             n_clients=2,
             client_names=["client_0", "client_1"],
-            classes_per_client=[0, 1],
+            classes_per_client=[[0], [1]],
             weights=[0.25, 0.5],
             replacement=False,
         )
@@ -461,24 +461,24 @@ class TestFlexDataDistribution(unittest.TestCase):
         assert len(flex_dataset) == config.n_clients
         assert len(flex_dataset["client_0"]) == len(flex_dataset["client_1"])
 
-    # def test_from_torchvision_dataset_w_lazy_array(self):
-    #     from torchvision.datasets import Food101
+    def test_from_torchvision_dataset_w_lazy_array(self):
+        from torchvision.datasets import Food101
 
-    #     data = Food101(root="./torch_datasets", download=True)
-    #     config = FlexDatasetConfig(
-    #         seed=0,
-    #         n_clients=2,
-    #         replacement=False,
-    #         client_names=["client_0", "client_1"],
-    #         classes_per_client=[[2, 3], [2]],
-    #     )
-    #     flex_dataset = FlexDataDistribution.from_config_with_torchvision_dataset(
-    #         data, config
-    #     )
-    #     assert len(flex_dataset) == config.n_clients
-    #     assert not np.array_equal(
-    #         flex_dataset["client_0"].X_data[1], flex_dataset["client_1"].X_data[1]
-    #     )
+        data = Food101(root="./torch_datasets", download=True)
+        config = FlexDatasetConfig(
+            seed=0,
+            n_clients=2,
+            replacement=False,
+            client_names=["client_0", "client_1"],
+            classes_per_client=[[2, 3], [2]],
+        )
+        flex_dataset = FlexDataDistribution.from_config_with_torchvision_dataset(
+            data, config
+        )
+        assert len(flex_dataset) == config.n_clients
+        assert not np.array_equal(
+            flex_dataset["client_0"].X_data[1], flex_dataset["client_1"].X_data[1]
+        )
 
     def test_from_huggingface_text_dataset(self):
         from datasets import load_dataset
