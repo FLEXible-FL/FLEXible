@@ -188,15 +188,16 @@ class FlexDataDistribution(object):
         Returns:
             federated_dataset (FlexDataset): The federated dataset.
         """
-        d = defaultdict()
+        d = defaultdict(list)
         for idx, (x, y) in enumerate(cdata):
             client_name = clustering_func(x, y)
-            if d.get(client_name) is None:
-                d[client_name] = [idx]
-            else:
-                d[client_name].append(idx)
+            d[client_name].append(idx)
+
         config = FlexDatasetConfig(
-            client_names=list(d.keys()), indexes_per_client=list(d.values())
+            n_clients=len(d),
+            client_names=list(d.keys()),
+            indexes_per_client=list(d.values()),
+            replacement=False,
         )
         return cls.from_config(cdata, config)
 
@@ -458,7 +459,7 @@ class FlexDataDistribution(object):
                         config.weights_per_class[i, j] = 1
         else:  # ensure that each class has the same amount of data
             for client_i, clasess_at_client_i in enumerate(config.classes_per_client):
-                length = len(i)
+                length = len(clasess_at_client_i)
                 for j in clasess_at_client_i:
                     config.weights_per_class[client_i, j] = (
                         config.weights[client_i] / length
@@ -475,7 +476,7 @@ class FlexDataDistribution(object):
     ):
         """Especialized function to sample indices from a FlexDataObject as especified by a FlexDatasetConfig.
             It takes into consideration the config.features_per_client option and applies it. Weights are applied
-            the same as in __sample_only_with_weights.
+            the same as in __sample_with_weights.
 
         Args:
             rng (np.random.Generator): Random number generator used to sample.
@@ -489,7 +490,7 @@ class FlexDataDistribution(object):
             and the sampled feature indices.
         """
         # Sample data indices
-        sub_data_indices, _ = cls.__sample_only_with_weights(
+        sub_data_indices, _ = cls.__sample_with_weights(
             rng, data_indices, data, config, client_i
         )
 
