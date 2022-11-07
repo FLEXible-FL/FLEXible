@@ -183,13 +183,7 @@ class FlexPool:
         Returns:
             FlexPool: Pool containing all the clients from a pool
         """
-<<<<<<< Updated upstream
-        return self.filter(
-            lambda a, b: FlexRoleManager.is_client(b), clients_dropout=0.0
-        )
-=======
         return self.filter(lambda a, b: FlexRoleManager.is_client(b))
->>>>>>> Stashed changes
 
     @functools.cached_property
     def aggregators(self):

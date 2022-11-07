@@ -7,7 +7,6 @@ import numpy as np
 import numpy.typing as npt
 from numpy.random import default_rng
 from scipy.io import loadmat
-from collections import defaultdict
 
 from flex.data import FlexDataObject, FlexDataset, FlexDatasetConfig
 from flex.data.flex_utils import (
@@ -303,7 +302,9 @@ class FlexDataDistribution(object):
             x_data[feat_to_cname[feature]].append(x)
             y_data[feat_to_cname[feature]].append(y)
         for k in x_data:
-            yield k, FlexDataObject(X_data=np.asarray(x_data[k]), y_data=np.asarray(y_data[k]))
+            yield k, FlexDataObject(
+                X_data=np.asarray(x_data[k]), y_data=np.asarray(y_data[k])
+            )
 
     @classmethod
     def __sample_dataset_with_indexes(
