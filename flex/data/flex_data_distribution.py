@@ -234,8 +234,8 @@ class FlexDataDistribution(object):
 
         config_ = copy.deepcopy(config)  # copy, because we might modify some components
 
-        # Ensure that n_clients and client_names have the same length
-        cls.__configure_n_clients(config_)
+        if config.client_names is None:
+            config_.client_names = list(range(config_.n_clients))
 
         # Normalize weights when no replacement
         if (
@@ -299,22 +299,11 @@ class FlexDataDistribution(object):
         for i, (x, y) in enumerate(cdata):
             feature = x[f_index]
             if feature not in feat_to_cname:
-                feat_to_cname[feature] = f"client_{i}"
+                feat_to_cname[feature] = i
             x_data[feat_to_cname[feature]].append(x)
             y_data[feat_to_cname[feature]].append(y)
         for k in x_data:
             yield k, FlexDataObject(X_data=np.asarray(x_data[k]), y_data=np.asarray(y_data[k]))
-
-    @classmethod
-    def __configure_n_clients(cls, config):
-        if config.client_names is not None and config.n_clients is not None:
-            common_min = min(config.n_clients, len(config.client_names))
-            config.n_clients = common_min
-            config.client_names = config.client_names[:common_min]
-        elif config.client_names is not None:
-            config.n_clients = len(config.client_names)
-        elif config.n_clients is not None:  # autofill client names
-            config.client_names = [f"client_{i}" for i in range(config.n_clients)]
 
     @classmethod
     def __sample_dataset_with_indexes(
