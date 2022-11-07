@@ -44,7 +44,7 @@ class FlexDatasetConfig:
         We expect a bidimensional array of shape (n, m) where "n" is the number of clients and "m" is the number of classes of \
         the dataset to federate. Default None.
     replacement: bool
-        Whether the samping procedure used to split a centralized dataset is with replacement or not. Default True
+        Whether the samping procedure used to split a centralized dataset is with replacement or not. Default False
     classes_per_client: Optional[Union[int, npt.NDArray, Tuple[int]]]
         Classes to assign to each client, if provided as an int, it is the number classes per client, if provided as a \
         tuple of ints, it establishes a mininum and a maximum of number of classes per client, a random number sampled \
@@ -63,7 +63,7 @@ class FlexDatasetConfig:
     client_names: Optional[List[Hashable]] = None
     weights: Optional[npt.NDArray] = None
     weights_per_class: Optional[npt.NDArray] = None
-    replacement: bool = True
+    replacement: bool = False
     classes_per_client: Optional[Union[int, npt.NDArray, Tuple[int]]] = None
     features_per_client: Optional[Union[int, npt.NDArray, Tuple[int]]] = None
     indexes_per_client: Optional[npt.NDArray] = None
@@ -82,8 +82,6 @@ class FlexDatasetConfig:
         """This function checks whether the configuration to federate a dataset is correct."""
         self_dict = asdict(self)
         # By default every option is compatible, therefore we only specify incompatibilities
-        self._check_incomp(self_dict, "n_clients", "group_by_feature")
-        self._check_incomp(self_dict, "client_names", "group_by_feature")
         self._check_incomp(self_dict, "weights", "group_by_feature")
         self._check_incomp(self_dict, "weights", "weights_per_class")
         self._check_incomp(self_dict, "weights", "indexes_per_client")

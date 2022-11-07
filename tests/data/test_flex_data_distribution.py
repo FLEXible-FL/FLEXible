@@ -5,7 +5,12 @@ import pytest
 from sklearn.cluster import KMeans
 from sklearn.datasets import load_iris
 
-from flex.data import FlexDataDistribution, FlexDataObject, FlexDatasetConfig
+from flex.data import (
+    FlexDataDistribution,
+    FlexDataObject,
+    FlexDataset,
+    FlexDatasetConfig,
+)
 
 
 @pytest.fixture(name="fcd")
@@ -461,24 +466,24 @@ class TestFlexDataDistribution(unittest.TestCase):
         assert len(flex_dataset) == config.n_clients
         assert len(flex_dataset["client_0"]) == len(flex_dataset["client_1"])
 
-    def test_from_torchvision_dataset_w_lazy_array(self):
-        from torchvision.datasets import Food101
+    # def test_from_torchvision_dataset_w_lazy_array(self):
+    #     from torchvision.datasets import Food101
 
-        data = Food101(root="./torch_datasets", download=True)
-        config = FlexDatasetConfig(
-            seed=0,
-            n_clients=2,
-            replacement=False,
-            client_names=["client_0", "client_1"],
-            classes_per_client=[[2, 3], [2]],
-        )
-        flex_dataset = FlexDataDistribution.from_config_with_torchvision_dataset(
-            data, config
-        )
-        assert len(flex_dataset) == config.n_clients
-        assert not np.array_equal(
-            flex_dataset["client_0"].X_data[1], flex_dataset["client_1"].X_data[1]
-        )
+    #     data = Food101(root="./torch_datasets", download=True)
+    #     config = FlexDatasetConfig(
+    #         seed=0,
+    #         n_clients=2,
+    #         replacement=False,
+    #         client_names=["client_0", "client_1"],
+    #         classes_per_client=[[2, 3], [2]],
+    #     )
+    #     flex_dataset = FlexDataDistribution.from_config_with_torchvision_dataset(
+    #         data, config
+    #     )
+    #     assert len(flex_dataset) == config.n_clients
+    #     assert not np.array_equal(
+    #         flex_dataset["client_0"].X_data[1], flex_dataset["client_1"].X_data[1]
+    #     )
 
     def test_from_huggingface_text_dataset(self):
         from datasets import load_dataset
@@ -500,3 +505,19 @@ class TestFlexDataDistribution(unittest.TestCase):
             len(flex_dataset["client_0"]) + len(flex_dataset["client_1"])
             == data.num_rows
         )
+
+    def test_loading_fedmnist_using_from_config(self):
+        from math import isclose
+        fed_data, test_data = FlexDataDistribution.FederatedMNIST(return_test=True)
+        assert isinstance(fed_data, FlexDataset)
+        assert isinstance(test_data, FlexDataObject)
+        num_samples = [len(fed_data[i]) for i in fed_data]
+        total_samples = np.sum(num_samples)
+        std = np.std(num_samples)
+        mean = np.mean(num_samples)
+        users = len(fed_data)
+        assert users == 3579  # The paper reports 3550
+        assert total_samples == 240000  # The paper reports 805,263
+        assert isclose(mean, 67.85, abs_tol=1e-1)  # The paper reports 226.83
+        assert isclose(std, 11.17, abs_tol=1e-1)  # The paper reports 88.94
+
