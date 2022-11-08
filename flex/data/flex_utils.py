@@ -5,10 +5,12 @@ from hashlib import md5
 from sultan.api import Sultan
 from tqdm import tqdm
 
-MNIST_URL = "http://www.itl.nist.gov/iaui/vip/cs_links/EMNIST/matlab.zip"
-MNIST_MD5 = "1bbb49fdf3462bb70c240eac93fff0e4"
-MNIST_FILE = "mnist.zip"
-MNIST_DIGITS = "emnist-digits.mat"
+EMNIST_URL = "http://www.itl.nist.gov/iaui/vip/cs_links/EMNIST/matlab.zip"
+EMNIST_MD5 = "1bbb49fdf3462bb70c240eac93fff0e4"
+EMNIST_FILE = "mnist.zip"
+EMNIST_DIGITS = "emnist-digits.mat"
+EMNIST_LETTERS = "emnist-letters.mat"
+EMNIST_MNIST = "emnist-mnist.mat"
 
 
 def check_hash(filename: str, md5_hash: str) -> bool:
