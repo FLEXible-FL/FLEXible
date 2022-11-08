@@ -86,7 +86,7 @@ class TestFlexPool(unittest.TestCase):
             p._models[k]["model"].get_params()["leaf_size"] == reference_value
             for k in p.actor_ids
         )
-        test_data = self.f_iris["client_0"]
+        test_data = self.f_iris[0]
         result = p.servers.map(evaluate_server, test_data=test_data)
         preds, accuracy = result[0]
         print(accuracy)

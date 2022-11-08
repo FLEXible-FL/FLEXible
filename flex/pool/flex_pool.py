@@ -179,9 +179,7 @@ class FlexPool:
         Returns:
             FlexPool: Pool containing all the clients from a pool
         """
-        return self.filter(
-            lambda a, b: FlexRoleManager.is_client(b)
-        )
+        return self.filter(lambda a, b: FlexRoleManager.is_client(b))
 
     @functools.cached_property
     def aggregators(self):
