@@ -506,10 +506,12 @@ class TestFlexDataDistribution(unittest.TestCase):
             == data.num_rows
         )
 
-    def test_loading_fedmnist_using_from_config(self):
+    def test_loading_fedmnist_digits_using_from_config(self):
         from math import isclose
 
-        fed_data, test_data = FlexDataDistribution.FederatedMNIST(return_test=True)
+        fed_data, test_data = FlexDataDistribution.FederatedEMNIST(
+            return_test=True, split="digits"
+        )
         assert isinstance(fed_data, FlexDataset)
         assert isinstance(test_data, FlexDataObject)
         num_samples = [len(fed_data[i]) for i in fed_data]
@@ -519,5 +521,41 @@ class TestFlexDataDistribution(unittest.TestCase):
         users = len(fed_data)
         assert users == 3579  # The paper reports 3550
         assert total_samples == 240000  # The paper reports 805,263
-        assert isclose(mean, 67.85, abs_tol=1e-1)  # The paper reports 226.83
+        assert isclose(mean, 67.05, abs_tol=1e-1)  # The paper reports 226.83
         assert isclose(std, 11.17, abs_tol=1e-1)  # The paper reports 88.94
+
+    def test_loading_fedmnist_letters_using_from_config(self):
+        from math import isclose
+
+        fed_data, test_data = FlexDataDistribution.FederatedEMNIST(
+            return_test=True, split="letters"
+        )
+        assert isinstance(fed_data, FlexDataset)
+        assert isinstance(test_data, FlexDataObject)
+        num_samples = [len(fed_data[i]) for i in fed_data]
+        total_samples = np.sum(num_samples)
+        std = np.std(num_samples)
+        mean = np.mean(num_samples)
+        users = len(fed_data)
+        assert users == 3585  # The paper reports 3550
+        assert total_samples == 124800  # The paper reports 805,263
+        assert isclose(mean, 34.81, abs_tol=1e-1)  # The paper reports 226.83
+        assert isclose(std, 21.85, abs_tol=1e-1)  # The paper reports 88.94
+
+    def test_loading_fedmnist_raw_using_from_config(self):
+        from math import isclose
+
+        fed_data, test_data = FlexDataDistribution.FederatedEMNIST(
+            return_test=True, split="mnist"
+        )
+        assert isinstance(fed_data, FlexDataset)
+        assert isinstance(test_data, FlexDataObject)
+        num_samples = [len(fed_data[i]) for i in fed_data]
+        total_samples = np.sum(num_samples)
+        std = np.std(num_samples)
+        mean = np.mean(num_samples)
+        users = len(fed_data)
+        assert users == 3578  # The paper reports 3550
+        assert total_samples == 60000  # The paper reports 805,263
+        assert isclose(mean, 16.76, abs_tol=1e-1)  # The paper reports 226.83
+        assert isclose(std, 4.49, abs_tol=1e-1)  # The paper reports 88.94

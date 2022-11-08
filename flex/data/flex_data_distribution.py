@@ -10,10 +10,12 @@ from scipy.io import loadmat
 
 from flex.data import FlexDataObject, FlexDataset, FlexDatasetConfig
 from flex.data.flex_utils import (
-    MNIST_DIGITS,
-    MNIST_FILE,
-    MNIST_MD5,
-    MNIST_URL,
+    EMNIST_DIGITS,
+    EMNIST_FILE,
+    EMNIST_LETTERS,
+    EMNIST_MD5,
+    EMNIST_MNIST,
+    EMNIST_URL,
     download_dataset,
 )
 
@@ -28,13 +30,23 @@ class FlexDataDistribution(object):
         FlexDataDistribution.iid_distribution"""
 
     @classmethod
-    def MNIST(cls, out_dir: str = ".", include_writers=False):
+    def EMNIST(cls, out_dir: str = ".", split="digits", include_writers=False):
+        if split == "digits":
+            split_type = EMNIST_DIGITS
+        elif split == "letters":
+            split_type = EMNIST_LETTERS
+        elif split == "mnist":
+            split_type = EMNIST_MNIST
+        else:
+            raise ValueError(
+                "Unknown split. Available splits are 'mnist', 'digits' and 'letters'."
+            )
         mnist_files = download_dataset(
-            MNIST_URL, MNIST_FILE, MNIST_MD5, extract=True, output=True
+            EMNIST_URL, EMNIST_FILE, EMNIST_MD5, extract=True, output=True
         )
-        dataset = [
-            loadmat(mat)["dataset"] for mat in mnist_files if MNIST_DIGITS in mat
-        ][0]
+        dataset = [loadmat(mat)["dataset"] for mat in mnist_files if split_type in mat][
+            0
+        ]
         writers = dataset["train"][0, 0]["writers"][0, 0]
         train_data = np.reshape(
             dataset["train"][0, 0]["images"][0, 0], (-1, 28, 28), order="F"
@@ -57,14 +69,11 @@ class FlexDataDistribution(object):
         return train_data_object, test_data_object
 
     @classmethod
-    def FederatedMNIST(cls, out_dir: str = ".", return_test=False):
-        train_data, test_data = cls.MNIST(out_dir, include_writers=True)
+    def FederatedEMNIST(cls, out_dir: str = ".", split="digits", return_test=False):
+        train_data, test_data = cls.EMNIST(out_dir, split=split, include_writers=True)
         config = FlexDatasetConfig(group_by_feature=1)
         federated_data = cls.from_config(train_data, config)
-        if return_test:
-            return federated_data, test_data
-        else:
-            return federated_data
+        return (federated_data, test_data) if return_test else federated_data
 
     @classmethod
     def from_config_with_torchtext_dataset(cls, data, config: FlexDatasetConfig):
