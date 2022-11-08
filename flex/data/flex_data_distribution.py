@@ -78,6 +78,13 @@ class FlexDataDistribution(object):
         return (federated_data, test_data) if return_test else federated_data
 
     @classmethod
+    def FederatedCelebA(cls, out_dir: str = ".", split="all"):
+        from torchvision.datasets import CelebA
+        dataset = CelebA(root=out_dir, split=split, target_type=["identity", "attr"], download=True)
+        config = FlexDatasetConfig(group_by_label=0)
+        return cls.from_config_with_torchvision_dataset(dataset, config)
+
+    @classmethod
     def from_config_with_torchtext_dataset(cls, data, config: FlexDatasetConfig):
         """This function federates a centralized torchtext dataset given a FlexDatasetConfig.
         This function will transform the torchtext dataset into a FlexDataObject and then it will

@@ -72,9 +72,7 @@ class FlexDataObject:
         ):  # skip loading dataset in memory
 
             def lazy_1d_index(indices, ds, extra_dim=1):
-                try:
-                    iter(indices)
-                except TypeError:  # not iterable
+                if isinstance(indices, int):
                     return ds[indices][extra_dim]
                 else:  # iterable
                     return larray(
