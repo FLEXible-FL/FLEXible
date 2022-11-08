@@ -43,7 +43,7 @@ class FlexDataObject:
     def __iter__(self):
         return zip(
             self.X_data,
-            self.y_data if self.y_data is not None else [None] * len(self.X_data),
+            self.y_data if self.y_data is not None else [None] * len(self),
         )
 
     @classmethod
