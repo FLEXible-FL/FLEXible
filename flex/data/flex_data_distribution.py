@@ -53,7 +53,7 @@ class FlexDataDistribution(object):
         )
         train_labels = np.squeeze(dataset["train"][0, 0]["labels"][0, 0])
         if include_writers:
-            train_data = [(v, writers[i][0]) for i, v in enumerate(train_data)]
+            train_labels = [(label, writers[i][0]) for i, label in enumerate(train_labels)]
 
         test_data = np.reshape(
             dataset["test"][0, 0]["images"][0, 0], (-1, 28, 28), order="F"
@@ -71,7 +71,7 @@ class FlexDataDistribution(object):
     @classmethod
     def FederatedEMNIST(cls, out_dir: str = ".", split="digits", return_test=False):
         train_data, test_data = cls.EMNIST(out_dir, split=split, include_writers=True)
-        config = FlexDatasetConfig(group_by_feature=1)
+        config = FlexDatasetConfig(group_by_label=1)
         federated_data = cls.from_config(train_data, config)
         return (federated_data, test_data) if return_test else federated_data
 
@@ -243,8 +243,8 @@ class FlexDataDistribution(object):
         if config_.indexes_per_client is not None:
             for client_name, data in cls.__sample_dataset_with_indexes(cdata, config_):
                 fed_dataset[client_name] = data
-        elif config_.group_by_feature is not None:
-            for client_name, data in cls.__group_by_feature(cdata, config_):
+        elif config_.group_by_label is not None:
+            for client_name, data in cls.__group_by_label(cdata, config_):
                 fed_dataset[client_name] = data
         else:  # sample using weights or features
             remaining_data_indices = np.arange(len(cdata))
@@ -267,15 +267,15 @@ class FlexDataDistribution(object):
         return fed_dataset
 
     @classmethod
-    def __group_by_feature(cls, cdata: FlexDataObject, config: FlexDatasetConfig):
-        f_index = config.group_by_feature
+    def __group_by_label(cls, cdata: FlexDataObject, config: FlexDatasetConfig):
+        label_index = config.group_by_label
         feat_to_cname = {}
         x_data = defaultdict(list)
         y_data = defaultdict(list)
         for i, (x, y) in enumerate(cdata):
-            feature = str(x[f_index])  # Use str to make every feature hashable
+            feature = str(y[label_index])  # Use str to make every feature hashable
             if feature not in feat_to_cname:
-                feat_to_cname[feature] = i
+                feat_to_cname[feature] = i  # Name each client using the first index where the label appears
             x_data[feat_to_cname[feature]].append(x)
             y_data[feat_to_cname[feature]].append(y)
         for k in x_data:
