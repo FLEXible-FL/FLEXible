@@ -508,6 +508,7 @@ class TestFlexDataDistribution(unittest.TestCase):
 
     def test_loading_fedmnist_using_from_config(self):
         from math import isclose
+
         fed_data, test_data = FlexDataDistribution.FederatedMNIST(return_test=True)
         assert isinstance(fed_data, FlexDataset)
         assert isinstance(test_data, FlexDataObject)
@@ -520,4 +521,3 @@ class TestFlexDataDistribution(unittest.TestCase):
         assert total_samples == 240000  # The paper reports 805,263
         assert isclose(mean, 67.85, abs_tol=1e-1)  # The paper reports 226.83
         assert isclose(std, 11.17, abs_tol=1e-1)  # The paper reports 88.94
-
