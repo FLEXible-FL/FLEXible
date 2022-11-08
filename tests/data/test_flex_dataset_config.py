@@ -52,12 +52,14 @@ class TestFlexDatasetConfig(unittest.TestCase):
             a.validate()
 
     def test_features_per_client_arr(self):
-        a = FlexDatasetConfig(features_per_client=[[0, 1], [2, 3], [4]])
+        a = FlexDatasetConfig(
+            features_per_client=[[0, 1], [2, 3], [4]], replacement=True
+        )
         with pytest.raises(InvalidConfig):
             a.validate()
 
     def test_features_per_client_tuple(self):
-        a = FlexDatasetConfig(features_per_client=(1, 2, 3))
+        a = FlexDatasetConfig(features_per_client=(1, 2, 3), replacement=True)
         with pytest.raises(InvalidConfig):
             a.validate()
         a.features_per_client = (1,)

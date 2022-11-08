@@ -466,24 +466,24 @@ class TestFlexDataDistribution(unittest.TestCase):
         assert len(flex_dataset) == config.n_clients
         assert len(flex_dataset["client_0"]) == len(flex_dataset["client_1"])
 
-    # def test_from_torchvision_dataset_w_lazy_array(self):
-    #     from torchvision.datasets import Food101
+    def test_from_torchvision_dataset_w_lazy_array(self):
+        from torchvision.datasets import Food101
 
-    #     data = Food101(root="./torch_datasets", download=True)
-    #     config = FlexDatasetConfig(
-    #         seed=0,
-    #         n_clients=2,
-    #         replacement=False,
-    #         client_names=["client_0", "client_1"],
-    #         classes_per_client=[[2, 3], [2]],
-    #     )
-    #     flex_dataset = FlexDataDistribution.from_config_with_torchvision_dataset(
-    #         data, config
-    #     )
-    #     assert len(flex_dataset) == config.n_clients
-    #     assert not np.array_equal(
-    #         flex_dataset["client_0"].X_data[1], flex_dataset["client_1"].X_data[1]
-    #     )
+        data = Food101(root="./torch_datasets", download=True)
+        config = FlexDatasetConfig(
+            seed=0,
+            n_clients=2,
+            replacement=False,
+            client_names=["client_0", "client_1"],
+            classes_per_client=[[2, 3], [2]],
+        )
+        flex_dataset = FlexDataDistribution.from_config_with_torchvision_dataset(
+            data, config
+        )
+        assert len(flex_dataset) == config.n_clients
+        assert not np.array_equal(
+            flex_dataset["client_0"].X_data[1], flex_dataset["client_1"].X_data[1]
+        )
 
     def test_from_huggingface_text_dataset(self):
         from datasets import load_dataset
@@ -559,3 +559,7 @@ class TestFlexDataDistribution(unittest.TestCase):
         assert total_samples == 60000  # The paper reports 805,263
         assert isclose(mean, 16.76, abs_tol=1e-1)  # The paper reports 226.83
         assert isclose(std, 4.49, abs_tol=1e-1)  # The paper reports 88.94
+
+    def test_emnist_wrong_split_error(self):
+        with pytest.raises(ValueError):
+            FlexDataDistribution.EMNIST(split="weird")

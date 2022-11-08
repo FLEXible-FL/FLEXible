@@ -26,7 +26,10 @@ class FlexDataObject:
     y_data: Optional[npt.NDArray] = field(default=None, init=True)
 
     def __len__(self):
-        return len(self.X_data)
+        try:
+            return len(self.X_data)
+        except TypeError:
+            return self.X_data.shape[0]
 
     def __getitem__(self, pos):
         if self.y_data is None:
@@ -222,9 +225,9 @@ class FlexDataObject:
 
     def validate(self):
         """Function that checks whether the object is correct or not."""
-        if self.y_data is not None and len(self.X_data) != len(self.y_data):
+        if self.y_data is not None and len(self) != len(self.y_data):
             raise ValueError(
-                f"X_data and y_data must have equal lenght. X_data has {len(self.X_data)} elements and y_data has {len(self.y_data)} elements."
+                f"X_data and y_data must have equal lenght. X_data has {len(self)} elements and y_data has {len(self.y_data)} elements."
             )
         if self.y_data is not None and len(self.y_data.shape) > 1:
             raise ValueError(
