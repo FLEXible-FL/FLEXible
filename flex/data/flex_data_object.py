@@ -229,7 +229,3 @@ class FlexDataObject:
             raise ValueError(
                 f"X_data and y_data must have equal lenght. X_data has {len(self)} elements and y_data has {len(self.y_data)} elements."
             )
-        if self.y_data is not None and len(self.y_data.shape) > 1:
-            raise ValueError(
-                "y_data is multidimensional and we only support unidimensional labels."
-            )
