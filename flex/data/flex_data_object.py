@@ -229,4 +229,3 @@ class FlexDataObject:
             raise ValueError(
                 f"X_data and y_data must have equal lenght. X_data has {len(self)} elements and y_data has {len(self.y_data)} elements."
             )
-

@@ -55,7 +55,6 @@ class TestFlexDataObject(unittest.TestCase):
         with pytest.raises(ValueError):
             fcd.validate()
 
-
     def test_validate_from_torchtext_dataset(self):
         from torchtext.datasets import AG_NEWS
 

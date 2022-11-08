@@ -53,7 +53,9 @@ class FlexDataDistribution(object):
         )
         train_labels = np.squeeze(dataset["train"][0, 0]["labels"][0, 0])
         if include_writers:
-            train_labels = [(label, writers[i][0]) for i, label in enumerate(train_labels)]
+            train_labels = [
+                (label, writers[i][0]) for i, label in enumerate(train_labels)
+            ]
 
         test_data = np.reshape(
             dataset["test"][0, 0]["images"][0, 0], (-1, 28, 28), order="F"
@@ -275,7 +277,9 @@ class FlexDataDistribution(object):
         for i, (x, y) in enumerate(cdata):
             feature = str(y[label_index])  # Use str to make every feature hashable
             if feature not in feat_to_cname:
-                feat_to_cname[feature] = i  # Name each client using the first index where the label appears
+                feat_to_cname[
+                    feature
+                ] = i  # Name each client using the first index where the label appears
             x_data[feat_to_cname[feature]].append(x)
             y_data[feat_to_cname[feature]].append(y)
         for k in x_data:
