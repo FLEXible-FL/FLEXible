@@ -21,7 +21,7 @@ lint:
       - flex/**/__init__.py
       - test/**/__init__.py
       - setup.py
-      - notebooks/
+      - notebooks/*.ipynb
 actions:
   enabled:
     - trunk-upgrade-available
