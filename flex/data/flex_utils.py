@@ -39,7 +39,7 @@ def check_integrity(filename: str, md5_hash: str) -> bool:
         try:
             result = s.md5("-q", filename).run()
         except Exception:
-            result = s.md5sum(filename).pipe().cut("-f", "1", "-d", "\" \"").run()
+            result = s.md5sum(filename).pipe().cut("-f", "1", "-d", '" "').run()
     computed_md5 = result.stdout[0]
     return computed_md5 == md5_hash
 
