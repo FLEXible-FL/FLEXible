@@ -491,14 +491,14 @@ class TestFlexDataDistribution(unittest.TestCase):
 
         data = load_dataset("ag_news", split="train")
         X_columns = "text"
-        label_column = "label"
+        label_columns = "label"
         config = FlexDatasetConfig(
             seed=0,
             replacement=False,
             client_names=["client_0", "client_1"],
         )
         flex_dataset = FlexDataDistribution.from_config_with_huggingface_dataset(
-            data, config, X_columns, label_column
+            data, config, X_columns, label_columns
         )
         assert len(flex_dataset) == config.n_clients
         assert len(flex_dataset["client_0"]) == len(flex_dataset["client_1"])
@@ -587,4 +587,4 @@ class TestFlexDataDistribution(unittest.TestCase):
 
     def test_emnist_wrong_split_error(self):
         with pytest.raises(ValueError):
-            FlexDataDistribution.EMNIST(split="weird")
+            FlexDataObject.EMNIST(split="weird")

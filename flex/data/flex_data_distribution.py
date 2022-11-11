@@ -136,7 +136,7 @@ class FlexDataDistribution(object):
 
     @classmethod
     def from_config_with_tfds_text_dataset(
-        cls, data, config: FlexDatasetConfig, X_columns: list, label_column: list
+        cls, data, config: FlexDatasetConfig, X_columns: list, label_columns: list
     ):
         """This function federates a centralized tensorflow dataset given a FlexDatasetConfig.
         This function will transform a dataset from the tensorflow_datasets module into a FlexDataObject
@@ -146,9 +146,9 @@ class FlexDataDistribution(object):
             data (Dataset): The tensorflow dataset
             config (FlexDatasetConfig): FlexDatasetConfig with the configuration to federate the centralized dataset.
             X_columns (List): List that contains the columns names for the input features.
-            label_column (List): List that contains the columns names for the output features.
+            label_columns (List): List that contains the columns names for the output features.
         """
-        cdata = FlexDataObject.from_tfds_text_dataset(data, X_columns, label_column)
+        cdata = FlexDataObject.from_tfds_text_dataset(data, X_columns, label_columns)
         return cls.from_config(cdata, config)
 
     @classmethod

@@ -232,13 +232,13 @@ class FlexDataObject:
         return cls(X_data=np.asarray(X_data), y_data=np.asarray(y_data))
 
     @classmethod
-    def from_tfds_text_dataset(cls, tfds_dataset, X_columns=None, label_column=None):
+    def from_tfds_text_dataset(cls, tfds_dataset, X_columns=None, label_columns=None):
         """Function to convert a dataset from tensorflow_datasets to a FlexDataObject.
 
         Args:
             tdfs_dataset (tf.data.Datasets): a tf dataset loaded.
             X_columns (list): List containing the features (input) of the model.
-            label_column (list): List containing the targets of the model.
+            label_columns (list): List containing the targets of the model.
 
         Returns:
             FlexDataObject: a FlexDataObject which encapsulates the dataset.
@@ -253,13 +253,13 @@ class FlexDataObject:
                 with contextlib.suppress(ValueError):
                     tfds_dataset.unbatch()
             X_data = as_dataframe(tfds_dataset)[X_columns].to_numpy()
-            y_data = as_dataframe(tfds_dataset)[label_column].to_numpy()
+            y_data = as_dataframe(tfds_dataset)[label_columns].to_numpy()
         else:  # User used batch_size=-1 when using the load function
             X_data = pd.DataFrame.from_dict(
                 {col: tfds_dataset[col].numpy() for col in X_columns}
             ).to_numpy()
             y_data = pd.DataFrame.from_dict(
-                {col: tfds_dataset[col].numpy() for col in label_column}
+                {col: tfds_dataset[col].numpy() for col in label_columns}
             ).to_numpy()
         # if len(y_data.shape) == 2 and y_data.shape[1] == 1:
         y_data = np.squeeze(y_data)  # .reshape((len(y_data),))
