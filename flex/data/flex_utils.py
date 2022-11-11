@@ -36,7 +36,10 @@ def check_integrity(filename: str, md5_hash: str) -> bool:
         bool: whether the given file has the same hash as the one provided
     """
     with Sultan.load() as s:
-        result = s.md5("-q", filename).run()
+        try:
+            result = s.md5("-q", filename).run()
+        except Exception:
+            result = s.md5sum(filename).pipe().cut("-f", "1", "-d", "\" \"").run()
     computed_md5 = result.stdout[0]
     return computed_md5 == md5_hash
 
@@ -103,7 +106,10 @@ def download_file(url: str, filename: str, out_dir: str = "."):
     if "drive.google" not in url:
         additional_args = ("-#", "-L", "--output", out_path)
         with Sultan.load() as s:
-            result = s.curl(url, *additional_args).run(streaming=True)
+            try:
+                result = s.curl(url, *additional_args).run(streaming=True)
+            except Exception:
+                result = s.wget(url, "-O", out_path).run(streaming=True)
 
             def generator():
                 while True:
