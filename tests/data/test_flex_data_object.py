@@ -55,13 +55,6 @@ class TestFlexDataObject(unittest.TestCase):
         with pytest.raises(ValueError):
             fcd.validate()
 
-    def test_validate_incorrect_object(self):
-        X_data = np.random.rand(100).reshape([20, 5])
-        y_data = np.random.choice(2, [20, 5])
-        fcd = FlexDataObject(X_data=X_data, y_data=y_data)
-        with pytest.raises(ValueError):
-            fcd.validate()
-
     def test_validate_from_torchtext_dataset(self):
         from torchtext.datasets import AG_NEWS
 
