@@ -5,11 +5,11 @@ from typing import Any, Callable, Hashable, List, Optional
 
 from multiprocess import Pool
 
-from flex.data.flex_data_object import FlexDataObject
-from flex.data.flex_preprocessing_utils import normalize, one_hot_encoding
+from flex.data.dataset import Dataset
+from flex.data.preprocessing_utils import normalize, one_hot_encoding
 
 
-class FlexDataset(UserDict):
+class FedDataset(UserDict):
     """Class that represents a federated dataset for the Flex library.
     The dataset contains the ids of the clients and the dataset associated
     with each client.
@@ -20,7 +20,7 @@ class FlexDataset(UserDict):
         with the clients ids as keys and the dataset as value.
     """
 
-    def __setitem__(self, key: Hashable, item: FlexDataObject) -> None:
+    def __setitem__(self, key: Hashable, item: Dataset) -> None:
         self.data[key] = item
 
     def get(self, key: Hashable, default: Optional[Any] = None) -> Any:
@@ -47,7 +47,7 @@ class FlexDataset(UserDict):
             num_proc (int, optional): Number of processes to parallelize, negative values are ignored. Default to 1
 
         Returns:
-            FlexDataset: The modified FlexDataset.
+            FedDataset: The modified FlexDataset.
 
         Raises:
             ValueError: All client ids given must be in the FlexDataset.
@@ -58,9 +58,9 @@ class FlexDataset(UserDict):
             clients_ids = list(self.keys())
         elif isinstance(clients_ids, str):
             if clients_ids not in self.keys():
-                raise ValueError("All client ids given must be in the FlexDataset.")
+                raise ValueError("All client ids given must be in the FedDataset.")
         elif any(client not in self.keys() for client in clients_ids):
-            raise ValueError("All client ids given must be in the FlexDataset.")
+            raise ValueError("All client ids given must be in the FedDataset.")
 
         if num_proc < 2:
             updates = self._map_single(func, clients_ids, **kwargs)
@@ -84,14 +84,14 @@ class FlexDataset(UserDict):
         The  **kwargs provided to this function are the kwargs of the custom function provided by the client.
 
         Args:
-            fld (FlexDataset): FlexDataset containing all the data from the clients.
+            fld (FedDataset): FlexDataset containing all the data from the clients.
             func (Callable): Function to apply to preprocess the data.
             clients_ids (List[Hashtable]): List containig the the clients id where func will
             be applied. Each element of the list must be hashable and part of the FlexDataset
             num_proc (int): Number of processes to parallelize, negative values are ignored. Default to 2
 
         Returns:
-            FlexDataset: The modified FlexDataset.
+            FedDataset: The modified FlexDataset.
 
         """
 
@@ -125,7 +125,7 @@ class FlexDataset(UserDict):
             be applied. Each element of the list must be hashable and part of the FlexDataset.
 
         Returns:
-            FlexDataset: The modified FlexDataset.
+            FedDataset: The modified FlexDataset.
         """
         if not isinstance(clients_ids, list):
             clients_ids = [clients_ids]
@@ -142,13 +142,13 @@ class FlexDataset(UserDict):
         """Function that normalize the data over the clients.
 
         Args:
-            fld (FlexDataset): FlexDataset containing all the data from the clients.
+            fld (FedDataset): FlexDataset containing all the data from the clients.
             clients_ids (List[Hashtable], optional): List containig the clients id whether
             to normalize the data or not. Each element of the list must be hashable. Defaults to None.
             num_proc (int, optional): Number of processes to paralelize. Default to None (Use all).
 
         Returns:
-            FlexDataset: The FlexDataset normalized.
+            FedDataset: The FlexDataset normalized.
         """
         return self.map(normalize, clients_ids, num_proc, *args, **kwargs)
 
@@ -162,12 +162,12 @@ class FlexDataset(UserDict):
         """Function that apply one hot encoding to the client classes.
 
         Args:
-            fld (FlexDataset): FlexDataset containing all the data from the clients.
+            fld (FedDataset): FlexDataset containing all the data from the clients.
             clients_ids (List[Hashtable], optional): List containing the clients id whether
             to normalize the data or not. Each element of the list must be hashable. Defaults to None.
             num_proc (int, optional): Number of processes to paralelize. Default to None (Use all).
 
         Returns:
-            FlexDataset: The FlexDataset normalized.
+            FedDataset: The FlexDataset normalized.
         """
         return self.map(one_hot_encoding, clients_ids, num_proc, *args, **kwargs)

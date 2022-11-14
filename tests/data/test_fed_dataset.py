@@ -3,9 +3,9 @@ import unittest
 import numpy as np
 import pytest
 
-from flex.data.flex_data_object import FlexDataObject
-from flex.data.flex_dataset import FlexDataset
-from flex.data.flex_preprocessing_utils import normalize
+from flex.data.dataset import Dataset
+from flex.data.fed_dataset import FedDataset
+from flex.data.preprocessing_utils import normalize
 
 
 @pytest.fixture(name="fld")
@@ -13,25 +13,25 @@ def fixture_flex_dataset():
     """Function that returns a FlexDataset provided as example to test functions.
 
     Returns:
-        FlexDataset: A FlexDataset generated randomly
+        FedDataset: A FlexDataset generated randomly
     """
     X_data = np.random.rand(100).reshape([20, 5])
     y_data = np.random.choice(2, 20)
-    fcd = FlexDataObject(X_data=X_data, y_data=y_data)
+    fcd = Dataset(X_data=X_data, y_data=y_data)
     X_data = np.random.rand(100).reshape([20, 5])
     y_data = np.random.choice(2, 20)
-    fcd1 = FlexDataObject(X_data=X_data, y_data=y_data)
+    fcd1 = Dataset(X_data=X_data, y_data=y_data)
     X_data = np.random.rand(100).reshape([20, 5])
     y_data = np.random.choice(2, 20)
-    fcd2 = FlexDataObject(X_data=X_data, y_data=y_data)
-    return FlexDataset({"client_1": fcd, "client_2": fcd1, "client_3": fcd2})
+    fcd2 = Dataset(X_data=X_data, y_data=y_data)
+    return FedDataset({"client_1": fcd, "client_2": fcd1, "client_3": fcd2})
 
 
 @pytest.fixture(name="fcd")
 def fixture_simple_fex_data_object():
     X_data = np.random.rand(100).reshape([20, 5])
     y_data = np.random.choice(2, 20)
-    return FlexDataObject(X_data=X_data, y_data=y_data)
+    return Dataset(X_data=X_data, y_data=y_data)
 
 
 class TestFlexDataset(unittest.TestCase):
@@ -42,8 +42,8 @@ class TestFlexDataset(unittest.TestCase):
     def test_get_method(self):
         X_data = np.random.rand(100).reshape([20, 5])
         y_data = np.random.choice(2, 20)
-        fcd = FlexDataObject(X_data=X_data, y_data=y_data)
-        flex_data = FlexDataset()
+        fcd = Dataset(X_data=X_data, y_data=y_data)
+        flex_data = FedDataset()
         flex_data["client_1"] = fcd
         assert flex_data["client_1"] == fcd
         assert flex_data.get("client_2") is None

@@ -12,7 +12,7 @@ class InvalidConfig(ValueError):
 
 
 @dataclass
-class FlexDatasetConfig:
+class FedDatasetConfig:
     """Class used to represent a configuration to federate a centralized dataset.
     The following table shows the compatiblity of each option:
 

@@ -5,8 +5,8 @@ import numpy as np
 import pytest
 from sklearn.datasets import load_iris
 
-from flex.data import FlexDataDistribution
-from flex.data.flex_dataset import FlexDataObject, FlexDataset
+from flex.data import FedDataDistribution
+from flex.data.fed_dataset import Dataset, FedDataset
 from flex.pool.actors import FlexActors, FlexRole, FlexRoleManager
 from flex.pool.flex_model import FlexModel
 from flex.pool.flex_pool import FlexPool
@@ -17,18 +17,18 @@ def fixture_flex_dataset():
     """Function that returns a FlexDataset provided as example to test functions.
 
     Returns:
-        FlexDataset: A FlexDataset generated randomly
+        FedDataset: A FlexDataset generated randomly
     """
     X_data = np.random.rand(100).reshape([20, 5])
     y_data = np.random.choice(2, 20)
-    fcd = FlexDataObject(X_data=X_data, y_data=y_data)
+    fcd = Dataset(X_data=X_data, y_data=y_data)
     X_data = np.random.rand(100).reshape([20, 5])
     y_data = np.random.choice(2, 20)
-    fcd1 = FlexDataObject(X_data=X_data, y_data=y_data)
+    fcd1 = Dataset(X_data=X_data, y_data=y_data)
     X_data = np.random.rand(100).reshape([20, 5])
     y_data = np.random.choice(2, 20)
-    fcd2 = FlexDataObject(X_data=X_data, y_data=y_data)
-    return FlexDataset({"client_1": fcd, "client_2": fcd1, "client_3": fcd2})
+    fcd2 = Dataset(X_data=X_data, y_data=y_data)
+    return FedDataset({"client_1": fcd, "client_2": fcd1, "client_3": fcd2})
 
 
 @pytest.fixture(name="only_clients")
@@ -56,8 +56,8 @@ class TestFlexPool(unittest.TestCase):
     @pytest.fixture(autouse=True)
     def _fixture_iris_dataset(self):
         iris = load_iris()
-        tmp = FlexDataObject(X_data=iris.data, y_data=iris.target)
-        self._iris = FlexDataDistribution.iid_distribution(tmp, n_clients=2)
+        tmp = Dataset(X_data=iris.data, y_data=iris.target)
+        self._iris = FedDataDistribution.iid_distribution(tmp, n_clients=2)
 
     @pytest.fixture(autouse=True)
     def _fixture_flex_dataset(self, fld):
@@ -121,7 +121,7 @@ class TestFlexPool(unittest.TestCase):
         assert FlexRoleManager.is_server(p._actors["client_3"]) is True
 
     def test_validate_client_without_data(self):
-        fld = FlexDataset(
+        fld = FedDataset(
             {"client_1": self._fld["client_1"], "client_2": self._fld["client_2"]}
         )
         with pytest.raises(ValueError):
@@ -204,7 +204,7 @@ class TestFlexPool(unittest.TestCase):
                 p.servers._models[i]["model"] = 0
 
     def test_reserved_server_id(self):
-        fld = FlexDataset(
+        fld = FedDataset(
             {"server": self._fld["client_1"], "client_2": self._fld["client_2"]}
         )
         with pytest.raises(ValueError):

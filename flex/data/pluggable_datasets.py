@@ -19,7 +19,7 @@ class PluggableDatasetString(EnumMeta):
 class PluggableTorchtext(Enum, metaclass=PluggableDataset):
     from torchtext import datasets
 
-    """Class containing all the pluggable datasets to a FlexDataObject without any preprocessing needed.
+    """Class containing all the pluggable datasets to a Dataset without any preprocessing needed.
 
     Any other dataset from the TorchText library will need further preprocessing.
 
@@ -39,7 +39,7 @@ class PluggableTorchtext(Enum, metaclass=PluggableDataset):
 class PluggableTorchvision(Enum, metaclass=PluggableDataset):
     from torchvision import datasets
 
-    """Class containing all the pluggable datasets to a FlexDataObject without any preprocessing needed.
+    """Class containing all the pluggable datasets to a Dataset without any preprocessing needed.
 
     Any other dataset from the Torchvision library will need further preprocessing.
 
@@ -88,7 +88,7 @@ class PluggableHuggingFace(Enum, metaclass=PluggableDatasetString):
     other datasets.
 
     We show some example datasets that can be loaded using the function
-    FlexDataDistribution.from_config_with_huggingface_dataset just giving a config
+    FedDataDistribution.from_config_with_huggingface_dataset just giving a config
     and the string associated to each dataset from the Enum defined.
 
     We selected this dataset as we can automatice the process of loading this datasets,

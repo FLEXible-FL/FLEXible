@@ -7,24 +7,24 @@ import numpy as np
 import numpy.typing as npt
 from numpy.random import default_rng
 
-from flex.data import FlexDataObject, FlexDataset, FlexDatasetConfig
+from flex.data import Dataset, FedDataset, FedDatasetConfig
 
 
-class FlexDataDistribution(object):
+class FedDataDistribution(object):
     __create_key = object()
 
     def __init__(self, create_key: object = None) -> None:
         assert (
-            create_key == FlexDataDistribution.__create_key
-        ), """FlexDataDistribution objects must be created using FlexDataDistribution.from_config or
-        FlexDataDistribution.iid_distribution"""
+                create_key == FedDataDistribution.__create_key
+        ), """FedDataDistribution objects must be created using FedDataDistribution.from_config or
+        FedDataDistribution.iid_distribution"""
 
     @classmethod
     def FederatedEMNIST(cls, out_dir: str = ".", split="digits", return_test=False):
-        train_data, test_data = FlexDataObject.EMNIST(
+        train_data, test_data = Dataset.EMNIST(
             out_dir, split=split, include_authors=True
         )
-        config = FlexDatasetConfig(
+        config = FedDatasetConfig(
             group_by_label=1
         )  # each label is a pair (class, writer_id)
         federated_data = cls.from_config(train_data, config)
@@ -49,7 +49,7 @@ class FlexDataDistribution(object):
             target_type=["identity", "attr"],
             download=True,
         )
-        config = FlexDatasetConfig(group_by_label=0)  # identity
+        config = FedDatasetConfig(group_by_label=0)  # identity
         federated_data = cls.from_config_with_torchvision_dataset(dataset, config)
         if return_test:
             test_ds = CelebA(
@@ -60,7 +60,7 @@ class FlexDataDistribution(object):
                 target_type=["identity", "attr"],
                 download=True,
             )
-            test_data = FlexDataObject.from_torchvision_dataset(test_ds)
+            test_data = Dataset.from_torchvision_dataset(test_ds)
             return (federated_data, test_data)
         return federated_data
 
@@ -71,12 +71,12 @@ class FlexDataDistribution(object):
         dataset = load_dataset("sentiment140")
         x_labels = "text"
         y_labels = ["user", "sentiment"]
-        config = FlexDatasetConfig(group_by_label=0)  # Label "user"
+        config = FedDatasetConfig(group_by_label=0)  # Label "user"
         federated_data = cls.from_config_with_huggingface_dataset(
             dataset["train"], config, x_labels, y_labels
         )
         if return_test:
-            test_data = FlexDataObject.from_huggingface_dataset(
+            test_data = Dataset.from_huggingface_dataset(
                 dataset["test"], x_labels, y_labels
             )
             return (federated_data, test_data)
@@ -84,8 +84,8 @@ class FlexDataDistribution(object):
 
     @classmethod
     def FederatedShakespeare(cls, out_dir: str = ".", return_test=False):
-        train_data, test_data = FlexDataObject.Shakespeare(out_dir, include_actors=True)
-        config = FlexDatasetConfig(
+        train_data, test_data = Dataset.Shakespeare(out_dir, include_actors=True)
+        config = FedDatasetConfig(
             group_by_label=1
         )  # each label is a pair (class, actor_id)
         federated_data = cls.from_config(train_data, config)
@@ -97,7 +97,7 @@ class FlexDataDistribution(object):
     #         REDDIT_URL, REDDIT_FILE, REDDIT_MD5, out_dir=out_dir, extract=True, output=True
     #     )
     #     filtered_files = filter(lambda n: split in n and n.endswith(".json"), reddit_files)
-    #     flex_dataset = FlexDataset()
+    #     flex_dataset = FedDataset()
     #     for f in tqdm(filtered_files):
     #         with open(f) as json_file:
     #             train_data = json.load(json_file)
@@ -105,104 +105,104 @@ class FlexDataDistribution(object):
     #             node_ds = train_data['user_data'][user_id]
     #             y_data = [(y["target_tokens"], y["count_tokens"]) for y in node_ds['y']]
     #             x_data = node_ds['x']
-    #             flex_dataset[user_id] = FlexDataObject(x_data, y_data)
+    #             flex_dataset[user_id] = Dataset(x_data, y_data)
     #     return flex_dataset
 
     @classmethod
-    def from_config_with_torchtext_dataset(cls, data, config: FlexDatasetConfig):
+    def from_config_with_torchtext_dataset(cls, data, config: FedDatasetConfig):
         """This function federates a centralized torchtext dataset given a FlexDatasetConfig.
-        This function will transform the torchtext dataset into a FlexDataObject and then it will
+        This function will transform the torchtext dataset into a Dataset and then it will
         federate it.
 
         Args:
             data (Dataset): The torchtext dataset
-            config (FlexDatasetConfig): FlexDatasetConfig with the configuration to federate the centralized dataset.
+            config (FedDatasetConfig): FlexDatasetConfig with the configuration to federate the centralized dataset.
         """
-        cdata = FlexDataObject.from_torchtext_dataset(data)
+        cdata = Dataset.from_torchtext_dataset(data)
         return cls.from_config(cdata, config)
 
     @classmethod
-    def from_config_with_tfds_image_dataset(cls, data, config: FlexDatasetConfig):
+    def from_config_with_tfds_image_dataset(cls, data, config: FedDatasetConfig):
         """This function federates a centralized tensorflow dataset given a FlexDatasetConfig.
-        This function will transform a dataset from the tensorflow_datasets module into a FlexDataObject
+        This function will transform a dataset from the tensorflow_datasets module into a Dataset
         and then it will federate it.
 
         Args:
             data (Dataset): The tensorflow dataset
-            config (FlexDatasetConfig): FlexDatasetConfig with the configuration to federate the centralized dataset.
+            config (FedDatasetConfig): FlexDatasetConfig with the configuration to federate the centralized dataset.
         """
-        cdata = FlexDataObject.from_tfds_image_dataset(data)
+        cdata = Dataset.from_tfds_image_dataset(data)
         return cls.from_config(cdata, config)
 
     @classmethod
     def from_config_with_tfds_text_dataset(
-        cls, data, config: FlexDatasetConfig, X_columns: list, label_columns: list
+        cls, data, config: FedDatasetConfig, X_columns: list, label_columns: list
     ):
         """This function federates a centralized tensorflow dataset given a FlexDatasetConfig.
-        This function will transform a dataset from the tensorflow_datasets module into a FlexDataObject
+        This function will transform a dataset from the tensorflow_datasets module into a Dataset
         and then it will federate it.
 
         Args:
             data (Dataset): The tensorflow dataset
-            config (FlexDatasetConfig): FlexDatasetConfig with the configuration to federate the centralized dataset.
+            config (FedDatasetConfig): FlexDatasetConfig with the configuration to federate the centralized dataset.
             X_columns (List): List that contains the columns names for the input features.
             label_columns (List): List that contains the columns names for the output features.
         """
-        cdata = FlexDataObject.from_tfds_text_dataset(data, X_columns, label_columns)
+        cdata = Dataset.from_tfds_text_dataset(data, X_columns, label_columns)
         return cls.from_config(cdata, config)
 
     @classmethod
-    def from_config_with_torchvision_dataset(cls, data, config: FlexDatasetConfig):
+    def from_config_with_torchvision_dataset(cls, data, config: FedDatasetConfig):
         """This function federates a centralized torchvision dataset given a FlexDatasetConfig.
-        This function will transform a dataset from the torchvision module into a FlexDataObject
+        This function will transform a dataset from the torchvision module into a Dataset
         and then it will federate it.
 
         Args:
             data (Dataset): The torchvision dataset
-            config (FlexDatasetConfig): FlexDatasetConfig with the configuration to federate the centralized dataset.
+            config (FedDatasetConfig): FlexDatasetConfig with the configuration to federate the centralized dataset.
         """
-        cdata = FlexDataObject.from_torchvision_dataset(data)
+        cdata = Dataset.from_torchvision_dataset(data)
         return cls.from_config(cdata, config)
 
     @classmethod
     def from_config_with_huggingface_dataset(
         cls,
         data,
-        config: FlexDatasetConfig,
+        config: FedDatasetConfig,
         X_columns: list,
         label_columns: str,
     ):
         """This function federates a centralized hugginface dataset given a FlexDatasetConfig.
-        This function will transform a dataset from the HuggingFace Hub datasets into a FlexDataObject
+        This function will transform a dataset from the HuggingFace Hub datasets into a Dataset
         and then it will federate it.
 
         Args:
             data (Dataset): The hugginface dataset
-            config (FlexDatasetConfig): FlexDatasetConfig with the configuration to federate the centralized dataset.
+            config (FedDatasetConfig): FlexDatasetConfig with the configuration to federate the centralized dataset.
         """
-        cdata = FlexDataObject.from_huggingface_dataset(data, X_columns, label_columns)
+        cdata = Dataset.from_huggingface_dataset(data, X_columns, label_columns)
         return cls.from_config(cdata, config)
 
     @classmethod
-    def from_clustering_func(cls, cdata: FlexDataObject, clustering_func: Callable):
+    def from_clustering_func(cls, cdata: Dataset, clustering_func: Callable):
         """This function federates data into clients by means of a clustering function, that outputs
         to which client (cluster) a data point belongs.
 
         Args:
-            cdata (FlexDataObject): Centralized dataset represented as a FlexDataObject.
+            cdata (Dataset): Centralized dataset represented as a FlexDataObject.
             clustering_func (Callable): function that receives as arguments a pair of x and y elements from cdata
             and returns the name of the client (cluster) that should own it, the returned type must be Hashable.
             Note that we only support one client (cluster) per data point.
 
         Returns:
-            federated_dataset (FlexDataset): The federated dataset.
+            federated_dataset (FedDataset): The federated dataset.
         """
         d = defaultdict(list)
         for idx, (x, y) in enumerate(cdata):
             client_name = clustering_func(x, y)
             d[client_name].append(idx)
 
-        config = FlexDatasetConfig(
+        config = FedDatasetConfig(
             n_clients=len(d),
             client_names=list(d.keys()),
             indexes_per_client=list(d.values()),
@@ -211,31 +211,31 @@ class FlexDataDistribution(object):
         return cls.from_config(cdata, config)
 
     @classmethod
-    def iid_distribution(cls, cdata: FlexDataObject, n_clients: int = 2):
-        """Function to create a FlexDataset for an IID experiment. We consider the simplest situation
+    def iid_distribution(cls, cdata: Dataset, n_clients: int = 2):
+        """Function to create a FedDataset for an IID experiment. We consider the simplest situation
         in which the data is distributed by giving the same amount of data to each client.
 
         Args:
-            cdata (FlexDataObject): Centralized dataset represented as a FlexDataObject.
+            cdata (Dataset): Centralized dataset represented as a FlexDataObject.
             n_clients (int): Number of clients in the Federated Learning experiment. Default 2.
 
         Returns:
-            federated_dataset (FlexDataset): The federated dataset.
+            federated_dataset (FedDataset): The federated dataset.
         """
-        config = FlexDatasetConfig(n_clients=n_clients)
-        return FlexDataDistribution.from_config(cdata, config)
+        config = FedDatasetConfig(n_clients=n_clients)
+        return FedDataDistribution.from_config(cdata, config)
 
     @classmethod
-    def from_config(cls, cdata: FlexDataObject, config: FlexDatasetConfig):
+    def from_config(cls, cdata: Dataset, config: FedDatasetConfig):
         """This function prepare the data from a centralized data structure to a federated one.
         It will run different modifications to federate the data.
 
         Args:
-            cdata (FlexDataObject): Centralized dataset represented as a FlexDataObject.
-            config (FlexDatasetConfig): FlexDatasetConfig with the configuration to federate the centralized dataset.
+            cdata (Dataset): Centralized dataset represented as a FlexDataObject.
+            config (FedDatasetConfig): FlexDatasetConfig with the configuration to federate the centralized dataset.
 
         Returns:
-            federated_dataset (FlexDataset): The federated dataset.
+            federated_dataset (FedDataset): The federated dataset.
         """
         cdata.validate()
         config.validate()
@@ -272,7 +272,7 @@ class FlexDataDistribution(object):
             config_.weights_per_class = np.nan_to_num(config_.weights_per_class)
 
         # Now we can start generating our federated dataset
-        fed_dataset = FlexDataset()
+        fed_dataset = FedDataset()
         if config_.indexes_per_client is not None:
             for client_name, data in cls.__sample_dataset_with_indexes(cdata, config_):
                 fed_dataset[client_name] = data
@@ -288,7 +288,7 @@ class FlexDataDistribution(object):
                     remaining_data_indices,
                 ) = cls.__sample(rng, remaining_data_indices, cdata, config_, i)
 
-                fed_dataset[config_.client_names[i]] = FlexDataObject(
+                fed_dataset[config_.client_names[i]] = Dataset(
                     X_data=cdata.X_data[sub_data_indices][:, sub_features_indices]
                     if len(cdata.X_data.shape) > 1
                     else cdata.X_data[sub_data_indices],
@@ -300,7 +300,7 @@ class FlexDataDistribution(object):
         return fed_dataset
 
     @classmethod
-    def __group_by_label(cls, cdata: FlexDataObject, config: FlexDatasetConfig):
+    def __group_by_label(cls, cdata: Dataset, config: FedDatasetConfig):
         label_index = config.group_by_label
         feat_to_cname = {}
         x_data = defaultdict(list)
@@ -314,20 +314,20 @@ class FlexDataDistribution(object):
             x_data[feat_to_cname[feature]].append(x)
             y_data[feat_to_cname[feature]].append(y)
         for k in x_data:
-            yield k, FlexDataObject(
+            yield k, Dataset(
                 X_data=np.asarray(x_data[k]), y_data=np.asarray(y_data[k])
             )
 
     @classmethod
     def __sample_dataset_with_indexes(
-        cls, data: FlexDataObject, config: FlexDatasetConfig
+        cls, data: Dataset, config: FedDatasetConfig
     ):
         """Iterable function that associates a client with its data, when a list of indexes is given for
         each client.
 
         Args:
-            data (FlexDataObject): Centralizaed dataset represented as a FlexDataObject.
-            config (FlexDatasetConfig): Configuration used to federate a FlexDataObject.
+            data (Dataset): Centralizaed dataset represented as a FlexDataObject.
+            config (FedDatasetConfig): Configuration used to federate a FlexDataObject.
 
         Yields:
             tuple (Tuple): a tuple whose first item is the client name and the second one is the indexes of
@@ -335,7 +335,7 @@ class FlexDataDistribution(object):
 
         """
         for idx, name in zip(config.indexes_per_client, config.client_names):
-            yield name, FlexDataObject(
+            yield name, Dataset(
                 X_data=data.X_data[idx],
                 y_data=data.y_data[idx] if data.y_data is not None else None,
             )
@@ -345,8 +345,8 @@ class FlexDataDistribution(object):
         cls,
         rng: np.random.Generator,
         data_indices: npt.NDArray[np.int_],
-        data: FlexDataObject,
-        config: FlexDatasetConfig,
+        data: Dataset,
+        config: FedDatasetConfig,
         client_i: int,
     ) -> Tuple[npt.NDArray[np.int_], npt.NDArray[np.int_], npt.NDArray[np.int_]]:
         """Function to sample indices from a FlexDataObject as especified by a FlexDatasetConfig.
@@ -354,8 +354,8 @@ class FlexDataDistribution(object):
         Args:
             rng (np.random.Generator): Random number generator used to sample.
             data_indices (npt.NDArray[np.int_]): Array of available data indices to sample from.
-            data (FlexDataObject): Centralizaed dataset represented as a FlexDataObject.
-            config (FlexDatasetConfig): Configuration used to federate a FlexDataObject.
+            data (Dataset): Centralizaed dataset represented as a FlexDataObject.
+            config (FedDatasetConfig): Configuration used to federate a FlexDataObject.
             client_i (int): Position of client which will be identified with the generated sample.
 
         Returns:
@@ -387,8 +387,8 @@ class FlexDataDistribution(object):
         cls,
         rng: np.random.Generator,
         data_indices: npt.NDArray[np.int_],
-        data: FlexDataObject,
-        config: FlexDatasetConfig,
+        data: Dataset,
+        config: FedDatasetConfig,
         client_i: int,
     ):
         """Especialized function to sample indices from a FlexDataObject as especified by a FlexDatasetConfig.
@@ -399,8 +399,8 @@ class FlexDataDistribution(object):
         Args:
             rng (np.random.Generator): Random number generator used to sample.
             data_indices (npt.NDArray[np.int_]): Array of available data indices to sample from.
-            data (FlexDataObject): Centralizaed dataset represented as a FlexDataObject.
-            config (FlexDatasetConfig): Configuration used to federate a FlexDataObject.
+            data (Dataset): Centralizaed dataset represented as a FlexDataObject.
+            config (FedDatasetConfig): Configuration used to federate a FlexDataObject.
             client_i (int): Position of client which will be identified with the generated sample.
 
         Returns:
@@ -440,7 +440,7 @@ class FlexDataDistribution(object):
 
     @classmethod
     def __configure_weights_per_class(
-        cls, rng: np.random.Generator, config: FlexDatasetConfig, data: FlexDataObject
+        cls, rng: np.random.Generator, config: FedDatasetConfig, data: Dataset
     ):
         sorted_classes = np.sort(np.unique(data.y_data))
         assigned_classes = []
@@ -478,8 +478,8 @@ class FlexDataDistribution(object):
         cls,
         rng,
         data_indices: npt.NDArray[np.int_],
-        data: FlexDataObject,
-        config: FlexDatasetConfig,
+        data: Dataset,
+        config: FedDatasetConfig,
         client_i: int,
     ):
         """Especialized function to sample indices from a FlexDataObject as especified by a FlexDatasetConfig.
@@ -489,8 +489,8 @@ class FlexDataDistribution(object):
         Args:
             rng (np.random.Generator): Random number generator used to sample.
             data_indices (npt.NDArray[np.int_]): Array of available data indices to sample from.
-            data (FlexDataObject): Centralized dataset represented as a FlexDataObject.
-            config (FlexDatasetConfig): Configuration used to federate a FlexDataObject.
+            data (Dataset): Centralized dataset represented as a FlexDataObject.
+            config (FedDatasetConfig): Configuration used to federate a FlexDataObject.
             client_i (int): Position of client which will be identified with the generated sample.
 
         Returns:

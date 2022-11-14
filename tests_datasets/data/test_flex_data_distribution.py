@@ -2,12 +2,12 @@ import unittest
 
 import pytest
 
-from flex.data import FlexDataDistribution, FlexDatasetConfig
+from flex.data import FedDataDistribution, FedDatasetConfig
 
 
 @pytest.fixture(name="basic_config")
 def fixture_simple_fex_data_object():
-    return FlexDatasetConfig(
+    return FedDatasetConfig(
         seed=0,
         n_clients=2,
         replacement=False,
@@ -24,7 +24,7 @@ class TestFlexDataDistribution(unittest.TestCase):
         from torchtext.datasets import AG_NEWS
 
         data = AG_NEWS(split="train")
-        flex_dataset = FlexDataDistribution.from_pytorch_text_dataset(
+        flex_dataset = FedDataDistribution.from_pytorch_text_dataset(
             data, self._config
         )
         assert len(flex_dataset) == self._config.n_clients
@@ -36,7 +36,7 @@ class TestFlexDataDistribution(unittest.TestCase):
         data = load_dataset("ag_news", split="train")
         X_columns = "text"
         label_column = "label"
-        flex_dataset = FlexDataDistribution.from_huggingface_dataset(
+        flex_dataset = FedDataDistribution.from_huggingface_dataset(
             data, self._config, X_columns, label_column
         )
         assert len(flex_dataset) == self._config.n_clients

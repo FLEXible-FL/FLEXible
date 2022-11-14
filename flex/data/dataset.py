@@ -10,7 +10,7 @@ from cardinality import count
 from lazyarray import larray
 from scipy.io import loadmat
 
-from flex.data.flex_utils import (
+from flex.data.utils import (
     EMNIST_DIGITS_FILE,
     EMNIST_DIGITS_MD5,
     EMNIST_DIGITS_URL,
@@ -25,7 +25,7 @@ from flex.data.flex_utils import (
 
 
 @dataclass(frozen=True)
-class FlexDataObject:
+class Dataset:
     """Class used to represent the dataset from a client in a Federated Learning enviroment.
 
     Attributes
@@ -48,9 +48,9 @@ class FlexDataObject:
 
     def __getitem__(self, pos):
         if self.y_data is None:
-            return FlexDataObject(self.X_data[pos], None)
+            return Dataset(self.X_data[pos], None)
         else:
-            return FlexDataObject(
+            return Dataset(
                 self.X_data[pos],
                 self.y_data[pos[0]] if isinstance(pos, tuple) else self.y_data[pos],
             )
@@ -102,7 +102,7 @@ class FlexDataObject:
                     test_y += node_ds["y"]
                 test_x += node_ds["x"]
 
-        return FlexDataObject(train_x, train_y), FlexDataObject(test_x, test_y)
+        return Dataset(train_x, train_y), Dataset(test_x, test_y)
 
     @classmethod
     def EMNIST(cls, out_dir: str = ".", split="digits", include_authors=False):
@@ -145,10 +145,10 @@ class FlexDataObject:
             test_labels = [
                 (label, test_writers[i][0]) for i, label in enumerate(test_labels)
             ]
-        train_data_object = FlexDataObject(
+        train_data_object = Dataset(
             X_data=np.asarray(train_data), y_data=train_labels
         )
-        test_data_object = FlexDataObject(
+        test_data_object = Dataset(
             X_data=np.asarray(test_data), y_data=test_labels
         )
         return train_data_object, test_data_object
@@ -161,7 +161,7 @@ class FlexDataObject:
             pytorch_dataset (torchvision.datasets.*): a torchvision dataset.
 
         Returns:
-            FlexDataObject: a FlexDataObject which encapsulates the dataset.
+            Dataset: a FlexDataObject which encapsulates the dataset.
         """
         from torchvision.datasets import ImageFolder
 
@@ -214,7 +214,7 @@ class FlexDataObject:
             tdfs_dataset (tf.data.Datasets): a tf dataset
 
         Returns:
-            FlexDataObject: a FlexDataObject which encapsulates the dataset.
+            Dataset: a FlexDataObject which encapsulates the dataset.
         """
         from tensorflow_datasets import as_numpy
 
@@ -241,7 +241,7 @@ class FlexDataObject:
             label_columns (list): List containing the targets of the model.
 
         Returns:
-            FlexDataObject: a FlexDataObject which encapsulates the dataset.
+            Dataset: a FlexDataObject which encapsulates the dataset.
         """
         import pandas as pd
         from tensorflow.python.data.ops.dataset_ops import PrefetchDataset
@@ -276,7 +276,7 @@ class FlexDataObject:
             label_columns (str, list): name of the label columns
 
         Returns:
-            FlexDataObject: a FlexDataObject which encapsulates the dataset.
+            Dataset: a FlexDataObject which encapsulates the dataset.
         """
         from flex.data.pluggable_datasets import PluggableHuggingFace
 
@@ -307,7 +307,7 @@ class FlexDataObject:
             pytorch_text_dataset (torchtext.datasets.*): a torchtext dataset
 
         Returns:
-            FlexDataObject: a FlexDataObject which encapsulates the dataset.
+            Dataset: a FlexDataObject which encapsulates the dataset.
         """
         import numpy as np
         from torch.utils.data import DataLoader

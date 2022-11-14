@@ -4,7 +4,7 @@ import functools
 import random
 from typing import Callable, Hashable
 
-from flex.data import FlexDataset
+from flex.data import FedDataset
 from flex.pool.actors import FlexActors, FlexRole, FlexRoleManager
 from flex.pool.flex_model import FlexModel
 
@@ -23,7 +23,7 @@ class FlexPool:
 
     Attributes
     ----------
-        - flex_data (FlexDataset): The federated dataset prepared to be used.
+        - flex_data (FedDataset): The federated dataset prepared to be used.
         - flex_actors (FlexActors): Actors with its roles.
         - flex_models (defaultdict): A dictionary containing the each actor id,
         and initialized to None. The model to train by each actor will be initialized
@@ -33,9 +33,9 @@ class FlexPool:
     --------------------------------------------------------------------------
     We offer two class methods to create two architectures, client-server architecture
     and p2p architecture. In the client-server architecture, every id from the
-    FlexDataset is assigned to be a client, and we create a third-party actor,
+    FedDataset is assigned to be a client, and we create a third-party actor,
     supposed to be neutral, to orchestate the training. Meanwhile, in the p2p
-    architecture, each id from the FlexDataset will be assigned to be client,
+    architecture, each id from the FedDataset will be assigned to be client,
     server and aggregator. In both cases, the method will create the actors
     so the user will only have to apply the map function to train the model.
 
@@ -46,12 +46,12 @@ class FlexPool:
 
     def __init__(
         self,
-        flex_data: FlexDataset,
+        flex_data: FedDataset,
         flex_actors: FlexActors,
         flex_models: dict[Hashable, FlexModel] = None,
     ) -> None:
         self._actors = flex_actors  # Actors
-        self._data = flex_data  # FlexDataset
+        self._data = flex_data  # FedDataset
         self._models = flex_models
         if self._models is None:
             self._models = {k: FlexModel() for k in self._actors}
@@ -147,7 +147,7 @@ class FlexPool:
         node_dropout = int(len(self._actors) * node_dropout)
         selected_nodes = random.sample(list(self._actors.keys()), node_dropout)
         new_actors = FlexActors()
-        new_data = FlexDataset()
+        new_data = FedDataset()
         new_models = {}
         for actor_id in selected_nodes:
             cond = (
@@ -199,7 +199,7 @@ class FlexPool:
         """
         return self.filter(lambda a, b: FlexRoleManager.is_server(b))
 
-    def validate(self):
+    def validate(self):  # sourcery skip: de-morgan
         """Function that checks whether the object is correct or not."""
         actors_ids = self._actors.keys()
         data_ids = self._data.keys()
@@ -221,7 +221,7 @@ class FlexPool:
 
     @classmethod
     def client_server_architecture(
-        cls, fed_dataset: FlexDataset, init_func: Callable, **kwargs
+        cls, fed_dataset: FedDataset, init_func: Callable, **kwargs
     ):
         """Method to create a client-server architeture for a FlexDataset given.
         This functions is used when you have a FlexDataset and you want to start
@@ -232,7 +232,7 @@ class FlexPool:
         orchestrate the learning phase.
 
         Args:
-            fed_dataset (FlexDataset): Federated dataset used to train a model.
+            fed_dataset (FedDataset): Federated dataset used to train a model.
 
         Returns:
             FlexPool: A FlexPool with the assigned roles for a client-server architecture.
@@ -255,7 +255,7 @@ class FlexPool:
         return new_arch
 
     @classmethod
-    def p2p_architecture(cls, fed_dataset: FlexDataset, init_func: Callable, **kwargs):
+    def p2p_architecture(cls, fed_dataset: FedDataset, init_func: Callable, **kwargs):
         """Method to create a peer-to-peer (p2p) architecture for a FlexDataset given.
         This method is used when you have a FlexDataset and you want to start the
         learning phase following a p2p architecture.
@@ -265,7 +265,7 @@ class FlexPool:
         aggregator and server.
 
         Args:
-            fed_dataset (FlexDataset): Federated dataset used to train a model.
+            fed_dataset (FedDataset): Federated dataset used to train a model.
 
         Returns:
             FlexPool: A FlexPool with the assigned roles for a p2p architecture.

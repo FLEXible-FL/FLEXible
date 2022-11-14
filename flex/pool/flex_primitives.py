@@ -2,11 +2,11 @@
 
 In this file we specify some functions for each framework, i.e., TensorFlow (tf), PyTorch (pt), among others, but
 we only give functions for a general purpose. For a more personalized use of FLEXible, the user must create
-her own functions. The user can use this functions as template on how to create a custom funcion for each step
+her own functions. The user can use this functions as template on how to create a custom function for each step
 of the training steps in a federated learning environment.
 
 Note that each function is using the decorators we've created to facilitate the use of the library. For a better
-understanding on how the platform works, please go to fthe flex_decorators file.
+understanding on how the platform works, please go to the flex_decorators file.
 """
 from copy import deepcopy
 
@@ -54,7 +54,8 @@ def init_server_model_tf(
     else:
         if any([optimizer, loss, metrics] is None):
             raise ValueError(
-                "If the model is not compiled, then optimizer, loss and metrics can't be None. Please, provide a value for this arguments."
+                "If the model is not compiled, then optimizer, loss and metrics can't be None. Please, provide a "
+                "value for this arguments. "
             )
         server_flex_model["optimizer"] = optimizer
         server_flex_model["loss"] = loss
@@ -71,7 +72,7 @@ def init_server_model_tf(
 
 @deploy_server_model
 def deploy_server_model_tf(server_flex_model, *args, **kwargs):
-    """Function the deploy a TensorFlow model from the server to a client.
+    """Function to deploy a TensorFlow model from the server to a client.
 
     The function will make a deepcopy for a TensorFlow model, as it needs
     a special method of copying. Also, it compiles the model for being able
@@ -110,9 +111,9 @@ def train_tf(client_flex_model, client_data, *args, **kwargs):
 
     Args:
         client_flex_model (FlexModel): client's FlexModel
-        client_data (FlexDataset): client's FlexDataset
+        client_data (FedDataset): client's FedDataset
 
-    Example of use assuming you are using a client-server architechture:
+    Example of use assuming you are using a client-server architecture:
 
         from flex.pool.primitive_functions import train_tf
 
@@ -120,8 +121,8 @@ def train_tf(client_flex_model, client_data, *args, **kwargs):
 
         clients.map(train_tf)
 
-    Example of use using the FlexPool without separating clients
-    and following a client-server architechture.
+    Example of using the FlexPool without separating clients
+    and following a client-server architecture.
 
         from flex.pool.primitive_functions import train_tf
 
@@ -137,11 +138,11 @@ def train_tf(client_flex_model, client_data, *args, **kwargs):
 #     # TODO: Improve documentation.
 #     """Function to train train a model at client level. This
 #     function will use the model allocated at the client level,
-#     and then will feed the client's data to the model in orther
+#     and then will feed the client's data to the model in order
 #     to train it.
 
 #     We use the args and kwargs arguments to give it to the train
-#     function of the model. Each model will have it's own train
+#     function of the model. Each model will have its own train
 #     function, i.e., a TensorFlow model will call .fit() method,
 #     so we will call the method as follows:
 #     model.fit(X_data, y_data, *args, **kwargs)
@@ -155,7 +156,7 @@ def train_tf(client_flex_model, client_data, *args, **kwargs):
 
 #     if "model" in kwargs or "weights" in kwargs:
 #         raise ValueError(
-#             "'model' and 'weights' are reserved words in out framework, please, dont't use it."
+#             "'model' and 'weights' are reserved words in out framework, please, don't use it."
 #         )
 
 #     model = client_model["model"]
@@ -190,7 +191,7 @@ def collect_clients_weights_tf(client_flex_model, *args, **kwargs):
     Returns:
         np.array: An array with all the weights of the client's model
 
-    Example of use assuming you are using a client-server architechture:
+    Example of use assuming you are using a client-server architecture:
 
         from flex.pool.primitive_functions import collect_weights_tf
 
@@ -199,8 +200,8 @@ def collect_clients_weights_tf(client_flex_model, *args, **kwargs):
 
         clients.map(collect_weights_tf, aggregator)
 
-    Example of use using the FlexPool without separating clients
-    and aggregator, and following a client-server architechture.
+    Example of using the FlexPool without separating clients
+    and aggregator, and following a client-server architecture.
 
         from flex.pool.primitive_functions import collect_weights_tf
 
@@ -221,7 +222,7 @@ def collect_clients_weights_pt(client_flex_mode, *args, **kwargs):
     Returns:
         List: List with all the weights of the client's model
 
-    Example of use assuming you are using a client-server architechture:
+    Example of use assuming you are using a client-server architecture:
 
         from flex.pool.primitive_functions import collect_weights_pt
 
@@ -230,8 +231,8 @@ def collect_clients_weights_pt(client_flex_mode, *args, **kwargs):
 
         clients.map(collect_weights_pt, aggregator)
 
-    Example of use using the FlexPool without separating clients
-    and aggregator, and following a client-server architechture.
+    Example of using the FlexPool without separating clients
+    and aggregator, and following a client-server architecture.
 
         from flex.pool.primitive_functions import collect_weights_pt
 
@@ -263,7 +264,7 @@ def set_aggregated_weights_pt(server_flex_model, aggregated_weights, *args, **kw
         server_flex_model (FlexModel): The server's FlexModel
         aggregated_weights (np.array): Aggregated weights
 
-    Example of use assuming you are using a client-server architechture:
+    Example of use assuming you are using a client-server architecture:
 
         from flex.pool.primitive_functions import set_aggregated_weights_pt
 
@@ -271,8 +272,8 @@ def set_aggregated_weights_pt(server_flex_model, aggregated_weights, *args, **kw
 
         aggregator.map(set_aggregated_weights_pt)
 
-    Example of use using the FlexPool without separating clients
-    and aggregator, and following a client-server architechture.
+    Example of using the FlexPool without separating clients
+    and aggregator, and following a client-server architecture.
 
         from flex.pool.primitive_functions import set_aggregated_weights_pt
 
@@ -294,7 +295,7 @@ def evaluate_server_model_tf(
     """Function that evaluate the global model on the test data
 
     Args:
-        server_flex_model (FlexModel): server's Flexmodel
+        server_flex_model (FlexModel): server's FlexModel
         test_data (np.array): Test inputs.
         test_labels (np.array): Test labels.
 

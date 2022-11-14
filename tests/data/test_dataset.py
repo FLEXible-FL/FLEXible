@@ -3,14 +3,14 @@ import unittest
 import numpy as np
 import pytest
 
-from flex.data.flex_data_object import FlexDataObject
+from flex.data.dataset import Dataset
 
 
 @pytest.fixture(name="fcd")
 def fixture_simple_fex_data_object():
     X_data = np.random.rand(100).reshape([20, 5])
     y_data = np.random.choice(2, 20)
-    return FlexDataObject(X_data=X_data, y_data=y_data)
+    return Dataset(X_data=X_data, y_data=y_data)
 
 
 class TestFlexDataObject(unittest.TestCase):
@@ -35,14 +35,14 @@ class TestFlexDataObject(unittest.TestCase):
     def test_getitem_property(self):
         X_data = np.random.rand(100).reshape([20, 5])
         y_data = np.random.choice(2, 20)
-        fcd = FlexDataObject(X_data=X_data, y_data=y_data)
+        fcd = Dataset(X_data=X_data, y_data=y_data)
         for x, y, (x_bis, y_bis) in zip(X_data, y_data, fcd):
             assert np.array_equal(x, x_bis)
             assert y == y_bis
 
     def test_getitem_property_y_data_none(self):
         X_data = np.random.rand(100).reshape([20, 5])
-        fcd = FlexDataObject(X_data=X_data, y_data=None)
+        fcd = Dataset(X_data=X_data, y_data=None)
         assert len(fcd[:, 0]) == fcd.X_data.shape[0]
 
     def test_validate_correct_object(self):
@@ -51,7 +51,7 @@ class TestFlexDataObject(unittest.TestCase):
     def test_len_X_data_differs_len_y_data(self):
         X_data = np.random.rand(100).reshape([20, 5])
         y_data = np.random.choice(2, 19)
-        fcd = FlexDataObject(X_data=X_data, y_data=y_data)
+        fcd = Dataset(X_data=X_data, y_data=y_data)
         with pytest.raises(ValueError):
             fcd.validate()
 
@@ -59,7 +59,7 @@ class TestFlexDataObject(unittest.TestCase):
         from torchtext.datasets import AG_NEWS
 
         data = AG_NEWS(split="train")
-        fcd = FlexDataObject.from_torchtext_dataset(data)
+        fcd = Dataset.from_torchtext_dataset(data)
         fcd.validate()
 
     def test_validate_from_huggingface_dataset(self):
@@ -68,7 +68,7 @@ class TestFlexDataObject(unittest.TestCase):
         data = load_dataset("ag_news", split="train")
         X_columns = "text"
         label_columns = "label"
-        fcd = FlexDataObject.from_huggingface_dataset(
+        fcd = Dataset.from_huggingface_dataset(
             data, X_columns=X_columns, label_columns=label_columns
         )
         fcd.validate()
