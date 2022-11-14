@@ -6,12 +6,7 @@ import pytest
 from sklearn.cluster import KMeans
 from sklearn.datasets import load_iris
 
-from flex.data import (
-    FedDataDistribution,
-    Dataset,
-    FedDataset,
-    FedDatasetConfig,
-)
+from flex.data import Dataset, FedDataDistribution, FedDataset, FedDatasetConfig
 
 
 @pytest.fixture(name="fcd")
@@ -570,9 +565,7 @@ class TestFlexDataDistribution(unittest.TestCase):
         assert isclose(std, 4.71, abs_tol=1e-1)
 
     def test_loading_fedshakespeare_using_from_config(self):
-        fed_data, test_data = FedDataDistribution.FederatedShakespeare(
-            return_test=True
-        )
+        fed_data, test_data = FedDataDistribution.FederatedShakespeare(return_test=True)
         assert isinstance(fed_data, FedDataset)
         assert isinstance(test_data, Dataset)
         num_samples = [len(fed_data[i]) for i in fed_data]

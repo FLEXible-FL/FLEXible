@@ -15,7 +15,7 @@ class FedDataDistribution(object):
 
     def __init__(self, create_key: object = None) -> None:
         assert (
-                create_key == FedDataDistribution.__create_key
+            create_key == FedDataDistribution.__create_key
         ), """FedDataDistribution objects must be created using FedDataDistribution.from_config or
         FedDataDistribution.iid_distribution"""
 
@@ -314,14 +314,10 @@ class FedDataDistribution(object):
             x_data[feat_to_cname[feature]].append(x)
             y_data[feat_to_cname[feature]].append(y)
         for k in x_data:
-            yield k, Dataset(
-                X_data=np.asarray(x_data[k]), y_data=np.asarray(y_data[k])
-            )
+            yield k, Dataset(X_data=np.asarray(x_data[k]), y_data=np.asarray(y_data[k]))
 
     @classmethod
-    def __sample_dataset_with_indexes(
-        cls, data: Dataset, config: FedDatasetConfig
-    ):
+    def __sample_dataset_with_indexes(cls, data: Dataset, config: FedDatasetConfig):
         """Iterable function that associates a client with its data, when a list of indexes is given for
         each client.
 

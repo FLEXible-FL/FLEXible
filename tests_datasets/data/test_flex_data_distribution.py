@@ -24,9 +24,7 @@ class TestFlexDataDistribution(unittest.TestCase):
         from torchtext.datasets import AG_NEWS
 
         data = AG_NEWS(split="train")
-        flex_dataset = FedDataDistribution.from_pytorch_text_dataset(
-            data, self._config
-        )
+        flex_dataset = FedDataDistribution.from_pytorch_text_dataset(data, self._config)
         assert len(flex_dataset) == self._config.n_clients
         assert len(flex_dataset["client_0"]) == len(flex_dataset["client_1"])
 

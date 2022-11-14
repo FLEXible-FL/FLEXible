@@ -3,7 +3,7 @@
 
 import gc
 
-from flex.data import FedDataDistribution, Dataset, FedDatasetConfig
+from flex.data import Dataset, FedDataDistribution, FedDatasetConfig
 
 config = FedDatasetConfig(
     seed=0,

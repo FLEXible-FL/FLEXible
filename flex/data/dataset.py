@@ -145,12 +145,8 @@ class Dataset:
             test_labels = [
                 (label, test_writers[i][0]) for i, label in enumerate(test_labels)
             ]
-        train_data_object = Dataset(
-            X_data=np.asarray(train_data), y_data=train_labels
-        )
-        test_data_object = Dataset(
-            X_data=np.asarray(test_data), y_data=test_labels
-        )
+        train_data_object = Dataset(X_data=np.asarray(train_data), y_data=train_labels)
+        test_data_object = Dataset(X_data=np.asarray(test_data), y_data=test_labels)
         return train_data_object, test_data_object
 
     @classmethod
