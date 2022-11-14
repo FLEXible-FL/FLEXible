@@ -10,7 +10,7 @@ understanding on how the platform works, please go to the flex_decorators file.
 """
 from copy import deepcopy
 
-from flex.pool.flex_decorators import (
+from flex.pool.decorators import (
     collect_clients_weights,
     deploy_server_model,
     evaluate_server_model,
@@ -42,7 +42,7 @@ def init_server_model_tf(
     Returns:
         FlexModel: A FlexModel that will be assigned to the server.
     """
-    from flex.pool.flex_model import FlexModel
+    from flex.model.model import FlexModel
 
     server_flex_model = FlexModel()
 
@@ -90,7 +90,7 @@ def deploy_server_model_tf(server_flex_model, *args, **kwargs):
     """
     import tensorflow as tf
 
-    from flex.pool.flex_model import FlexModel
+    from flex.model.model import FlexModel
 
     weights = server_flex_model["model"].get_weights()
     model = tf.keras.models.clone_model(server_flex_model["model"])

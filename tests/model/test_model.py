@@ -2,7 +2,7 @@ import unittest
 
 import pytest
 
-from flex.pool import FlexModel
+from flex.model import FlexModel
 
 
 class TestFlexModel(unittest.TestCase):

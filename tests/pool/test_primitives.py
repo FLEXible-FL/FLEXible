@@ -3,9 +3,9 @@ import unittest
 import pytest
 
 from flex.data import FedDataDistribution, FedDatasetConfig
-from flex.pool.flex_aggregators import fed_avg
-from flex.pool.flex_pool import FlexPool
-from flex.pool.flex_primitives import (  # collect_weights_pt,; set_aggregated_weights_pt,
+from flex.pool.aggregators import fed_avg
+from flex.pool.pool import FlexPool
+from flex.pool.primitives import (  # collect_weights_pt,; set_aggregated_weights_pt,
     collect_clients_weights_tf,
     deploy_server_model_tf,
     evaluate_server_model_tf,

@@ -4,9 +4,9 @@ import functools
 import random
 from typing import Callable, Hashable
 
+from flex.actors.actors import FlexActors, FlexRole, FlexRoleManager
 from flex.data import FedDataset
-from flex.pool.actors import FlexActors, FlexRole, FlexRoleManager
-from flex.pool.flex_model import FlexModel
+from flex.model.model import FlexModel
 
 
 class FlexPool:

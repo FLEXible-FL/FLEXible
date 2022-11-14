@@ -4,7 +4,7 @@ development of a federated model in FLEXible.
 This aggregators also can work as examples for creating a custom aggregator.
 """
 
-from flex.pool.flex_decorators import aggregate_weights
+from flex.pool.decorators import aggregate_weights
 
 
 @aggregate_weights

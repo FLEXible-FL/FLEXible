@@ -2,7 +2,7 @@ import unittest
 
 import pytest
 
-from flex.pool.actors import FlexActors, FlexRole, FlexRoleManager
+from flex.actors.actors import FlexActors, FlexRole, FlexRoleManager
 
 
 @pytest.fixture(name="actors_cs")
