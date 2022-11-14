@@ -16,7 +16,8 @@ setup(
                     "lazyarray",
                     "sultan",
                     "tqdm",
-                    "scipy"
+                    "scipy",
+                    "gdown"
                     ],
     extras_require={
         "tensorflow": ["tensorflow", 

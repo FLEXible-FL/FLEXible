@@ -67,9 +67,9 @@ class TestFlexDataObject(unittest.TestCase):
 
         data = load_dataset("ag_news", split="train")
         X_columns = "text"
-        label_column = "label"
+        label_columns = "label"
         fcd = FlexDataObject.from_huggingface_dataset(
-            data, X_columns=X_columns, label_column=label_column
+            data, X_columns=X_columns, label_columns=label_columns
         )
         fcd.validate()
 

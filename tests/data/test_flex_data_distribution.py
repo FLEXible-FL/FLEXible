@@ -1,4 +1,5 @@
 import unittest
+from math import isclose
 
 import numpy as np
 import pytest
@@ -490,14 +491,14 @@ class TestFlexDataDistribution(unittest.TestCase):
 
         data = load_dataset("ag_news", split="train")
         X_columns = "text"
-        label_column = "label"
+        label_columns = "label"
         config = FlexDatasetConfig(
             seed=0,
             replacement=False,
             client_names=["client_0", "client_1"],
         )
         flex_dataset = FlexDataDistribution.from_config_with_huggingface_dataset(
-            data, config, X_columns, label_column
+            data, config, X_columns, label_columns
         )
         assert len(flex_dataset) == config.n_clients
         assert len(flex_dataset["client_0"]) == len(flex_dataset["client_1"])
@@ -507,8 +508,6 @@ class TestFlexDataDistribution(unittest.TestCase):
         )
 
     def test_loading_fedmnist_digits_using_from_config(self):
-        from math import isclose
-
         fed_data, test_data = FlexDataDistribution.FederatedEMNIST(
             return_test=True, split="digits"
         )
@@ -519,14 +518,12 @@ class TestFlexDataDistribution(unittest.TestCase):
         std = np.std(num_samples)
         mean = np.mean(num_samples)
         users = len(fed_data)
-        assert users == 3579  # The paper reports 3550
-        assert total_samples == 240000  # The paper reports 805,263
-        assert isclose(mean, 67.05, abs_tol=1e-1)  # The paper reports 226.83
-        assert isclose(std, 11.17, abs_tol=1e-1)  # The paper reports 88.94
+        assert users == 3579
+        assert total_samples == 240000
+        assert isclose(mean, 67.05, abs_tol=1e-1)
+        assert isclose(std, 11.17, abs_tol=1e-1)
 
     def test_loading_fedmnist_letters_using_from_config(self):
-        from math import isclose
-
         fed_data, test_data = FlexDataDistribution.FederatedEMNIST(
             return_test=True, split="letters"
         )
@@ -537,16 +534,28 @@ class TestFlexDataDistribution(unittest.TestCase):
         std = np.std(num_samples)
         mean = np.mean(num_samples)
         users = len(fed_data)
-        assert users == 3585  # The paper reports 3550
-        assert total_samples == 124800  # The paper reports 805,263
-        assert isclose(mean, 34.81, abs_tol=1e-1)  # The paper reports 226.83
-        assert isclose(std, 21.85, abs_tol=1e-1)  # The paper reports 88.94
+        assert users == 3585
+        assert total_samples == 124800
+        assert isclose(mean, 34.81, abs_tol=1e-1)
+        assert isclose(std, 21.85, abs_tol=1e-1)
 
-    def test_loading_fedmnist_raw_using_from_config(self):
-        from math import isclose
+    def test_loading_fedceleba_using_from_config(self):
+        fed_data, test_data = FlexDataDistribution.FederatedCelebA(return_test=True)
+        assert isinstance(fed_data, FlexDataset)
+        assert isinstance(test_data, FlexDataObject)
+        num_samples = [len(fed_data[i]) for i in fed_data]
+        total_samples = np.sum(num_samples)
+        std = np.std(num_samples)
+        mean = np.mean(num_samples)
+        users = len(fed_data)
+        assert users == 8192
+        assert total_samples == 162770
+        assert isclose(mean, 19.87, abs_tol=1e-1)
+        assert isclose(std, 8.92, abs_tol=1e-1)
 
-        fed_data, test_data = FlexDataDistribution.FederatedEMNIST(
-            return_test=True, split="mnist"
+    def test_loading_fedsentiment_using_from_config(self):
+        fed_data, test_data = FlexDataDistribution.FederatedSentiment140(
+            return_test=True
         )
         assert isinstance(fed_data, FlexDataset)
         assert isinstance(test_data, FlexDataObject)
@@ -555,11 +564,27 @@ class TestFlexDataDistribution(unittest.TestCase):
         std = np.std(num_samples)
         mean = np.mean(num_samples)
         users = len(fed_data)
-        assert users == 3578  # The paper reports 3550
-        assert total_samples == 60000  # The paper reports 805,263
-        assert isclose(mean, 16.76, abs_tol=1e-1)  # The paper reports 226.83
-        assert isclose(std, 4.49, abs_tol=1e-1)  # The paper reports 88.94
+        assert users == 659775
+        assert total_samples == 1600000
+        assert isclose(mean, 2.42, abs_tol=1e-1)
+        assert isclose(std, 4.71, abs_tol=1e-1)
+
+    def test_loading_fedshakespeare_using_from_config(self):
+        fed_data, test_data = FlexDataDistribution.FederatedShakespeare(
+            return_test=True
+        )
+        assert isinstance(fed_data, FlexDataset)
+        assert isinstance(test_data, FlexDataObject)
+        num_samples = [len(fed_data[i]) for i in fed_data]
+        total_samples = np.sum(num_samples)
+        std = np.std(num_samples)
+        mean = np.mean(num_samples)
+        users = len(fed_data)
+        assert users == 660
+        assert total_samples == 3678451
+        assert isclose(mean, 5573.41, abs_tol=1e-1)
+        assert isclose(std, 6460.77, abs_tol=1e-1)
 
     def test_emnist_wrong_split_error(self):
         with pytest.raises(ValueError):
-            FlexDataDistribution.EMNIST(split="weird")
+            FlexDataObject.EMNIST(split="weird")

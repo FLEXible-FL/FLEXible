@@ -6,18 +6,8 @@ from typing import Callable, Tuple
 import numpy as np
 import numpy.typing as npt
 from numpy.random import default_rng
-from scipy.io import loadmat
 
 from flex.data import FlexDataObject, FlexDataset, FlexDatasetConfig
-from flex.data.flex_utils import (
-    EMNIST_DIGITS,
-    EMNIST_FILE,
-    EMNIST_LETTERS,
-    EMNIST_MD5,
-    EMNIST_MNIST,
-    EMNIST_URL,
-    download_dataset,
-)
 
 
 class FlexDataDistribution(object):
@@ -30,52 +20,93 @@ class FlexDataDistribution(object):
         FlexDataDistribution.iid_distribution"""
 
     @classmethod
-    def EMNIST(cls, out_dir: str = ".", split="digits", include_writers=False):
-        if split == "digits":
-            split_type = EMNIST_DIGITS
-        elif split == "letters":
-            split_type = EMNIST_LETTERS
-        elif split == "mnist":
-            split_type = EMNIST_MNIST
-        else:
-            raise ValueError(
-                "Unknown split. Available splits are 'mnist', 'digits' and 'letters'."
-            )
-        mnist_files = download_dataset(
-            EMNIST_URL, EMNIST_FILE, EMNIST_MD5, extract=True, output=True
-        )
-        dataset = [loadmat(mat)["dataset"] for mat in mnist_files if split_type in mat][
-            0
-        ]
-        writers = dataset["train"][0, 0]["writers"][0, 0]
-        train_data = np.reshape(
-            dataset["train"][0, 0]["images"][0, 0], (-1, 28, 28), order="F"
-        )
-        train_labels = np.squeeze(dataset["train"][0, 0]["labels"][0, 0])
-        if include_writers:
-            train_labels = [
-                (label, writers[i][0]) for i, label in enumerate(train_labels)
-            ]
-
-        test_data = np.reshape(
-            dataset["test"][0, 0]["images"][0, 0], (-1, 28, 28), order="F"
-        )
-        test_labels = np.squeeze(dataset["test"][0, 0]["labels"][0, 0])
-
-        train_data_object = FlexDataObject(
-            X_data=np.asarray(train_data), y_data=train_labels
-        )
-        test_data_object = FlexDataObject(
-            X_data=np.asarray(test_data), y_data=test_labels
-        )
-        return train_data_object, test_data_object
-
-    @classmethod
     def FederatedEMNIST(cls, out_dir: str = ".", split="digits", return_test=False):
-        train_data, test_data = cls.EMNIST(out_dir, split=split, include_writers=True)
-        config = FlexDatasetConfig(group_by_label=1)
+        train_data, test_data = FlexDataObject.EMNIST(
+            out_dir, split=split, include_authors=True
+        )
+        config = FlexDatasetConfig(
+            group_by_label=1
+        )  # each label is a pair (class, writer_id)
         federated_data = cls.from_config(train_data, config)
         return (federated_data, test_data) if return_test else federated_data
+
+    @classmethod
+    def FederatedCelebA(cls, out_dir: str = ".", return_test=False):
+        from torchvision.datasets import CelebA
+
+        class ToNumpy:
+            def __call__(self, data):
+                if isinstance(data, tuple):  # Label
+                    return tuple(np.asarray(i) for i in data)
+                else:
+                    return np.asarray(data)  # Images
+
+        dataset = CelebA(
+            root=out_dir,
+            split="train",
+            transform=ToNumpy(),
+            target_transform=ToNumpy(),
+            target_type=["identity", "attr"],
+            download=True,
+        )
+        config = FlexDatasetConfig(group_by_label=0)  # identity
+        federated_data = cls.from_config_with_torchvision_dataset(dataset, config)
+        if return_test:
+            test_ds = CelebA(
+                root=out_dir,
+                split="test",
+                transform=ToNumpy(),
+                target_transform=ToNumpy(),
+                target_type=["identity", "attr"],
+                download=True,
+            )
+            test_data = FlexDataObject.from_torchvision_dataset(test_ds)
+            return (federated_data, test_data)
+        return federated_data
+
+    @classmethod
+    def FederatedSentiment140(cls, out_dir: str = ".", return_test=False):
+        from datasets import load_dataset
+
+        dataset = load_dataset("sentiment140")
+        x_labels = "text"
+        y_labels = ["user", "sentiment"]
+        config = FlexDatasetConfig(group_by_label=0)  # Label "user"
+        federated_data = cls.from_config_with_huggingface_dataset(
+            dataset["train"], config, x_labels, y_labels
+        )
+        if return_test:
+            test_data = FlexDataObject.from_huggingface_dataset(
+                dataset["test"], x_labels, y_labels
+            )
+            return (federated_data, test_data)
+        return federated_data
+
+    @classmethod
+    def FederatedShakespeare(cls, out_dir: str = ".", return_test=False):
+        train_data, test_data = FlexDataObject.Shakespeare(out_dir, include_actors=True)
+        config = FlexDatasetConfig(
+            group_by_label=1
+        )  # each label is a pair (class, actor_id)
+        federated_data = cls.from_config(train_data, config)
+        return (federated_data, test_data) if return_test else federated_data
+
+    # @classmethod
+    # def FederatedReddit(cls, out_dir: str = ".", split="train"):
+    #     reddit_files = download_dataset(
+    #         REDDIT_URL, REDDIT_FILE, REDDIT_MD5, out_dir=out_dir, extract=True, output=True
+    #     )
+    #     filtered_files = filter(lambda n: split in n and n.endswith(".json"), reddit_files)
+    #     flex_dataset = FlexDataset()
+    #     for f in tqdm(filtered_files):
+    #         with open(f) as json_file:
+    #             train_data = json.load(json_file)
+    #         for user_id in train_data['users']:
+    #             node_ds = train_data['user_data'][user_id]
+    #             y_data = [(y["target_tokens"], y["count_tokens"]) for y in node_ds['y']]
+    #             x_data = node_ds['x']
+    #             flex_dataset[user_id] = FlexDataObject(x_data, y_data)
+    #     return flex_dataset
 
     @classmethod
     def from_config_with_torchtext_dataset(cls, data, config: FlexDatasetConfig):
@@ -105,7 +136,7 @@ class FlexDataDistribution(object):
 
     @classmethod
     def from_config_with_tfds_text_dataset(
-        cls, data, config: FlexDatasetConfig, X_columns: list, label_column: list
+        cls, data, config: FlexDatasetConfig, X_columns: list, label_columns: list
     ):
         """This function federates a centralized tensorflow dataset given a FlexDatasetConfig.
         This function will transform a dataset from the tensorflow_datasets module into a FlexDataObject
@@ -115,9 +146,9 @@ class FlexDataDistribution(object):
             data (Dataset): The tensorflow dataset
             config (FlexDatasetConfig): FlexDatasetConfig with the configuration to federate the centralized dataset.
             X_columns (List): List that contains the columns names for the input features.
-            label_column (List): List that contains the columns names for the output features.
+            label_columns (List): List that contains the columns names for the output features.
         """
-        cdata = FlexDataObject.from_tfds_text_dataset(data, X_columns, label_column)
+        cdata = FlexDataObject.from_tfds_text_dataset(data, X_columns, label_columns)
         return cls.from_config(cdata, config)
 
     @classmethod
@@ -139,7 +170,7 @@ class FlexDataDistribution(object):
         data,
         config: FlexDatasetConfig,
         X_columns: list,
-        label_column: str,
+        label_columns: str,
     ):
         """This function federates a centralized hugginface dataset given a FlexDatasetConfig.
         This function will transform a dataset from the HuggingFace Hub datasets into a FlexDataObject
@@ -149,7 +180,7 @@ class FlexDataDistribution(object):
             data (Dataset): The hugginface dataset
             config (FlexDatasetConfig): FlexDatasetConfig with the configuration to federate the centralized dataset.
         """
-        cdata = FlexDataObject.from_huggingface_dataset(data, X_columns, label_column)
+        cdata = FlexDataObject.from_huggingface_dataset(data, X_columns, label_columns)
         return cls.from_config(cdata, config)
 
     @classmethod

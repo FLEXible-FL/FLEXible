@@ -1,19 +1,30 @@
 import os
 import zipfile
-from hashlib import md5
 
+import gdown
 from sultan.api import Sultan
 from tqdm import tqdm
 
-EMNIST_URL = "http://www.itl.nist.gov/iaui/vip/cs_links/EMNIST/matlab.zip"
-EMNIST_MD5 = "1bbb49fdf3462bb70c240eac93fff0e4"
-EMNIST_FILE = "mnist.zip"
-EMNIST_DIGITS = "emnist-digits.mat"
-EMNIST_LETTERS = "emnist-letters.mat"
-EMNIST_MNIST = "emnist-mnist.mat"
+EMNIST_DIGITS_URL = "https://drive.google.com/file/d/1fl9fRPPxTUxnC56ACzZ8JiLiew0SMFwt/view?usp=share_link"
+EMNIST_DIGITS_MD5 = "5a18b33e88e3884e79f8b2d6274564d7"
+EMNIST_DIGITS_FILE = "emnist-digits.mat"
+
+EMNIST_LETTERS_URL = "https://drive.google.com/file/d/1KpwKUfx5L8zN0gPyrEuCEDFnC0OlEOoM/view?usp=share_link"
+EMNIST_LETTERS_MD5 = "b9eddc3e325dee05b65fb21ee45da52f"
+EMNIST_LETTERS_FILE = "emnist-letters.mat"
+
+REDDIT_URL = (
+    "https://drive.google.com/file/d/1S5R11eDR6g9Lkb02Ht6zmP2W-ZYqtS5U/view?usp=sharing"
+)
+REDDIT_MD5 = "308519a1945cf9268707d0aeba2b1c96"
+REDDIT_FILE = "reddit_leaf.zip"
+
+SHAKESPEARE_URL = "https://drive.google.com/file/d/1YkFqXqvN1s1JE1lEQ5YHb-aBPgmQ2IIk/view?usp=share_link"
+SHAKESPEARE_MD5 = "a75e79f9ecebe5118314227a9cd19bc9"
+SHAKESPEARE_FILE = "shakespeare_leaf.zip"
 
 
-def check_hash(filename: str, md5_hash: str) -> bool:
+def check_integrity(filename: str, md5_hash: str) -> bool:
     """Function that computes the md5 hash of a file and compares it
         with a given one, ensuring that the file corresponds to the given md5 hash
 
@@ -24,10 +35,13 @@ def check_hash(filename: str, md5_hash: str) -> bool:
     Returns:
         bool: whether the given file has the same hash as the one provided
     """
-    with open(filename, "rb") as file_to_check:
-        data = file_to_check.read()
-        md5_returned = md5(data).hexdigest()
-    return md5_returned == md5_hash
+    with Sultan.load() as s:
+        try:
+            result = s.md5("-q", filename).run()
+        except Exception:
+            result = s.md5sum(filename).pipe().cut("-f", "1", "-d", '" "').run()
+    computed_md5 = result.stdout[0]
+    return computed_md5 == md5_hash
 
 
 def check_file_exists(filename: str) -> bool:
@@ -55,7 +69,7 @@ def check_dir_exists(filename: str) -> bool:
 
 
 def extract_zip(filename: str, output: bool = True):
-    """Function that extract a zip file.
+    """Function that extract a zip file. If files are already extracted, it skips extracting them
 
     Args:
         filename (str): Directory to check.
@@ -64,10 +78,17 @@ def extract_zip(filename: str, output: bool = True):
     Returns:
         bool: True/False if the directory exits or not.
     """
-    with zipfile.ZipFile(filename, "r") as ref:
-        ref.extractall()
+    base_dir = "/".join(filename.split("/")[:-1])
+    with zipfile.ZipFile(filename, "r", allowZip64=True) as zip_file:
+        for member in zip_file.namelist():
+            extracted_file_path = f"{base_dir}/{member}"
+            if not (
+                os.path.isfile(extracted_file_path)
+                or os.path.exists(extracted_file_path)
+            ):
+                zip_file.extract(member, base_dir)
         if output:
-            return ref.namelist()
+            return [f"{base_dir}/{member}" for member in zip_file.namelist()]
 
 
 def download_file(url: str, filename: str, out_dir: str = "."):
@@ -82,20 +103,26 @@ def download_file(url: str, filename: str, out_dir: str = "."):
     """
     additional_args = ()
     out_path = os.path.join(out_dir, filename)
-    additional_args = ("-#", "-L", "--output", out_path)
-    with Sultan.load() as s:
-        result = s.curl(url, *additional_args).run(streaming=True)
+    if "drive.google" not in url:
+        additional_args = ("-#", "-L", "--output", out_path)
+        with Sultan.load() as s:
+            try:
+                result = s.curl(url, *additional_args).run(streaming=True)
+            except Exception:
+                result = s.wget(url, "-O", out_path).run(streaming=True)
 
-        def generator():
-            while True:
-                complete = result.is_complete
-                if complete:
-                    break
-                yield from result.stderr
+            def generator():
+                while True:
+                    complete = result.is_complete
+                    if complete:
+                        break
+                    yield from result.stderr
 
-        pbar = tqdm(generator())
-        for i in pbar:
-            pbar.set_description(i)
+            pbar = tqdm(generator())
+            for i in pbar:
+                pbar.set_description(i)
+    else:  # Google drive download using gdown library
+        gdown.download(url, quiet=False, fuzzy=True, output=out_path)
 
 
 # Example: download_dataset(MNIST_URL, MNIST_FILE, MNIST_MD5, extract=True)
@@ -125,7 +152,7 @@ def download_dataset(
     full_path = os.path.join(out_dir, filename)
     check_dir_exists(out_dir)
     i = 0
-    while not (check_file_exists(full_path) and check_hash(full_path, md5_hash)):
+    while not (check_file_exists(full_path) and check_integrity(full_path, md5_hash)):
         download_file(url, filename, out_dir)
         i += 1
         if i > max_trials:
