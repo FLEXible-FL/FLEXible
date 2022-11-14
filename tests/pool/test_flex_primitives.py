@@ -2,7 +2,7 @@ import unittest
 
 import pytest
 
-from flex.data import FlexDataDistribution, FlexDatasetConfig
+from flex.data import FedDataDistribution, FedDatasetConfig
 from flex.pool.flex_aggregators import fed_avg
 from flex.pool.flex_pool import FlexPool
 from flex.pool.flex_primitives import (  # collect_weights_pt,; set_aggregated_weights_pt,
@@ -20,7 +20,7 @@ class TestFlexPoolPrimitives(unittest.TestCase):
     def _fixture_ag_news_dataset(self):
         from datasets import load_dataset
 
-        config = FlexDatasetConfig(
+        config = FedDatasetConfig(
             seed=0,
             n_clients=2,
             replacement=False,
@@ -31,7 +31,7 @@ class TestFlexPoolPrimitives(unittest.TestCase):
         self.test_data = test_data
         X_columns = "text"
         label_columns = "label"
-        self.f_imdb = FlexDataDistribution.from_config_with_huggingface_dataset(
+        self.f_imdb = FedDataDistribution.from_config_with_huggingface_dataset(
             train_data, self.config, X_columns, label_columns
         )
 

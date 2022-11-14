@@ -6,8 +6,8 @@ from sklearn.datasets import load_iris
 from sklearn.metrics import accuracy_score
 from sklearn.neighbors import KNeighborsClassifier
 
-from flex.data import FlexDataDistribution
-from flex.data.flex_dataset import FlexDataObject
+from flex.data import FedDataDistribution
+from flex.data.fed_dataset import Dataset
 from flex.pool.flex_decorators import (
     aggregate_weights,
     collect_clients_weights,
@@ -24,8 +24,8 @@ class TestFlexPool(unittest.TestCase):
     @pytest.fixture(autouse=True)
     def _fixture_iris_dataset(self):
         iris = load_iris()
-        c_iris = FlexDataObject(X_data=iris.data, y_data=iris.target)
-        self.f_iris = FlexDataDistribution.iid_distribution(c_iris, n_clients=2)
+        c_iris = Dataset(X_data=iris.data, y_data=iris.target)
+        self.f_iris = FedDataDistribution.iid_distribution(c_iris, n_clients=2)
 
     def test_decorators(self):
         @init_server_model

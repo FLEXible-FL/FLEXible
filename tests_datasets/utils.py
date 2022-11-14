@@ -3,9 +3,9 @@
 
 import gc
 
-from flex.data import FlexDataDistribution, FlexDataObject, FlexDatasetConfig
+from flex.data import Dataset, FedDataDistribution, FedDatasetConfig
 
-config = FlexDatasetConfig(
+config = FedDatasetConfig(
     seed=0,
     n_clients=2,
     replacement=False,
@@ -50,11 +50,11 @@ def check_if_can_load_torchtext_dataset(list_datasets):
         print(f"Testing dataset: {name}")
         try:
             data = func(split="train")
-            fld = FlexDataObject.from_torchtext_dataset(data)
+            fld = Dataset.from_torchtext_dataset(data)
             fld.validate()
-            flex_dataset = FlexDataDistribution.from_pytorch_text_dataset(data, config)
+            flex_dataset = FedDataDistribution.from_pytorch_text_dataset(data, config)
             del flex_dataset
-            flex_dataset = FlexDataDistribution.from_config(fld, config)
+            flex_dataset = FedDataDistribution.from_config(fld, config)
             del flex_dataset
             valid_datasets.append([name, func, "-"])
             del data
@@ -93,13 +93,13 @@ def check_if_can_load_hf_dataset():
         print(f"Testing dataset: {name}")
         try:
             data = load_dataset(name, split="train")
-            flex_dataset = FlexDataDistribution.from_config_with_huggingface_dataset(
+            flex_dataset = FedDataDistribution.from_config_with_huggingface_dataset(
                 data, config, X_columns, y_column
             )
             del flex_dataset
-            fld = FlexDataObject.from_huggingface_dataset(data, X_columns, y_column)
+            fld = Dataset.from_huggingface_dataset(data, X_columns, y_column)
             fld.validate()
-            flex_dataset = FlexDataDistribution.from_config(fld, config)
+            flex_dataset = FedDataDistribution.from_config(fld, config)
             del flex_dataset
             del data
             del fld
@@ -141,12 +141,12 @@ def check_if_can_load_text_tfds():
         try:
             split = "train" if name != "asset" else "validation"
             data = tfds.load(name, split=split)
-            flex_dataset = FlexDataDistribution.from_config_with_tfds_dataset_args(
+            flex_dataset = FedDataDistribution.from_config_with_tfds_dataset_args(
                 data, config, X_columns, y_column
             )
-            fld = FlexDataObject.from_tfds_dataset_with_args(data, X_columns, y_column)
+            fld = Dataset.from_tfds_dataset_with_args(data, X_columns, y_column)
             fld.validate()
-            flex_dataset = FlexDataDistribution.from_config(fld, config)
+            flex_dataset = FedDataDistribution.from_config(fld, config)
             del flex_dataset
             del data
             del fld
@@ -180,12 +180,12 @@ def check_if_can_load_torchvision_dataset(list_datasets, **kwargs):
         print(f"Testing dataset: {name}")
         try:
             data = func(**kwargs)
-            fld = FlexDataObject.from_torchvision_dataset(data)
+            fld = Dataset.from_torchvision_dataset(data)
             fld.validate()
-            flex_dataset = FlexDataDistribution.from_config(fld, config)
+            flex_dataset = FedDataDistribution.from_config(fld, config)
             del flex_dataset
             gc.collect()
-            flex_dataset = FlexDataDistribution.from_config_with_torchvision_dataset(
+            flex_dataset = FedDataDistribution.from_config_with_torchvision_dataset(
                 data, config
             )
             del flex_dataset
