@@ -11,7 +11,7 @@ setup(
     packages=find_packages(),
     install_requires=["numpy",
                     "multiprocess",
-                    "sklearn",
+                    "scikit-learn",
                     "cardinality",
                     "lazyarray",
                     "sultan",
