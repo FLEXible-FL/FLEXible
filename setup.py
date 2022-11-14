@@ -32,6 +32,7 @@ setup(
         "hugginface": ["datasets"],
         "develop": ["pytest",
                 "pytest-cov",
+                "coverage",
                 "jinja2",
                 "tensorflow",
                 "tensorflow_datasets",
