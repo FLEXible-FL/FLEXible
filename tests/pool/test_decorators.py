@@ -8,6 +8,7 @@ from sklearn.neighbors import KNeighborsClassifier
 
 from flex.data import FedDataDistribution
 from flex.data.fed_dataset import Dataset
+from flex.model.model import FlexModel
 from flex.pool.decorators import (
     aggregate_weights,
     collect_clients_weights,
@@ -16,7 +17,6 @@ from flex.pool.decorators import (
     init_server_model,
     set_aggregated_weights,
 )
-from flex.model.model import FlexModel
 from flex.pool.pool import FlexPool
 
 

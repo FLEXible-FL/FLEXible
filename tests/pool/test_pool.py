@@ -5,9 +5,9 @@ import numpy as np
 import pytest
 from sklearn.datasets import load_iris
 
+from flex.actors.actors import FlexActors, FlexRole, FlexRoleManager
 from flex.data import FedDataDistribution
 from flex.data.fed_dataset import Dataset, FedDataset
-from flex.actors.actors import FlexActors, FlexRole, FlexRoleManager
 from flex.model.model import FlexModel
 from flex.pool.pool import FlexPool
 

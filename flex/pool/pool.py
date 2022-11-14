@@ -4,8 +4,8 @@ import functools
 import random
 from typing import Callable, Hashable
 
-from flex.data import FedDataset
 from flex.actors.actors import FlexActors, FlexRole, FlexRoleManager
+from flex.data import FedDataset
 from flex.model.model import FlexModel
 
 
