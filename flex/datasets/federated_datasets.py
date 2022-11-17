@@ -1,7 +1,7 @@
 import numpy as np
 
 from flex.data import Dataset, FedDataDistribution, FedDatasetConfig
-from flex.datasets.standard_datasets import Shakespeare, EMNIST
+from flex.datasets.standard_datasets import EMNIST, Shakespeare
 
 
 def FederatedEMNIST(out_dir: str = ".", split="digits", return_test=False):
