@@ -1,10 +1,11 @@
 import numpy as np
 
 from flex.data import Dataset, FedDataDistribution, FedDatasetConfig
+from flex.datasets.standard_datasets import Shakespeare, EMNIST
 
 
 def FederatedEMNIST(out_dir: str = ".", split="digits", return_test=False):
-    train_data, test_data = Dataset.EMNIST(out_dir, split=split, include_authors=True)
+    train_data, test_data = EMNIST(out_dir, split=split, include_authors=True)
     config = FedDatasetConfig(
         group_by_label=1
     )  # each label is a pair (class, writer_id)
@@ -67,7 +68,7 @@ def FederatedSentiment140(out_dir: str = ".", return_test=False):
 
 
 def FederatedShakespeare(out_dir: str = ".", return_test=False):
-    train_data, test_data = Dataset.Shakespeare(out_dir, include_actors=True)
+    train_data, test_data = Shakespeare(out_dir, include_actors=True)
     config = FedDatasetConfig(
         group_by_label=1
     )  # each label is a pair (class, actor_id)
