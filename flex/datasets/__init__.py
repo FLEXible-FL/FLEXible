@@ -3,6 +3,7 @@ from __future__ import division
 from __future__ import print_function
 
 
+from flex.datasets.encapsulated_dataset import EncapsulatedDataset
 from flex.datasets.federated_datasets import FederatedEMNIST
 from flex.datasets.federated_datasets import FederatedCelebA
 from flex.datasets.federated_datasets import FederatedSentiment140
