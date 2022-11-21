@@ -16,7 +16,6 @@ from flex.data.utils import (
     SHAKESPEARE_URL,
     download_dataset,
 )
-
 from flex.datasets import EncapsulatedDataset
 
 
@@ -161,6 +160,7 @@ class EMNIST(EncapsulatedDataset):
         train_data_object = Dataset(X_data=np.asarray(train_data), y_data=train_labels)
         test_data_object = Dataset(X_data=np.asarray(test_data), y_data=test_labels)
         return train_data_object, test_data_object
+
 
 """
 def EMNIST_f(out_dir: str = ".", split="digits", include_authors=False):

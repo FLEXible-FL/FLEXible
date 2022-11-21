@@ -1,16 +1,20 @@
 import numpy as np
 
 from flex.data import Dataset, FedDataDistribution, FedDatasetConfig
-from flex.datasets.standard_datasets import EMNIST, Shakespeare
 from flex.datasets import EncapsulatedDataset
+from flex.datasets.standard_datasets import EMNIST, Shakespeare
 
 
 class FederatedEMNIST(EncapsulatedDataset):
     def __init__(self, out_dir: str = ".", split="digits", return_test=False):
-        super(FederatedEMNIST, self).__init__(out_dir=out_dir, split=split, return_test=return_test)
+        super(FederatedEMNIST, self).__init__(
+            out_dir=out_dir, split=split, return_test=return_test
+        )
 
     def load_dataset(self):
-        train_data, test_data = EMNIST(self.out_dir, split=self.split, include_authors=True)
+        train_data, test_data = EMNIST(
+            self.out_dir, split=self.split, include_authors=True
+        )
         config = FedDatasetConfig(
             group_by_label=1
         )  # each label is a pair (class, writer_id)
@@ -109,7 +113,9 @@ def FederatedCelebA_f(out_dir: str = ".", return_test=False):
 
 class FederatedSentiment140(EncapsulatedDataset):
     def __init__(self, out_dir: str = ".", return_test=False):
-        super(FederatedSentiment140, self).__init__(out_dir=out_dir, return_test=return_test)
+        super(FederatedSentiment140, self).__init__(
+            out_dir=out_dir, return_test=return_test
+        )
 
     def load_dataset(self):
         from datasets import load_dataset
@@ -151,7 +157,9 @@ def FederatedSentiment140_f(out_dir: str = ".", return_test=False):
 
 class FederatedShakespeare(EncapsulatedDataset):
     def __init__(self, out_dir: str = ".", return_test=False):
-        super(FederatedShakespeare, self).__init__(out_dir=out_dir, return_test=return_test)
+        super(FederatedShakespeare, self).__init__(
+            out_dir=out_dir, return_test=return_test
+        )
 
     def load_dataset(self):
         train_data, test_data = Shakespeare(self.out_dir, include_actors=True)

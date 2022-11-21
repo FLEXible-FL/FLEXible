@@ -1,8 +1,8 @@
-from abc import abstractmethod, ABC
+from abc import ABC, abstractmethod
 
 
 class EncapsulatedDataset(ABC):
-    def __init__(self, out_dir='.', split=None, return_test=False):
+    def __init__(self, out_dir=".", split=None, return_test=False):
         self.__out_dir = out_dir
         self.__split = split
         self.__return_test = return_test
