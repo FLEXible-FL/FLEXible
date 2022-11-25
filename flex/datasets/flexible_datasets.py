@@ -10,7 +10,7 @@ def list_datasets():
     -------
 
     """
-    return list(FLEXibleDatasets.instances)
+    return list(FLEXibleDatasets.instances.keys())
 
 
 def check_availability(name, func):
