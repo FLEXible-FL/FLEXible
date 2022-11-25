@@ -1,7 +1,6 @@
 import json
 
 import numpy as np
-from scipy.io import loadmat
 
 from flex.data import Dataset
 from flex.data.utils import (
@@ -16,9 +15,8 @@ from flex.data.utils import (
     SHAKESPEARE_URL,
     download_dataset,
 )
-from flex.datasets import EncapsulatedDataset
 
-
+"""
 class Shakespeare(EncapsulatedDataset):
     def __init__(self, out_dir: str = ".", include_actors=False):
         super(Shakespeare, self).__init__(out_dir=out_dir)
@@ -65,10 +63,10 @@ class Shakespeare(EncapsulatedDataset):
                 test_x += node_ds["x"]
 
         return Dataset(train_x, train_y), Dataset(test_x, test_y)
-
-
 """
-def Shakespeare_f(out_dir: str = ".", include_actors=False):
+
+
+def Shakespeare(out_dir: str = ".", include_actors=False, **kwargs):
     shakespeare_files = download_dataset(
         SHAKESPEARE_URL,
         SHAKESPEARE_FILE,
@@ -109,9 +107,9 @@ def Shakespeare_f(out_dir: str = ".", include_actors=False):
             test_x += node_ds["x"]
 
     return Dataset(train_x, train_y), Dataset(test_x, test_y)
+
+
 """
-
-
 class EMNIST(EncapsulatedDataset):
     def __init__(self, out_dir: str = ".", split="digits", include_authors=False):
         super(EMNIST, self).__init__(out_dir=out_dir, split=split)
@@ -160,10 +158,12 @@ class EMNIST(EncapsulatedDataset):
         train_data_object = Dataset(X_data=np.asarray(train_data), y_data=train_labels)
         test_data_object = Dataset(X_data=np.asarray(test_data), y_data=test_labels)
         return train_data_object, test_data_object
-
-
 """
-def EMNIST_f(out_dir: str = ".", split="digits", include_authors=False):
+
+
+def EMNIST(out_dir: str = ".", split="digits", include_authors=False, **kwargs):
+    from scipy.io import loadmat
+
     if split == "digits":
         url, filename, md5 = (
             EMNIST_DIGITS_URL,
@@ -206,4 +206,3 @@ def EMNIST_f(out_dir: str = ".", split="digits", include_authors=False):
     train_data_object = Dataset(X_data=np.asarray(train_data), y_data=train_labels)
     test_data_object = Dataset(X_data=np.asarray(test_data), y_data=test_labels)
     return train_data_object, test_data_object
-"""
