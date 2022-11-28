@@ -31,14 +31,8 @@ class Dataset:
         except TypeError:
             return self.X_data.shape[0]
 
-    def __getitem__(self, pos):
-        if self.y_data is None:
-            return Dataset(self.X_data[pos], None)
-        else:
-            return Dataset(
-                self.X_data[pos],
-                self.y_data[pos[0]] if isinstance(pos, tuple) else self.y_data[pos],
-            )
+    def __getitem__(self, index):
+        return self.X_data[index], self.y_data[index] if self.y_data is not None else None
 
     def __iter__(self):
         return zip(
@@ -55,7 +49,12 @@ class Dataset:
                 other_self.data = data
 
             def __getitem__(other_self, index: int):
-                return other_self.data[index]
+                image, label = other_self.data[index]
+                if other_self.transform:
+                    image = other_self.transform(image)
+                if other_self.target_transform:
+                    label = other_self.target_transform(label)
+                return image, label
 
             def __len__(other_self):
                 return len(other_self.data)

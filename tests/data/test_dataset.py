@@ -72,6 +72,48 @@ class TestFlexDataObject(unittest.TestCase):
             data, X_columns=X_columns, label_columns=label_columns
         )
         fcd.validate()
+    
+    def test_to_torchvision_dataset_w_torchvision_dataset(self):
+        from torchvision import transforms, datasets
+        import torch
+
+        data = datasets.MNIST(root=".", train=True, download=True)
+        fcd = Dataset.from_torchvision_dataset(data)
+        torch_fcd = fcd.to_torchvision_dataset(
+            transform=transforms.ToTensor(),
+            target_transform=transforms.Compose([
+                                lambda x: torch.tensor(x),
+                                lambda x: torch.nn.functional.one_hot(x, 10)])
+                            )
+        dataloader = torch.utils.data.DataLoader(torch_fcd, batch_size=64, shuffle=True)
+        train_features, train_labels = next(iter(dataloader))
+
+        assert len(train_features) == 64
+        assert torch.is_tensor(train_features)
+        assert len(train_labels) == 64
+        assert torch.is_tensor(train_labels)
+        assert len(train_labels[0]) == 10  # number of classes
+
+    def test_to_torchvision_dataset_w_flex_datasets(self):
+        from flex.datasets import load
+        from torchvision import transforms
+        import torch
+
+        fcd = load("emnist", split="digits")
+        torch_fcd = fcd.to_torchvision_dataset(
+            transform=transforms.ToTensor(),
+            target_transform=transforms.Compose([
+                                lambda x: torch.tensor(x),
+                                lambda x: torch.nn.functional.one_hot(x, 10)])
+                            )
+        dataloader = torch.utils.data.DataLoader(torch_fcd, batch_size=64, shuffle=True)
+        train_features, train_labels = next(iter(dataloader))
+
+        assert len(train_features) == 64
+        assert torch.is_tensor(train_features)
+        assert len(train_labels) == 64
+        assert torch.is_tensor(train_labels)
+        assert len(train_labels[0]) == 10  # number of classes
 
     def test_pluggable_datasets_in_property(self):
         from torchtext.datasets import AG_NEWS
