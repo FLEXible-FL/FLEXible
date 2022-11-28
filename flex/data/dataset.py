@@ -52,7 +52,7 @@ class Dataset:
         class DefaultVision(VisionDataset):
             def __init__(other_self, data, **other_kwargs):
                 super().__init__(root="", **other_kwargs)
-                self.data = data
+                other_self.data = data
 
             def __getitem__(other_self, index: int):
                 return other_self.data[index]
