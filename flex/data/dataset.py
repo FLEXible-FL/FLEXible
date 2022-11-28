@@ -46,6 +46,27 @@ class Dataset:
             self.y_data if self.y_data is not None else [None] * len(self),
         )
 
+    def to_torchvision_dataset(self, **kwargs):
+        from torchvision.datasets import VisionDataset
+
+        class DefaultVision(VisionDataset):
+            def __init__(other_self, data, **other_kwargs):
+                super().__init__(root="", **other_kwargs)
+                self.data = data
+
+            def __getitem__(other_self, index: int):
+                return other_self.data[index]
+
+            def __len__(other_self):
+                return len(other_self.data)
+
+        return DefaultVision(self, **kwargs)
+
+    def to_tf_dataset(self):
+        from tensorflow.data import Dataset
+        from tensorflow import type_spec_from_value
+        return Dataset.from_generator(self.__iter__, output_signature=(type_spec_from_value(self[0].X_data), type_spec_from_value(self[0].y_data)))
+
     @classmethod
     def from_torchvision_dataset(cls, pytorch_dataset):
         """Function to convert an object from torchvision.datasets.* to a FlexDataObject.
