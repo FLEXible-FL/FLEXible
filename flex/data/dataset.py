@@ -41,6 +41,12 @@ class Dataset:
         )
 
     def to_torchvision_dataset(self, **kwargs):
+        """This function transforms a Dataset into a Torchvision dataset object
+
+        Returns:
+            torvhcision.datasets.VisionDataset: a torchvision dataset with the contents of datasets. \
+                Note that transforms should be pased as arguments.
+        """
         from torchvision.datasets import VisionDataset
 
         class DefaultVision(VisionDataset):
@@ -62,6 +68,11 @@ class Dataset:
         return DefaultVision(self, **kwargs)
 
     def to_tf_dataset(self):
+        """This function is an utility to transform a Dataset object to a tensorflow.data.Dataset object
+
+        Returns:
+            tensorflow.data.Dataset: tf dataset object instanciated using the contents of a Dataset
+        """
         from tensorflow.data import Dataset
         from tensorflow import type_spec_from_value
         return Dataset.from_generator(self.__iter__, output_signature=(type_spec_from_value(self[0][0]), type_spec_from_value(self[0][1])))
