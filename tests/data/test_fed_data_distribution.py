@@ -7,13 +7,7 @@ from sklearn.cluster import KMeans
 from sklearn.datasets import load_iris
 
 from flex.data import Dataset, FedDataDistribution, FedDataset, FedDatasetConfig
-from flex.datasets import (
-    EMNIST,
-    FederatedCelebA,
-    FederatedEMNIST,
-    FederatedSentiment140,
-    FederatedShakespeare,
-)
+from flex.datasets import load
 
 
 @pytest.fixture(name="fcd")
@@ -510,7 +504,7 @@ class TestFlexDataDistribution(unittest.TestCase):
         )
 
     def test_loading_fedmnist_digits_using_from_config(self):
-        fed_data, test_data = FederatedEMNIST(return_test=True, split="digits")
+        fed_data, test_data = load("federated_emnist", return_test=True, split="digits")
         assert isinstance(fed_data, FedDataset)
         assert isinstance(test_data, Dataset)
         num_samples = [len(fed_data[i]) for i in fed_data]
@@ -524,7 +518,7 @@ class TestFlexDataDistribution(unittest.TestCase):
         assert isclose(std, 11.17, abs_tol=1e-1)
 
     def test_loading_fedmnist_letters_using_from_config(self):
-        fed_data, test_data = FederatedEMNIST(return_test=True, split="letters")
+        fed_data, test_data = load("federated_emnist", return_test=True, split="letters")
         assert isinstance(fed_data, FedDataset)
         assert isinstance(test_data, Dataset)
         num_samples = [len(fed_data[i]) for i in fed_data]
@@ -538,7 +532,7 @@ class TestFlexDataDistribution(unittest.TestCase):
         assert isclose(std, 21.85, abs_tol=1e-1)
 
     def test_loading_fedceleba_using_from_config(self):
-        fed_data, test_data = FederatedCelebA(return_test=True)
+        fed_data, test_data = load("federated_celeba", return_test=True)
         assert isinstance(fed_data, FedDataset)
         assert isinstance(test_data, Dataset)
         num_samples = [len(fed_data[i]) for i in fed_data]
@@ -552,7 +546,7 @@ class TestFlexDataDistribution(unittest.TestCase):
         assert isclose(std, 8.92, abs_tol=1e-1)
 
     def test_loading_fedsentiment_using_from_config(self):
-        fed_data, test_data = FederatedSentiment140(return_test=True)
+        fed_data, test_data = load("federated_sentiment140", return_test=True)
         assert isinstance(fed_data, FedDataset)
         assert isinstance(test_data, Dataset)
         num_samples = [len(fed_data[i]) for i in fed_data]
@@ -566,7 +560,7 @@ class TestFlexDataDistribution(unittest.TestCase):
         assert isclose(std, 4.71, abs_tol=1e-1)
 
     def test_loading_fedshakespeare_using_from_config(self):
-        fed_data, test_data = FederatedShakespeare(return_test=True)
+        fed_data, test_data = load("federated_shakespeare", return_test=True)
         assert isinstance(fed_data, FedDataset)
         assert isinstance(test_data, Dataset)
         num_samples = [len(fed_data[i]) for i in fed_data]
@@ -581,4 +575,4 @@ class TestFlexDataDistribution(unittest.TestCase):
 
     def test_emnist_wrong_split_error(self):
         with pytest.raises(ValueError):
-            EMNIST(split="weird")
+            load("emnist", split="weird")
