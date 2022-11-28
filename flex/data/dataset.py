@@ -64,7 +64,7 @@ class Dataset:
     def to_tf_dataset(self):
         from tensorflow.data import Dataset
         from tensorflow import type_spec_from_value
-        return Dataset.from_generator(self.__iter__, output_signature=(type_spec_from_value(self[0].X_data), type_spec_from_value(self[0].y_data)))
+        return Dataset.from_generator(self.__iter__, output_signature=(type_spec_from_value(self[0][0]), type_spec_from_value(self[0][1])))
 
     @classmethod
     def from_torchvision_dataset(cls, pytorch_dataset):

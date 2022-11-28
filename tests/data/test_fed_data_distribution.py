@@ -279,15 +279,11 @@ class TestFlexDataDistribution(unittest.TestCase):
         assert len(flex_dataset[0]) + len(flex_dataset[1]) == len(self._iris)
 
     def test_single_feature_data(self):
-        single_feature_dataset = self._iris[:, 0]
+        single_feature_dataset = Dataset(self._iris.X_data[:, 0], self._iris.y_data)
         federated_iris = FedDataDistribution.iid_distribution(
             cdata=single_feature_dataset
         )
         assert len(federated_iris[0].X_data.shape) == 1
-
-    def test_getitem_property(self):
-        dataset = self._iris[:, :2]
-        assert len(dataset[:2]) == 2
 
     def test_indexes_per_client(self):
         indexes = [[1, 3], [0, 2]]
