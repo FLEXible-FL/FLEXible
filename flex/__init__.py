@@ -6,3 +6,4 @@ from flex import data
 from flex import actors
 from flex import model
 from flex import pool
+from flex import datasets
