@@ -2,19 +2,7 @@ import json
 
 import numpy as np
 
-from flex.data import Dataset
-from flex.data.utils import (
-    EMNIST_DIGITS_FILE,
-    EMNIST_DIGITS_MD5,
-    EMNIST_DIGITS_URL,
-    EMNIST_LETTERS_FILE,
-    EMNIST_LETTERS_MD5,
-    EMNIST_LETTERS_URL,
-    SHAKESPEARE_FILE,
-    SHAKESPEARE_MD5,
-    SHAKESPEARE_URL,
-    download_dataset,
-)
+from flex.data import Dataset, utils
 
 """
 class Shakespeare(EncapsulatedDataset):
@@ -67,10 +55,10 @@ class Shakespeare(EncapsulatedDataset):
 
 
 def Shakespeare(out_dir: str = ".", include_actors=False, **kwargs):
-    shakespeare_files = download_dataset(
-        SHAKESPEARE_URL,
-        SHAKESPEARE_FILE,
-        SHAKESPEARE_MD5,
+    shakespeare_files = utils.download_dataset(
+        utils.SHAKESPEARE_URL,
+        utils.SHAKESPEARE_FILE,
+        utils.SHAKESPEARE_MD5,
         out_dir=out_dir,
         extract=True,
         output=True,
@@ -166,21 +154,21 @@ def EMNIST(out_dir: str = ".", split="digits", include_authors=False, **kwargs):
 
     if split == "digits":
         url, filename, md5 = (
-            EMNIST_DIGITS_URL,
-            EMNIST_DIGITS_FILE,
-            EMNIST_DIGITS_MD5,
+            utils.EMNIST_DIGITS_URL,
+            utils.EMNIST_DIGITS_FILE,
+            utils.EMNIST_DIGITS_MD5,
         )
     elif split == "letters":
         url, filename, md5 = (
-            EMNIST_LETTERS_URL,
-            EMNIST_LETTERS_FILE,
-            EMNIST_LETTERS_MD5,
+            utils.EMNIST_LETTERS_URL,
+            utils.EMNIST_LETTERS_FILE,
+            utils.EMNIST_LETTERS_MD5,
         )
     else:
         raise ValueError(
             f"Unknown split: {split}. Available splits are 'digits' and 'letters'."
         )
-    mnist_files = download_dataset(
+    mnist_files = utils.download_dataset(
         url, filename, md5, out_dir=out_dir, extract=False, output=True
     )
     dataset = loadmat(mnist_files)["dataset"]
