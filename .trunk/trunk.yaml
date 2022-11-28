@@ -3,7 +3,7 @@ runtimes:
   enabled:
     - python@3.10.3
 cli: 
-  version: 1.0.1
+  version: 1.1.0
 lint:
   disabled:
     - prettier
@@ -13,7 +13,7 @@ lint:
     - actionlint@1.6.22
     - git-diff-check
     - black@22.10.0
-    - flake8@5.0.4
+    - flake8@6.0.0
     - isort@5.10.1 
   ignore:   
     - linters: [ALL]
