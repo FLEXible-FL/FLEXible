@@ -1,15 +1,32 @@
 version: 0.1
-cli:
-  version: 0.17.0-beta
-lint:
+runtimes:
   enabled:
-    - black@22.3.0
-    - flake8@4.0.1
-    - gitleaks@8.8.7
-    - isort@5.10.1
-  ignore:    
-    - linters: [ALL]      
+    - python@3.10.3
+cli: 
+  version: 1.1.0
+lint:
+  disabled:
+    - prettier
+    - markdownlint
+    - gitleaks
+  enabled:
+    - actionlint@1.6.22
+    - git-diff-check
+    - black@22.10.0
+    - flake8@6.0.0
+    - isort@5.10.1 
+  ignore:   
+    - linters: [ALL]
       paths:
       - flex/**/__init__.py
       - test/**/__init__.py
       - setup.py
+      - notebooks/*.ipynb
+actions:
+  enabled:
+    - trunk-upgrade-available
+plugins:
+  sources:
+    - id: trunk
+      ref: v0.0.6
+      uri: https://github.com/trunk-io/plugins

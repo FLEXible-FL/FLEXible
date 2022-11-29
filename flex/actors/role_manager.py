@@ -1,23 +1,4 @@
-from collections import UserDict
-from enum import Enum, unique
-from typing import Hashable
-
-
-@unique
-class FlexRole(Enum):
-    """Enum which contains all possible roles:
-        - Basic roles: client, server or aggregator
-        - Composite roles: aggregator_client, server_client, server_aggregator, server_aggregator_client
-    Note that composite roles are designed to represented a combination of Basic roles.
-    """
-
-    client = 1
-    aggregator = 2
-    server = 3
-    aggregator_client = 4
-    server_client = 5
-    server_aggregator = 6
-    server_aggregator_client = 7
+from flex.actors.role import FlexRole
 
 
 class FlexRoleManager:
@@ -145,11 +126,9 @@ class FlexRoleManager:
     def check_compatibility(cls, role1: FlexRole, role2: FlexRole) -> bool:
         """Method used to ensure that it is possible to communicate from role1
         to role2, note that the communication from role2 to role1 is not checked.
-
         Args:
             role1 (Role): role which establishes communication with role2
             role2 (Role): role which receives communication from role1
-
         Returns:
             bool: whether or not the communication from role1 to role2 is allowed.
         """
@@ -160,36 +139,3 @@ class FlexRoleManager:
                 cls.is_server(role1) and cls.can_comm_with_server(role2),
             ]
         )
-
-
-class FlexActors(UserDict):
-    """Class that represents roles assigned to each node in a Federated Experiment.
-    Roles are designed to restrict communications between nodes. It is important
-    to note that Roles are not mutually exclusive, that is, a node can have multiple
-    Roles.
-
-    Attributes
-    ----------
-    data (collections.UserDict): The structure is a dictionary
-        with the clients ids as keys and Roles as a value.
-    """
-
-    def check_compatibility(self, key1: Hashable, key2: Hashable) -> bool:
-        """Method to ensure that it is possible to establish communication
-        between two actors, according to their roles. Note that the communication
-        is stablished from node with key1 to node with key2. Communication from node
-        with key2 to node with key1 is not checked.
-
-        Args:
-            key1 (Hashable): id used to identify a node. This node is supposed to start communication
-            from itself to node with key2.
-            key2 (Hashable): id used to identify a node. This node is suppored to receive communication
-            from node with key1.
-
-        Returns:
-            bool: whether or not the communication is allowed.
-        """
-        return FlexRoleManager.check_compatibility(self[key1], self[key2])
-
-    def __setitem__(self, key: Hashable, item: FlexRole) -> None:
-        self.data[key] = item

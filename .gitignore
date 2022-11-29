@@ -141,5 +141,20 @@ pytest-coverage.txt
 #vs-code config
 .vscode
 
-#Mac os index files
+# Mac os index files
 .DS_Store
+notebooks/.vector_cache/wiki.en.vec
+notebooks/.vector_cache/wiki.en.vec.pt
+notebooks/~/
+~/
+__MACOSX/
+.idea/
+
+# Compressed files
+*.mat
+*.zip
+*.rar
+
+# Datasets
+torch_datasets/
+data/

@@ -1,22 +1,22 @@
 import numpy as np
 import pytest
 
-from flex.data.flex_dataset import FlexDataObject
-from flex.data.flex_preprocessing_utils import normalize, one_hot_encoding
+from flex.data.fed_dataset import Dataset
+from flex.data.preprocessing_utils import normalize, one_hot_encoding
 
 
 @pytest.fixture(name="fcd_ones")
 def fixture_simple_fex_data_object_with_ones():
     X_data = np.ones(shape=(20, 5))
     y_data = np.random.choice(2, 20)
-    return FlexDataObject(X_data=X_data, y_data=y_data)
+    return Dataset(X_data=X_data, y_data=y_data)
 
 
 @pytest.fixture(name="fcd_zeros")
 def fixture_simple_fex_data_object_with_zeros():
     X_data = np.zeros(shape=(20, 5))
     y_data = np.random.choice(2, 20)
-    return FlexDataObject(X_data=X_data, y_data=y_data)
+    return Dataset(X_data=X_data, y_data=y_data)
 
 
 def test_normalize_function(fcd_ones):

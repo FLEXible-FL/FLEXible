@@ -1,6 +1,6 @@
 # This workflow will install dependencies, create coverage tests and run Pytest Coverage Comment
 # For more information see: https://github.com/MishaKav/pytest-coverage-comment/
-name: run-tests-on-pull-request
+name: Tests
 on:
   pull_request:
     branches:
@@ -21,11 +21,11 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install flake8 pytest pytest-cov
-          pip install .
+          pip install ".[develop]"
 
       - name: Build coverage file
         run: |
-          pytest --junitxml=pytest.xml --cov-report=term-missing:skip-covered --cov=flex tests/ | tee pytest-coverage.txt
+          pytest -n 2 --junitxml=pytest.xml --cov-report=term-missing:skip-covered --cov=flex tests/ | tee pytest-coverage.txt
 
       - name: Pytest coverage comment
         uses: MishaKav/pytest-coverage-comment@main

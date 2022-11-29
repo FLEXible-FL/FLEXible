@@ -1,9 +1,5 @@
 from setuptools import find_packages, setup
 
-_deps = ["numpy"]
-
-install_requires = _deps
-
 setup(
     name="flex",
     version="0.0.1.dev0",
@@ -13,6 +9,41 @@ setup(
     keywords="FL federated-learning flexible",
     url="https://github.com/FLEXible-FL/FLEX-framework",
     packages=find_packages(),
-    install_requires=["numpy", "pytest"],
+    install_requires=["numpy",
+                    "multiprocess",
+                    "scikit-learn",
+                    "cardinality",
+                    "lazyarray",
+                    "sultan",
+                    "tqdm",
+                    "scipy",
+                    "gdown"
+                    ],
+    extras_require={
+        "tensorflow": ["tensorflow", 
+                "tensorflow_datasets", 
+                "tensorflow_hub"
+                ],
+        "pytorch": ["torch", 
+                "torchvision", 
+                "torchtext", 
+                "torchdata"
+                ],
+        "hugginface": ["datasets"],
+        "develop": ["pytest",
+                "pytest-cov",
+                "pytest-xdist",
+                "coverage",
+                "jinja2",
+                "tensorflow",
+                "tensorflow_datasets",
+                "tensorflow_hub",
+                "torch",
+                "torchvision",
+                "torchtext",
+                "torchdata",
+                "datasets"
+                ],
+    },
     python_requires=">=3.9.0",
 )

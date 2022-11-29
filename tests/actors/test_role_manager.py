@@ -2,7 +2,9 @@ import unittest
 
 import pytest
 
-from flex.pool.actors import FlexActors, FlexRole, FlexRoleManager
+from flex.actors.actors import FlexActors
+from flex.actors.role import FlexRole
+from flex.actors.role_manager import FlexRoleManager
 
 
 @pytest.fixture(name="actors_cs")
@@ -207,41 +209,3 @@ class TestRoleManger(unittest.TestCase):
             )
             is True
         )
-
-
-class TestActors(unittest.TestCase):
-    @pytest.fixture(autouse=True)
-    def _fixture_simple_actors_client_server(self, actors_cs):
-        self._actors_cs = actors_cs
-
-    @pytest.fixture(autouse=True)
-    def _fixture_peer_to_peer(self, p2p):
-        self._p2p = p2p
-
-    def test_check_compatibility_method(self):
-        # Client-Server Architecture
-        assert self._actors_cs.check_compatibility("client1", "client2") is False
-        assert self._actors_cs.check_compatibility("client1", "server") is False
-        assert self._actors_cs.check_compatibility("client1", "aggregator") is True
-        assert self._actors_cs.check_compatibility("aggregator", "client3") is False
-        assert self._actors_cs.check_compatibility("aggregator", "server") is True
-        assert self._actors_cs.check_compatibility("server", "aggregator") is False
-        # Peer-To-Peer Architecture
-        assert self._p2p.check_compatibility("actor1", "actor2") is True
-        assert self._p2p.check_compatibility("actor1", "actor3") is True
-        assert self._p2p.check_compatibility("actor1", "actor4") is True
-        assert self._p2p.check_compatibility("actor1", "actor5") is True
-        assert self._p2p.check_compatibility("actor2", "actor3") is True
-        assert self._p2p.check_compatibility("actor2", "actor4") is True
-        assert self._p2p.check_compatibility("actor2", "actor5") is True
-        assert self._p2p.check_compatibility("actor3", "actor4") is True
-        assert self._p2p.check_compatibility("actor3", "actor5") is True
-        assert self._p2p.check_compatibility("actor4", "actor5") is True
-        assert self._p2p.check_compatibility("actor5", "actor3") is True
-
-    def test_set_function(self):
-        client4_id = "client4"
-        role_client4 = FlexRole.client
-        self._actors_cs[client4_id] = role_client4
-        assert client4_id in self._actors_cs.keys()
-        assert self._actors_cs[client4_id] == role_client4
