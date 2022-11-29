@@ -31,20 +31,51 @@ class Dataset:
         except TypeError:
             return self.X_data.shape[0]
 
-    def __getitem__(self, pos):
-        if self.y_data is None:
-            return Dataset(self.X_data[pos], None)
-        else:
-            return Dataset(
-                self.X_data[pos],
-                self.y_data[pos[0]] if isinstance(pos, tuple) else self.y_data[pos],
-            )
+    def __getitem__(self, index):
+        return self.X_data[index], self.y_data[index] if self.y_data is not None else None
 
     def __iter__(self):
         return zip(
             self.X_data,
             self.y_data if self.y_data is not None else [None] * len(self),
         )
+
+    def to_torchvision_dataset(self, **kwargs):
+        """This function transforms a Dataset into a Torchvision dataset object
+
+        Returns:
+            torvhcision.datasets.VisionDataset: a torchvision dataset with the contents of datasets. \
+                Note that transforms should be pased as arguments.
+        """
+        from torchvision.datasets import VisionDataset
+
+        class DefaultVision(VisionDataset):
+            def __init__(other_self, data, **other_kwargs):
+                super().__init__(root="", **other_kwargs)
+                other_self.data = data
+
+            def __getitem__(other_self, index: int):
+                image, label = other_self.data[index]
+                if other_self.transform:
+                    image = other_self.transform(image)
+                if other_self.target_transform:
+                    label = other_self.target_transform(label)
+                return image, label
+
+            def __len__(other_self):
+                return len(other_self.data)
+
+        return DefaultVision(self, **kwargs)
+
+    def to_tf_dataset(self):
+        """This function is an utility to transform a Dataset object to a tensorflow.data.Dataset object
+
+        Returns:
+            tensorflow.data.Dataset: tf dataset object instanciated using the contents of a Dataset
+        """
+        from tensorflow.data import Dataset
+        from tensorflow import type_spec_from_value
+        return Dataset.from_generator(self.__iter__, output_signature=(type_spec_from_value(self[0][0]), type_spec_from_value(self[0][1])))
 
     @classmethod
     def from_torchvision_dataset(cls, pytorch_dataset):
