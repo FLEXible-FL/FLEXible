@@ -10,6 +10,7 @@ Welcome to FLEXible's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   installation
    modules
 
 Indices and tables
