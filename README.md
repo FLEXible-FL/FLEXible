@@ -11,7 +11,7 @@ The documentation of the package was generated using [pdoc](https://pdoc3.github
 pdoc flex -o=docs --docformat markdown --footer-text "FLEXible: Federad Learning Experiments"
 ``
 
-In order to install this repo locally, to develop:
+In order to install this repo locally for development:
 
 ``
     pip install -e ".[develop]"
