@@ -224,6 +224,8 @@ class FedDataDistribution(object):
                     str_label
                 ] = i  # Name each client using the first index where the label appears
             x_data[label_to_client_id[str_label]].append(x)
+            if len(y) == 1:
+                y = y[0]
             y_data[label_to_client_id[str_label]].append(y)
         for client_id in x_data:
             yield client_id, Dataset(X_data=np.asarray(x_data[client_id]), y_data=np.asarray(y_data[client_id]))
