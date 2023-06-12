@@ -16,7 +16,7 @@ class FedDatasetConfig:
     """Class used to represent a configuration to federate a centralized dataset.
     The following table shows the compatiblity of each option:
 
-    | Options compatibility   | **n_clients** | **client_names** | **weights** | **weights_per_class** | **replacement** | **classes_per_client** | **features_per_client** | **indexes_per_client** | **group_by_label** |
+    | Options compatibility   | **n_clients** | **client_names** | **weights** | **weights_per_class** | **replacement** | **classes_per_client** | **features_per_client** | **indexes_per_client** | **group_by_label_index** |
     |-------------------------|---------------|------------------|-------------|-----------------------|-----------------|------------------------|-------------------------|------------------------|----------------------|
     | **n_clients**           | -             | Y                | Y           | Y                     | Y               | Y                      | Y                       | N                      | N                    |
     | **client_names**        | -             | -                | Y           | Y                     | Y               | Y                      | Y                       | Y                      | N                    |
@@ -26,7 +26,7 @@ class FedDatasetConfig:
     | **classes_per_client**  | -             | -                | -           | -                     | -               | -                      | N                       | N                      | N                    |
     | **features_per_client** | -             | -                | -           | -                     | -               | -                      | -                       | N                      | N                    |
     | **indexes_per_client**  | -             | -                | -           | -                     | -               | -                      | -                       | -                      | N                    |
-    | **group_by_label**    | -             | -                | -           | -                     | -               | -                      | -                       | -                      | -                    |
+    | **group_by_label_index**    | -             | -                | -           | -                     | -               | -                      | -                       | -                      | -                    |
 
     Attributes
     ----------
@@ -54,7 +54,7 @@ class FedDatasetConfig:
         Features to assign to each client, it share the same interface as classes_per_client. Default None.
     indexes_per_client: Optional[npt.NDArray]
         Data indexes to assign to each client. Default None.
-    group_by_label: Optional[int]
+    group_by_label_index: Optional[int]
         Index which indicates which feature unique values will be used to generate federated clients. Default None.
     """
 
@@ -67,7 +67,7 @@ class FedDatasetConfig:
     classes_per_client: Optional[Union[int, npt.NDArray, Tuple[int]]] = None
     features_per_client: Optional[Union[int, npt.NDArray, Tuple[int]]] = None
     indexes_per_client: Optional[npt.NDArray] = None
-    group_by_label: Optional[int] = None
+    group_by_label_index: Optional[int] = None
 
     def _check_incomp(self, dict, option1, option2):
         """This function checks if two options are compatible, if not it raises and exception"""
@@ -82,22 +82,22 @@ class FedDatasetConfig:
         """This function checks whether the configuration to federate a dataset is correct."""
         self_dict = asdict(self)
         # By default every option is compatible, therefore we only specify incompatibilities
-        self._check_incomp(self_dict, "weights", "group_by_label")
+        self._check_incomp(self_dict, "weights", "group_by_label_index")
         self._check_incomp(self_dict, "weights", "weights_per_class")
         self._check_incomp(self_dict, "weights", "indexes_per_client")
-        self._check_incomp(self_dict, "weights", "group_by_label")
+        self._check_incomp(self_dict, "weights", "group_by_label_index")
         self._check_incomp(self_dict, "weights_per_class", "indexes_per_client")
         self._check_incomp(self_dict, "weights_per_class", "classes_per_client")
         self._check_incomp(self_dict, "weights_per_class", "features_per_client")
         self._check_incomp(self_dict, "weights_per_class", "indexes_per_client")
-        self._check_incomp(self_dict, "weights_per_class", "group_by_label")
+        self._check_incomp(self_dict, "weights_per_class", "group_by_label_index")
         self._check_incomp(self_dict, "replacement", "indexes_per_client")
-        self._check_incomp(self_dict, "replacement", "group_by_label")
+        self._check_incomp(self_dict, "replacement", "group_by_label_index")
         self._check_incomp(self_dict, "classes_per_client", "features_per_client")
         self._check_incomp(self_dict, "classes_per_client", "indexes_per_client")
-        self._check_incomp(self_dict, "classes_per_client", "group_by_label")
+        self._check_incomp(self_dict, "classes_per_client", "group_by_label_index")
         self._check_incomp(self_dict, "features_per_client", "indexes_per_client")
-        self._check_incomp(self_dict, "features_per_client", "group_by_label")
+        self._check_incomp(self_dict, "features_per_client", "group_by_label_index")
 
         self.__validate_clients_and_weights()
         if self.indexes_per_client is not None:
