@@ -29,8 +29,8 @@ class FedDataDistribution(object):
             data (Dataset): The torchtext dataset
             config (FedDatasetConfig): FlexDatasetConfig with the configuration to federate the centralized dataset.
         """
-        cdata = Dataset.from_torchtext_dataset(data)
-        return cls.from_config(cdata, config)
+        centralized_data = Dataset.from_torchtext_dataset(data)
+        return cls.from_config(centralized_data, config)
 
     @classmethod
     def from_config_with_tfds_image_dataset(cls, data, config: FedDatasetConfig):
@@ -42,8 +42,8 @@ class FedDataDistribution(object):
             data (Dataset): The tensorflow dataset
             config (FedDatasetConfig): FlexDatasetConfig with the configuration to federate the centralized dataset.
         """
-        cdata = Dataset.from_tfds_image_dataset(data)
-        return cls.from_config(cdata, config)
+        centralized_data = Dataset.from_tfds_image_dataset(data)
+        return cls.from_config(centralized_data, config)
 
     @classmethod
     def from_config_with_tfds_text_dataset(
@@ -59,8 +59,8 @@ class FedDataDistribution(object):
             X_columns (List): List that contains the columns names for the input features.
             label_columns (List): List that contains the columns names for the output features.
         """
-        cdata = Dataset.from_tfds_text_dataset(data, X_columns, label_columns)
-        return cls.from_config(cdata, config)
+        centralized_data = Dataset.from_tfds_text_dataset(data, X_columns, label_columns)
+        return cls.from_config(centralized_data, config)
 
     @classmethod
     def from_config_with_torchvision_dataset(cls, data, config: FedDatasetConfig):
@@ -72,8 +72,8 @@ class FedDataDistribution(object):
             data (Dataset): The torchvision dataset
             config (FedDatasetConfig): FlexDatasetConfig with the configuration to federate the centralized dataset.
         """
-        cdata = Dataset.from_torchvision_dataset(data)
-        return cls.from_config(cdata, config)
+        centralized_data = Dataset.from_torchvision_dataset(data)
+        return cls.from_config(centralized_data, config)
 
     @classmethod
     def from_config_with_huggingface_dataset(
@@ -91,17 +91,17 @@ class FedDataDistribution(object):
             data (Dataset): The hugginface dataset
             config (FedDatasetConfig): FlexDatasetConfig with the configuration to federate the centralized dataset.
         """
-        cdata = Dataset.from_huggingface_dataset(data, X_columns, label_columns)
-        return cls.from_config(cdata, config)
+        centralized_data = Dataset.from_huggingface_dataset(data, X_columns, label_columns)
+        return cls.from_config(centralized_data, config)
 
     @classmethod
-    def from_clustering_func(cls, cdata: Dataset, clustering_func: Callable):
+    def from_clustering_func(cls, centralized_data: Dataset, clustering_func: Callable):
         """This function federates data into clients by means of a clustering function, that outputs
         to which client (cluster) a data point belongs.
 
         Args:
-            cdata (Dataset): Centralized dataset represented as a FlexDataObject.
-            clustering_func (Callable): function that receives as arguments a pair of x and y elements from cdata
+            centralized_data (Dataset): Centralized dataset represented as a FlexDataObject.
+            clustering_func (Callable): function that receives as arguments a pair of x and y elements from centralized_data
             and returns the name of the client (cluster) that should own it, the returned type must be Hashable.
             Note that we only support one client (cluster) per data point.
 
@@ -109,7 +109,7 @@ class FedDataDistribution(object):
             federated_dataset (FedDataset): The federated dataset.
         """
         d = defaultdict(list)
-        for idx, (x, y) in enumerate(cdata):
+        for idx, (x, y) in enumerate(centralized_data):
             client_name = clustering_func(x, y)
             d[client_name].append(idx)
 
@@ -119,36 +119,36 @@ class FedDataDistribution(object):
             indexes_per_client=list(d.values()),
             replacement=False,
         )
-        return cls.from_config(cdata, config)
+        return cls.from_config(centralized_data, config)
 
     @classmethod
-    def iid_distribution(cls, cdata: Dataset, n_clients: int = 2):
+    def iid_distribution(cls, centralized_data: Dataset, n_clients: int = 2):
         """Function to create a FedDataset for an IID experiment. We consider the simplest situation
         in which the data is distributed by giving the same amount of data to each client.
 
         Args:
-            cdata (Dataset): Centralized dataset represented as a FlexDataObject.
+            centralized_data (Dataset): Centralized dataset represented as a FlexDataObject.
             n_clients (int): Number of clients in the Federated Learning experiment. Default 2.
 
         Returns:
             federated_dataset (FedDataset): The federated dataset.
         """
         config = FedDatasetConfig(n_clients=n_clients)
-        return FedDataDistribution.from_config(cdata, config)
+        return FedDataDistribution.from_config(centralized_data, config)
 
     @classmethod
-    def from_config(cls, cdata: Dataset, config: FedDatasetConfig):
+    def from_config(cls, centralized_data: Dataset, config: FedDatasetConfig):
         """This function prepare the data from a centralized data structure to a federated one.
         It will run different modifications to federate the data.
 
         Args:
-            cdata (Dataset): Centralized dataset represented as a FlexDataObject.
+            centralized_data (Dataset): Centralized dataset represented as a FlexDataObject.
             config (FedDatasetConfig): FlexDatasetConfig with the configuration to federate the centralized dataset.
 
         Returns:
             federated_dataset (FedDataset): The federated dataset.
         """
-        cdata.validate()
+        centralized_data.validate()
         config.validate()
         rng = default_rng(seed=config.seed)
 
@@ -168,7 +168,7 @@ class FedDataDistribution(object):
             )
         # Ensure that classes_per_client is translated to weights_per_class
         if config_.classes_per_client:
-            cls.__configure_weights_per_class(rng, config_, cdata)
+            cls.__configure_weights_per_class(rng, config_, centralized_data)
         # Normalize weights_per_class when no replacement
         if (
             not config_.replacement
@@ -185,47 +185,50 @@ class FedDataDistribution(object):
         # Now we can start generating our federated dataset
         fed_dataset = FedDataset()
         if config_.indexes_per_client is not None:
-            for client_name, data in cls.__sample_dataset_with_indexes(cdata, config_):
+            for client_name, data in cls.__sample_dataset_with_indexes(centralized_data, config_):
                 fed_dataset[client_name] = data
-        elif config_.group_by_label is not None:
-            for client_name, data in cls.__group_by_label(cdata, config_):
+        elif config_.group_by_label_index is not None:
+            for client_name, data in cls.__group_by_label_index(centralized_data, config_):
                 fed_dataset[client_name] = data
         else:  # sample using weights or features
-            remaining_data_indices = np.arange(len(cdata))
+            remaining_data_indices = np.arange(len(centralized_data))
             for i in range(config_.n_clients):
                 (
                     sub_data_indices,
                     sub_features_indices,
                     remaining_data_indices,
-                ) = cls.__sample(rng, remaining_data_indices, cdata, config_, i)
+                ) = cls.__sample(rng, remaining_data_indices, centralized_data, config_, i)
 
                 fed_dataset[config_.client_names[i]] = Dataset(
-                    X_data=cdata.X_data[sub_data_indices][:, sub_features_indices]
-                    if len(cdata.X_data.shape) > 1
-                    else cdata.X_data[sub_data_indices],
-                    y_data=cdata.y_data[sub_data_indices]
-                    if cdata.y_data is not None
+                    X_data=centralized_data.X_data[sub_data_indices][:, sub_features_indices]
+                    if len(centralized_data.X_data.shape) > 1
+                    else centralized_data.X_data[sub_data_indices],
+                    y_data=centralized_data.y_data[sub_data_indices]
+                    if centralized_data.y_data is not None
                     else None,
                 )
 
         return fed_dataset
 
     @classmethod
-    def __group_by_label(cls, cdata: Dataset, config: FedDatasetConfig):
-        label_index = config.group_by_label
-        feat_to_cname = {}
+    def __group_by_label_index(cls, centralized_data: Dataset, config: FedDatasetConfig):
+        label_index = config.group_by_label_index
+        label_to_client_id = {}
         x_data = defaultdict(list)
         y_data = defaultdict(list)
-        for i, (x, y) in enumerate(cdata):
-            feature = str(y[label_index])  # Use str to make every feature hashable
-            if feature not in feat_to_cname:
-                feat_to_cname[
-                    feature
+        for i, (x, y) in enumerate(centralized_data):
+            y = list(y) # TODO: enforce that y is only a list or a tuple
+            str_label = str(y.pop(label_index))  # Use str to make every label hashable
+            if str_label not in label_to_client_id:
+                label_to_client_id[
+                    str_label
                 ] = i  # Name each client using the first index where the label appears
-            x_data[feat_to_cname[feature]].append(x)
-            y_data[feat_to_cname[feature]].append(y)
-        for k in x_data:
-            yield k, Dataset(X_data=np.asarray(x_data[k]), y_data=np.asarray(y_data[k]))
+            x_data[label_to_client_id[str_label]].append(x)
+            if len(y) == 1:
+                y = y[0]
+            y_data[label_to_client_id[str_label]].append(y)
+        for client_id in x_data:
+            yield client_id, Dataset(X_data=np.asarray(x_data[client_id]), y_data=np.asarray(y_data[client_id]))
 
     @classmethod
     def __sample_dataset_with_indexes(cls, data: Dataset, config: FedDatasetConfig):

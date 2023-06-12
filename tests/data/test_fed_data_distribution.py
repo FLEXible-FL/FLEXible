@@ -281,7 +281,7 @@ class TestFlexDataDistribution(unittest.TestCase):
     def test_single_feature_data(self):
         single_feature_dataset = Dataset(self._iris.X_data[:, 0], self._iris.y_data)
         federated_iris = FedDataDistribution.iid_distribution(
-            cdata=single_feature_dataset
+            centralized_data=single_feature_dataset
         )
         assert len(federated_iris[0].X_data.shape) == 1
 

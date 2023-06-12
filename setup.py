@@ -27,7 +27,8 @@ setup(
         "pytorch": ["torch", 
                 "torchvision", 
                 "torchtext", 
-                "torchdata"
+                "torchdata",
+                "portalocker",
                 ],
         "hugginface": ["datasets"],
         "develop": ["pytest",
