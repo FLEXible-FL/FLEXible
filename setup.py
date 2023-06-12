@@ -20,7 +20,7 @@ setup(
                     "gdown"
                     ],
     extras_require={
-        "tensorflow": ["tensorflow", 
+        "tensorflow": ["tensorflow<2.11", 
                 "tensorflow_datasets", 
                 "tensorflow_hub"
                 ],
@@ -36,7 +36,7 @@ setup(
                 "pytest-xdist",
                 "coverage",
                 "jinja2",
-                "tensorflow",
+                "tensorflow<2.11",
                 "tensorflow_datasets",
                 "tensorflow_hub",
                 "torch",
