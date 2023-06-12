@@ -3,18 +3,20 @@ runtimes:
   enabled:
     - python@3.10.3
 cli: 
-  version: 1.1.0
+  version: 1.10.0
 lint:
   disabled:
     - prettier
     - markdownlint
     - gitleaks
   enabled:
-    - actionlint@1.6.22
+    - ruff@0.0.265
+    - yamllint@1.32.0
+    - actionlint@1.6.24
     - git-diff-check
-    - black@22.10.0
+    - black@23.3.0
     - flake8@6.0.0
-    - isort@5.10.1 
+    - isort@5.12.0
   ignore:   
     - linters: [ALL]
       paths:
@@ -23,10 +25,14 @@ lint:
       - setup.py
       - notebooks/*.ipynb
 actions:
+  disabled:
+    - trunk-announce
+    - trunk-check-pre-push
+    - trunk-fmt-pre-commit
   enabled:
     - trunk-upgrade-available
 plugins:
   sources:
     - id: trunk
-      ref: v0.0.6
+      ref: v0.0.17
       uri: https://github.com/trunk-io/plugins
