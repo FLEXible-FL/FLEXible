@@ -35,4 +35,4 @@ def fed_avg(aggregated_weights_as_list, *args, **kwargs):
     """
     import numpy as np
 
-    return np.mean(np.array(aggregated_weights_as_list), axis=0)
+    return np.mean(np.array(aggregated_weights_as_list, dtype=object), axis=0)
