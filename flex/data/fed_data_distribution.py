@@ -213,19 +213,19 @@ class FedDataDistribution(object):
     @classmethod
     def __group_by_label_index(cls, centralized_data: Dataset, config: FedDatasetConfig):
         label_index = config.group_by_label_index
-        label_to_client = {}
+        label_to_client_id = {}
         x_data = defaultdict(list)
         y_data = defaultdict(list)
         for i, (x, y) in enumerate(centralized_data):
-            str_label = str(y[label_index])  # Use str to make every str_label hashable
-            if str_label not in label_to_client:
-                label_to_client[
+            str_label = str(y.pop(label_index))  # Use str to make every label hashable
+            if str_label not in label_to_client_id:
+                label_to_client_id[
                     str_label
                 ] = i  # Name each client using the first index where the label appears
-            x_data[label_to_client[str_label]].append(x)
-            y_data[label_to_client[str_label]].append(y)
-        for k in x_data:
-            yield k, Dataset(X_data=np.asarray(x_data[k]), y_data=np.asarray(y_data[k]))
+            x_data[label_to_client_id[str_label]].append(x)
+            y_data[label_to_client_id[str_label]].append(y)
+        for client_id in x_data:
+            yield client_id, Dataset(X_data=np.asarray(x_data[client_id]), y_data=np.asarray(y_data[client_id]))
 
     @classmethod
     def __sample_dataset_with_indexes(cls, data: Dataset, config: FedDatasetConfig):
