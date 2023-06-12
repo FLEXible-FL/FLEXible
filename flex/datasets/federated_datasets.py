@@ -9,7 +9,7 @@ def federated_emnist(out_dir: str = ".", split="digits", return_test=False):
         out_dir, split=split, include_authors=True
     )
     config = FedDatasetConfig(
-        group_by_label=1
+        group_by_label_index=1
     )  # each label is a pair (class, writer_id)
     federated_data = FedDataDistribution.from_config(train_data, config)
     return (federated_data, test_data) if return_test else federated_data
@@ -33,7 +33,7 @@ def federated_celeba(out_dir: str = ".", return_test=False):
         target_type=["identity", "attr"],
         download=True,
     )
-    config = FedDatasetConfig(group_by_label=0)  # identity
+    config = FedDatasetConfig(group_by_label_index=0)  # identity
     federated_data = FedDataDistribution.from_config_with_torchvision_dataset(
         dataset, config
     )
@@ -57,7 +57,7 @@ def federated_sentiment140(out_dir: str = ".", return_test=False):
     dataset = load_dataset("sentiment140")
     x_labels = "text"
     y_labels = ["user", "sentiment"]
-    config = FedDatasetConfig(group_by_label=0)  # Label "user"
+    config = FedDatasetConfig(group_by_label_index=0)  # Label "user"
     federated_data = FedDataDistribution.from_config_with_huggingface_dataset(
         dataset["train"], config, x_labels, y_labels
     )
@@ -72,7 +72,7 @@ def federated_sentiment140(out_dir: str = ".", return_test=False):
 def federated_shakespeare(out_dir: str = ".", return_test=False):
     train_data, test_data = standard_datasets.shakespeare(out_dir, include_actors=True)
     config = FedDatasetConfig(
-        group_by_label=1
+        group_by_label_index=1
     )  # each label is a pair (class, actor_id)
     federated_data = FedDataDistribution.from_config(train_data, config)
     return (federated_data, test_data) if return_test else federated_data
