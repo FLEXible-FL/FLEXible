@@ -217,6 +217,7 @@ class FedDataDistribution(object):
         x_data = defaultdict(list)
         y_data = defaultdict(list)
         for i, (x, y) in enumerate(centralized_data):
+            y = list(y) # TODO: enforce that y is only a list or a tuple
             str_label = str(y.pop(label_index))  # Use str to make every label hashable
             if str_label not in label_to_client_id:
                 label_to_client_id[
