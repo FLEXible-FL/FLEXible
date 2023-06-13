@@ -5,15 +5,15 @@ from flex.datasets import standard_datasets
 
 
 def federated_emnist(out_dir: str = ".", split="digits", return_test=False):
-    train_data, _ = standard_datasets.emnist(
-        out_dir, split=split, include_authors=True
-    )
+    train_data, _ = standard_datasets.emnist(out_dir, split=split, include_authors=True)
     config = FedDatasetConfig(
         group_by_label_index=1
     )  # when authoers are included, each label is a tuple (class, writer_id)
     federated_data = FedDataDistribution.from_config(train_data, config)
     if return_test:
-        _, test_data = standard_datasets.emnist(out_dir, split=split, include_authors=False)
+        _, test_data = standard_datasets.emnist(
+            out_dir, split=split, include_authors=False
+        )
         return (federated_data, test_data)
     else:
         return federated_data
