@@ -126,7 +126,7 @@ class Dataset:
             for x, y in pytorch_dataset:
                 X_data.append(x)
                 y_data.append(y)
-            X_data = np.asarray(X_data)
+            X_data = np.asarray(X_data, dtype=object)
             y_data = np.asarray(y_data)
         return cls(X_data=X_data, y_data=y_data)
 
