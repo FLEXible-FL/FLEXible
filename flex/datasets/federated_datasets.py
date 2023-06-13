@@ -5,13 +5,18 @@ from flex.datasets import standard_datasets
 
 
 def federated_emnist(out_dir: str = ".", split="digits", return_test=False):
-    train_data, _ = standard_datasets.emnist(out_dir, split=split, include_authors=True)
-    _, test_data = standard_datasets.emnist(out_dir, split=split, include_authors=False)
+    train_data, _ = standard_datasets.emnist(
+        out_dir, split=split, include_authors=True
+    )
     config = FedDatasetConfig(
         group_by_label_index=1
     )  # when authoers are included, each label is a tuple (class, writer_id)
     federated_data = FedDataDistribution.from_config(train_data, config)
-    return (federated_data, test_data) if return_test else federated_data
+    if return_test:
+        _, test_data = standard_datasets.emnist(out_dir, split=split, include_authors=False)
+        return (federated_data, test_data)
+    else:
+        return federated_data
 
 
 def federated_celeba(out_dir: str = ".", return_test=False):
@@ -69,9 +74,13 @@ def federated_sentiment140(out_dir: str = ".", return_test=False):
 
 
 def federated_shakespeare(out_dir: str = ".", return_test=False):
-    train_data, test_data = standard_datasets.shakespeare(out_dir, include_actors=True)
+    train_data, _ = standard_datasets.shakespeare(out_dir, include_actors=True)
     config = FedDatasetConfig(
         group_by_label_index=1
     )  # each label is a pair (class, actor_id)
     federated_data = FedDataDistribution.from_config(train_data, config)
-    return (federated_data, test_data) if return_test else federated_data
+    if return_test:
+        _, test_data = standard_datasets.shakespeare(out_dir, include_actors=False)
+        return (federated_data, test_data)
+    else:
+        return federated_data
