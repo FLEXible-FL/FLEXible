@@ -289,9 +289,7 @@ def set_aggregated_weights_pt(server_flex_model, aggregated_weights, *args, **kw
 
 
 @evaluate_server_model
-def evaluate_server_model_tf(
-    server_flex_model, test_data, test_labels, *args, **kwargs
-):
+def evaluate_server_model_tf(server_flex_model, test_data, test_labels):
     """Function that evaluate the global model on the test data
 
     Args:
@@ -302,4 +300,4 @@ def evaluate_server_model_tf(
     Returns:
         Evaluations by the model on the test data.
     """
-    return server_flex_model["model"].evaluate(test_data, test_labels)
+    return server_flex_model["model"].evaluate(test_data, test_labels, verbose=False)
