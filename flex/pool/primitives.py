@@ -132,53 +132,6 @@ def train_tf(client_flex_model, client_data, *args, **kwargs):
         client_data.X_data, client_data.y_data, *args, **kwargs
     )
 
-
-# def train(client_model, client_data, *args, **kwargs):
-#     # TODO: Fulfill this function to work better for PyTorch.
-#     # TODO: Improve documentation.
-#     """Function to train train a model at client level. This
-#     function will use the model allocated at the client level,
-#     and then will feed the client's data to the model in order
-#     to train it.
-
-#     We use the args and kwargs arguments to give it to the train
-#     function of the model. Each model will have its own train
-#     function, i.e., a TensorFlow model will call .fit() method,
-#     so we will call the method as follows:
-#     model.fit(X_data, y_data, *args, **kwargs)
-
-#     Args:
-#         client_model (_type_): _description_
-#         client_data (_type_): _description_
-#     """
-#     if "verbose" in kwargs and kwargs["verbose"] == 1:
-#         print("Training model at client.")
-
-#     if "model" in kwargs or "weights" in kwargs:
-#         raise ValueError(
-#             "'model' and 'weights' are reserved words in out framework, please, don't use it."
-#         )
-
-#     model = client_model["model"]
-#     X_data = client_data.X_data
-#     y_data = client_data.y_data
-#     if "func" in kwargs:
-#         # PyTorch models need it's own function
-#         func = kwargs["func"]
-#         del kwargs["func"]
-#         for item in client_model:
-#             if item not in ["model", "weights"]:
-#                 kwargs.append(item)
-#         func(model, X_data, y_data, *args, **kwargs)
-
-#         def wrapper(func, model, client_data, *args, **kwargs):
-#             func(model, client_data, args, kwargs)
-
-#         return wrapper
-#     else:
-#         model.fit(X_data, y_data, *args, **kwargs)
-
-
 @collect_clients_weights
 def collect_clients_weights_tf(client_flex_model, *args, **kwargs):
     """Function that collect the weights for a TensorFlow model.
