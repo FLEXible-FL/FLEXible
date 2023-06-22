@@ -355,11 +355,19 @@ class FedDataDistribution(object):
         sorted_classes = np.sort(np.unique(data.y_data))
         assigned_classes = []
         if isinstance(config.classes_per_client, int):
+            histogram = np.zeros_like(sorted_classes)
             for _ in range(config.n_clients):
-                n = rng.choice(
-                    sorted_classes, size=config.classes_per_client, replace=False
-                )
-                assigned_classes.append(n)
+                individual_assigned_classes = []
+                for _ in range(config.classes_per_client):
+                    most_frequent = np.max(histogram)
+                    available_classes_indexes = np.arange(len(sorted_classes))
+                    tmp_available_indexes = histogram < most_frequent
+                    if sum(tmp_available_indexes) != 0:
+                        available_classes_indexes = available_classes_indexes[tmp_available_indexes]
+                    indx = rng.choice(available_classes_indexes, size=1, replace=False)
+                    histogram[indx] = histogram[indx] + 1
+                    individual_assigned_classes.append(sorted_classes[indx])
+                assigned_classes.append(individual_assigned_classes)
             config.classes_per_client = assigned_classes
         elif isinstance(config.classes_per_client, tuple):
             num_classes_per_client = rng.integers(
