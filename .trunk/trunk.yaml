@@ -1,18 +1,18 @@
 version: 0.1
 runtimes:
   enabled:
-    - python@3.10.8
+    - python@3.10.3
 cli: 
-  version: 1.11.1
+  version: 1.10.0
 lint:
   disabled:
     - prettier
     - markdownlint
     - gitleaks
   enabled:
-    - ruff@0.0.274
+    - ruff@0.0.265
     - yamllint@1.32.0
-    - actionlint@1.6.25
+    - actionlint@1.6.24
     - git-diff-check
     - black@23.3.0
     - flake8@6.0.0
