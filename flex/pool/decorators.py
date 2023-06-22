@@ -4,7 +4,7 @@ import functools
 def init_server_model(func):
     @functools.wraps(func)
     def _init_server_model_(server_flex_model, _, *args, **kwargs):
-        server_flex_model |= func(*args, **kwargs)
+        server_flex_model.update(func(*args, **kwargs))
 
     return _init_server_model_
 
@@ -14,7 +14,7 @@ def deploy_server_model(func):
     def _deploy_model_(server_flex_model, clients_flex_models, *args, **kwargs):
         for k in clients_flex_models:
             # Reminder, it is not possible to make assignements here
-            clients_flex_models[k] |= func(server_flex_model, *args, **kwargs)
+            clients_flex_models[k].update(func(server_flex_model, *args, **kwargs))
 
     return _deploy_model_
 

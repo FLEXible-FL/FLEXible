@@ -4,18 +4,18 @@ name: Tests
 on:
   pull_request:
     branches:
-      - 'main'
+      - main
     types: [synchronize, opened]
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
 
-      - name: Set up Python 3.9
-        uses: actions/setup-python@v2
+      - name: Set up Python 3.8.10
+        uses: actions/setup-python@v4
         with:
-          python-version: 3.9
+          python-version: 3.8.10
 
       - name: Install dependencies
         run: |
