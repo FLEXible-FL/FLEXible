@@ -4,7 +4,7 @@ name: Tests
 on:
   pull_request:
     branches:
-      - 'main'
+      - main
     types: [synchronize, opened]
 jobs:
   build:
@@ -15,7 +15,7 @@ jobs:
       - name: Set up Python 3.8.10
         uses: actions/setup-python@v4
         with:
-          python-version: "3.8.10"
+          python-version: 3.8.10
 
       - name: Install dependencies
         run: |
