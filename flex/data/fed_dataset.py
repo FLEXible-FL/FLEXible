@@ -100,7 +100,7 @@ class FedDataset(UserDict):
 
         with Pool(processes=num_proc) as p:
             for i in p.imap(f, clients_ids):
-                updates |= i
+                updates.update(i)
 
         return updates
 
