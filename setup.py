@@ -46,5 +46,5 @@ setup(
                         *HF_requires
                         ],
         },
-        python_requires=">=3.9.0",
+        python_requires=">=3.8.10",
 )
