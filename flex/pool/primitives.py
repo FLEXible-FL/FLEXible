@@ -132,6 +132,7 @@ def train_tf(client_flex_model, client_data, *args, **kwargs):
         client_data.X_data, client_data.y_data, *args, **kwargs
     )
 
+
 @collect_clients_weights
 def collect_clients_weights_tf(client_flex_model, *args, **kwargs):
     """Function that collect the weights for a TensorFlow model.
