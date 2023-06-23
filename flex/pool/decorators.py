@@ -11,7 +11,7 @@ def __inspect_arguments(func):
         assert len(signature.parameters) >= 1
     except AssertionError as er:
         raise AssertionError(
-            f"The function must recieve at least 1 argument. {er}"
+            f"The decorated function is expected to have at least one argument. {er}"
         ) from er
 
 
