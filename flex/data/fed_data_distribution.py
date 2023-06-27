@@ -167,7 +167,7 @@ class FedDataDistribution(object):
                 [w / sum(config.weights) for w in config.weights]
             )
         # Ensure that classes_per_client is translated to weights_per_class
-        if config_.classes_per_client:
+        if config_.classes_per_client is not None:
             cls.__configure_weights_per_class(rng, config_, centralized_data)
         # Normalize weights_per_class when no replacement
         if (

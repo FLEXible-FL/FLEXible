@@ -48,7 +48,7 @@ class FedDatasetConfig:
     classes_per_client: Optional[Union[int, npt.NDArray, Tuple[int]]]
         Classes to assign to each client, if provided as an int, it is the number classes per client, if provided as a \
         tuple of ints, it establishes a mininum and a maximum of number of classes per client, a random number sampled \
-        in such interval decides the number of classes of each client. If provided as a list, it establishes the classes \
+        in such interval decides the number of classes of each client. If provided as a list of lists, it establishes the classes \
         assigned to each client. Default None.
     features_per_client: Optional[Union[int, npt.NDArray, Tuple[int]]]
         Features to assign to each client, it share the same interface as classes_per_client. Default None.
