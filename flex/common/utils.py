@@ -1,5 +1,7 @@
+import inspect
 import os
 import zipfile
+from typing import Callable
 
 import gdown
 from sultan.api import Sultan
@@ -26,7 +28,7 @@ SHAKESPEARE_FILE = "shakespeare_leaf.zip"
 
 def check_integrity(filename: str, md5_hash: str) -> bool:
     """Function that computes the md5 hash of a file and compares it
-        with a given one, ensuring that the file corresponds to the given md5 hash
+        with a given one, ensuring that the file corresponds to the given md5 hash.
 
     Args:
         filename (str): path to file which will be used to compute a md5 hash
@@ -69,7 +71,8 @@ def check_dir_exists(filename: str) -> bool:
 
 
 def extract_zip(filename: str, output: bool = True):
-    """Function that extract a zip file. If files are already extracted, it skips extracting them
+    """Function that extract a zip file. If files are already extracted, it skips 
+    extracting them.
 
     Args:
         filename (str): Directory to check.
@@ -93,7 +96,7 @@ def extract_zip(filename: str, output: bool = True):
 
 def download_file(url: str, filename: str, out_dir: str = "."):
     """Function that downloads a file from a url and stores it in out_dir
-        with name filename
+        with name filename.
 
     Args:
         url (str): url to download the file
@@ -167,3 +170,25 @@ def download_dataset(
             if extract
             else full_path
         )
+
+
+# We should consider reallocating this function in the future, so that we can reuse it
+def inspect_arguments(func: Callable, min_args: int = 1):
+    """Function that inspect the minumum number of arguments of a given function.
+
+    Args:
+        func (Callable): Function to inspect
+        min_args (int, optional): Minimum number of arguments that the function
+        func must have. Defaults to 1.
+
+    Raises:
+        AssertionError: Raise an assertion error if the number of arguments of the
+        given function is lower than the min_args value.
+    """
+    signature = inspect.signature(func)
+    try:
+        assert len(signature.parameters) >= min_args
+    except AssertionError as er:
+        raise AssertionError(
+            f"The provided function: {func.__name__} is expected to have at least {min_args} argument/s. {er}"
+        ) from er
