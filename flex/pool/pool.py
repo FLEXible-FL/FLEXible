@@ -144,8 +144,8 @@ class FlexPool:
         """
         node_dropout = max(0, node_dropout)
         node_dropout = max(1 - min(node_dropout, 1), 0)
-        node_dropout = int(len(self._actors) * node_dropout)
-        selected_nodes = random.sample(list(self._actors.keys()), node_dropout)
+        num_nodes = round(len(self._actors) * node_dropout)
+        selected_nodes = random.sample(list(self._actors.keys()), num_nodes)
         new_actors = FlexActors()
         new_data = FedDataset()
         new_models = {}
