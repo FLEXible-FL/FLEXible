@@ -1,4 +1,5 @@
 from typing import Any, Hashable
+from copy import deepcopy
 
 
 class FlexModel(dict):
@@ -31,3 +32,11 @@ class FlexModel(dict):
             del self[key]
         except KeyError as k:
             raise KeyError(k) from k
+
+    def __deepcopy__(self, memo):
+        cls = self.__class__
+        result = cls.__new__(cls)
+        memo[id(self)] = result
+        for k, v in self.items():
+            setattr(result, k, deepcopy(v, memo))
+        return result

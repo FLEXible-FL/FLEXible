@@ -3,6 +3,7 @@ import unittest
 import pytest
 
 from flex.model import FlexModel
+from copy import deepcopy
 
 
 class TestFlexModel(unittest.TestCase):
@@ -42,3 +43,10 @@ class TestFlexModel(unittest.TestCase):
         flex_model.model = "test"
         with pytest.raises(KeyError):
             flex_model.model = "test2"
+
+    def test_deepcopy(self):
+        flex_model = FlexModel()
+        flex_model.model = list(range(100))
+        copy_flex_model = deepcopy(flex_model)
+        assert id(flex_model) != id(copy_flex_model)
+        assert id(flex_model.model) != id(copy_flex_model.model)
