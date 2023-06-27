@@ -27,14 +27,17 @@ class TestFlexPool(unittest.TestCase):
         c_iris = Dataset(X_data=iris.data, y_data=iris.target)
         self.f_iris = FedDataDistribution.iid_distribution(c_iris, n_clients=2)
 
+    def test_decorators_guard(self):
+        with pytest.raises(AssertionError):
+            @set_aggregated_weights
+            def bad_set_agreggated_weights_to_server(server_flex_model):
+                pass
+
     def test_decorators(self):
         @init_server_model
-        def build_server_model(
-            additional_value=2,
-        ):
+        def build_server_model():
             flex_model = FlexModel()
             flex_model["model"] = KNeighborsClassifier(n_neighbors=3)
-            flex_model["additional_value"] = additional_value
             return flex_model
 
         @deploy_server_model

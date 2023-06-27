@@ -4,20 +4,18 @@ from typing import List
 
 from flex.model import FlexModel
 
-
-def __inspect_arguments(func):
+# We should consider reallocating this function in the future, so that we can reuse it
+def __inspect_arguments(func, min_args=1):
     signature = inspect.signature(func)
     try:
-        assert len(signature.parameters) >= 1
+        assert len(signature.parameters) >= min_args
     except AssertionError as er:
         raise AssertionError(
-            f"The decorated function is expected to have at least one argument. {er}"
+            f"The provided function: {func.__name__} is expected to have at least {min_args} argument/s. {er}"
         ) from er
 
 
 def init_server_model(func):
-    __inspect_arguments(func=func)
-
     @functools.wraps(func)
     def _init_server_model_(server_flex_model: FlexModel, _, *args, **kwargs):
         server_flex_model.update(func(*args, **kwargs))
@@ -75,7 +73,7 @@ def aggregate_weights(func):
 
 
 def set_aggregated_weights(func):
-    __inspect_arguments(func=func)
+    __inspect_arguments(func=func, min_args=2)
 
     @functools.wraps(func)
     def _deploy_aggregated_weights_(
