@@ -160,6 +160,19 @@ class TestFlexPool(unittest.TestCase):
             for _, actor_role in new_p._actors.items()
         )
 
+    def test_filter_dropout(self):
+        iris = load_iris()
+        tmp = Dataset(X_data=iris.data, y_data=iris.target)
+        self._iris_many_clients = FedDataDistribution.iid_distribution(
+            tmp, n_clients=100
+        )
+        p = FlexPool.client_server_architecture(self._iris, lambda *args: None)
+        pool_size = len(p)
+        assert all(
+            len(p.filter(node_dropout=1 - (i / pool_size))) == i
+            for i in range(pool_size)
+        )
+
     def test_client_property(self):
         p = FlexPool.p2p_architecture(self._fld, init_func=lambda *args: None)
         new_p = p.clients
