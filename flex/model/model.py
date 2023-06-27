@@ -1,5 +1,5 @@
-from typing import Any, Hashable
 from copy import deepcopy
+from typing import Any, Hashable
 
 
 class FlexModel(dict):

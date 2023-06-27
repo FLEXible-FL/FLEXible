@@ -1,9 +1,9 @@
 import unittest
+from copy import deepcopy
 
 import pytest
 
 from flex.model import FlexModel
-from copy import deepcopy
 
 
 class TestFlexModel(unittest.TestCase):
