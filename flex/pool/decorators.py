@@ -4,6 +4,7 @@ from typing import List
 
 from flex.model import FlexModel
 
+
 # We should consider reallocating this function in the future, so that we can reuse it
 def __inspect_arguments(func, min_args=1):
     signature = inspect.signature(func)

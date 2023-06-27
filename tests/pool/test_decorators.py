@@ -1,6 +1,5 @@
 import copy
 import unittest
-
 import pytest
 from sklearn.datasets import load_iris
 from sklearn.metrics import accuracy_score
@@ -29,6 +28,7 @@ class TestFlexPool(unittest.TestCase):
 
     def test_decorators_guard(self):
         with pytest.raises(AssertionError):
+
             @set_aggregated_weights
             def bad_set_agreggated_weights_to_server(server_flex_model):
                 pass
