@@ -8,4 +8,4 @@ from flex.common.utils import check_dir_exists
 from flex.common.utils import check_file_exists
 from flex.common.utils import check_integrity
 from flex.common.utils import extract_zip
-from flex.common.utils import inspect_arguments
+from flex.common.utils import check_min_arguments
