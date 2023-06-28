@@ -207,15 +207,6 @@ class TestFlexPool(unittest.TestCase):
         clients = p.filter(lambda a, b: FlexRoleManager.is_client(b), node_dropout=10)
         assert len(clients._actors) == 0
 
-    def test_flex_model_key_restriction(self):
-        def init_func(fmodel, data):
-            fmodel["model"] = 0
-
-        p = FlexPool.p2p_architecture(self._fld, init_func)
-        for i in p.servers._models:
-            with pytest.raises(KeyError):
-                p.servers._models[i]["model"] = 0
-
     def test_reserved_server_id(self):
         fld = FedDataset(
             {"server": self._fld["client_1"], "client_2": self._fld["client_2"]}
