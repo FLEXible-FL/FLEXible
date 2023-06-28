@@ -7,6 +7,7 @@ from multiprocess import Pool
 
 from flex.data.dataset import Dataset
 from flex.data.preprocessing_utils import normalize, one_hot_encoding
+from flex.common.utils import check_min_arguments
 
 
 class FedDataset(UserDict):
@@ -61,6 +62,9 @@ class FedDataset(UserDict):
                 raise ValueError("All client ids given must be in the FedDataset.")
         elif any(client not in self.keys() for client in clients_ids):
             raise ValueError("All client ids given must be in the FedDataset.")
+
+        error_msg = f"The provided function: {func.__name__} is expected to have at least 1 argument/s."
+        assert check_min_arguments(func, min_args=1), error_msg
 
         if num_proc < 2:
             updates = self._map_single(func, clients_ids, **kwargs)

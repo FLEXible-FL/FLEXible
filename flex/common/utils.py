@@ -1,5 +1,7 @@
+import inspect
 import os
 import zipfile
+from typing import Callable
 
 import gdown
 from sultan.api import Sultan
@@ -26,13 +28,15 @@ SHAKESPEARE_FILE = "shakespeare_leaf.zip"
 
 def check_integrity(filename: str, md5_hash: str) -> bool:
     """Function that computes the md5 hash of a file and compares it
-        with a given one, ensuring that the file corresponds to the given md5 hash
+        with a given one, ensuring that the file corresponds to the given md5 hash.
 
     Args:
+    ----
         filename (str): path to file which will be used to compute a md5 hash
         md5_hash (str): md5 hash to compare with the one compute using filename
 
     Returns:
+    -------
         bool: whether the given file has the same hash as the one provided
     """
     with Sultan.load() as s:
@@ -48,9 +52,11 @@ def check_file_exists(filename: str) -> bool:
     """Function that checks if a given file exits or not.
 
     Args:
+    ----
         filename (str): Filename to check.
 
     Returns:
+    -------
         bool: True/False if the file exits or not.
     """
     return os.path.isfile(filename)
@@ -60,22 +66,27 @@ def check_dir_exists(filename: str) -> bool:
     """Function that checks if a given directory exits or not.
 
     Args:
+    ----
         filename (str): Directory to check.
 
     Returns:
+    -------
         bool: True/False if the directory exits or not.
     """
     return os.path.exists(filename)
 
 
 def extract_zip(filename: str, output: bool = True):
-    """Function that extract a zip file. If files are already extracted, it skips extracting them
+    """Function that extract a zip file. If files are already extracted, it skips
+    extracting them.
 
     Args:
+    ----
         filename (str): Directory to check.
         output (bool): Whether to output the paths of the extracted files
 
     Returns:
+    -------
         bool: True/False if the directory exits or not.
     """
     base_dir = "/".join(filename.split("/")[:-1])
@@ -93,9 +104,10 @@ def extract_zip(filename: str, output: bool = True):
 
 def download_file(url: str, filename: str, out_dir: str = "."):
     """Function that downloads a file from a url and stores it in out_dir
-        with name filename
+        with name filename.
 
     Args:
+    ----
         url (str): url to download the file
         filename (str): name used to store the downloaded file
         out_dir (str, optional): directory where the downloaded file will be stored. Defaults to ".".
@@ -138,6 +150,7 @@ def download_dataset(
     """Function that download a dataset given an URL.
 
     Args:
+    ----
         url (str): url to download the file
         filename (str): name used to store the downloaded file
         md5_hash (str): hash used to ensure the integrity of the downloaded file
@@ -147,6 +160,7 @@ def download_dataset(
         output (bool, optional): whether to return a list with the paths of the downloaded/extractred files. Defaults to True.
 
     Raises:
+    ------
         ValueError: Raise an error if it fails downloading the dataset or the given md5 hash is not correct.
     """
     full_path = os.path.join(out_dir, filename)
@@ -167,3 +181,21 @@ def download_dataset(
             if extract
             else full_path
         )
+
+
+def check_min_arguments(func: Callable, min_args: int = 1):
+    """Function that inspect the minumum number of arguments of a given function.
+
+    Args:
+    ----
+        func (Callable): Function to inspect
+        min_args (int, optional): Minimum number of arguments that the function
+        func must have. Defaults to 1.
+
+    Raises:
+    ------
+        AssertionError: Raise an assertion error if the number of arguments of the
+        given function is lower than the min_args value.
+    """
+    signature = inspect.signature(func)
+    return len(signature.parameters) >= min_args

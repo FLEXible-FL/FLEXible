@@ -1,19 +1,12 @@
 import functools
-import inspect
 from typing import List
 
+from flex.common.utils import check_min_arguments
 from flex.model import FlexModel
 
 
-# We should consider reallocating this function in the future, so that we can reuse it
-def __inspect_arguments(func, min_args=1):
-    signature = inspect.signature(func)
-    try:
-        assert len(signature.parameters) >= min_args
-    except AssertionError as er:
-        raise AssertionError(
-            f"The provided function: {func.__name__} is expected to have at least {min_args} argument/s. {er}"
-        ) from er
+def ERROR_MSG_MIN_ARG_GENERATOR(f, min_args):
+    return f"The decorated function: {f.__name__} is expected to have at least {min_args} argument/s."
 
 
 def init_server_model(func):
@@ -25,7 +18,10 @@ def init_server_model(func):
 
 
 def deploy_server_model(func):
-    __inspect_arguments(func=func)
+    min_args = 1
+    assert check_min_arguments(func, min_args), ERROR_MSG_MIN_ARG_GENERATOR(
+        func, min_args
+    )
 
     @functools.wraps(func)
     def _deploy_model_(
@@ -42,7 +38,10 @@ def deploy_server_model(func):
 
 
 def collect_clients_weights(func):
-    __inspect_arguments(func=func)
+    min_args = 1
+    assert check_min_arguments(func, min_args), ERROR_MSG_MIN_ARG_GENERATOR(
+        func, min_args
+    )
 
     @functools.wraps(func)
     def _collect_weights_(
@@ -61,7 +60,10 @@ def collect_clients_weights(func):
 
 
 def aggregate_weights(func):
-    __inspect_arguments(func=func)
+    min_args = 1
+    assert check_min_arguments(func, min_args), ERROR_MSG_MIN_ARG_GENERATOR(
+        func, min_args
+    )
 
     @functools.wraps(func)
     def _aggregate_weights_(aggregator_flex_model: FlexModel, _, *args, **kwargs):
@@ -74,7 +76,10 @@ def aggregate_weights(func):
 
 
 def set_aggregated_weights(func):
-    __inspect_arguments(func=func, min_args=2)
+    min_args = 2
+    assert check_min_arguments(func, min_args), ERROR_MSG_MIN_ARG_GENERATOR(
+        func, min_args
+    )
 
     @functools.wraps(func)
     def _deploy_aggregated_weights_(
@@ -95,7 +100,10 @@ def set_aggregated_weights(func):
 
 
 def evaluate_server_model(func):
-    __inspect_arguments(func=func)
+    min_args = 1
+    assert check_min_arguments(func, min_args), ERROR_MSG_MIN_ARG_GENERATOR(
+        func, min_args
+    )
 
     @functools.wraps(func)
     def _evaluate_server_model_(server_flex_model: FlexModel, _, *args, **kwargs):
