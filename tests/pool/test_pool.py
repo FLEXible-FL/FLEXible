@@ -66,7 +66,7 @@ class TestFlexPool(unittest.TestCase):
     def test_len_property(self):
         p = FlexPool.client_server_architecture(self._iris, lambda *args: None)
         assert len(p) != len(self._iris)
-        assert len(p.filter(lambda *args: True)) == len(p)
+        assert len(p.select(lambda *args: True)) == len(p)
         assert len(p.actor_ids) == len(p)
 
     def test_check_compatibility(self):
@@ -152,15 +152,15 @@ class TestFlexPool(unittest.TestCase):
         assert p._models.get("client_2") == FlexModel()
         assert p._models.get("client_3") == FlexModel()
 
-    def test_filter(self):
+    def test_select(self):
         p = FlexPool.p2p_architecture(self._fld, init_func=lambda *args: None)
-        new_p = p.filter(lambda a, b: FlexRoleManager.is_client(b))
+        new_p = p.select(lambda a, b: FlexRoleManager.is_client(b))
         assert all(
             FlexRoleManager.is_client(actor_role)
             for _, actor_role in new_p._actors.items()
         )
 
-    def test_filter_dropout(self):
+    def test_select_int_criteria(self):
         iris = load_iris()
         tmp = Dataset(X_data=iris.data, y_data=iris.target)
         self._iris_many_clients = FedDataDistribution.iid_distribution(
@@ -168,10 +168,7 @@ class TestFlexPool(unittest.TestCase):
         )
         p = FlexPool.client_server_architecture(self._iris, lambda *args: None)
         pool_size = len(p)
-        assert all(
-            len(p.filter(node_dropout=1 - (i / pool_size))) == i
-            for i in range(pool_size)
-        )
+        assert all(len(p.select(i)) == i for i in range(pool_size))
 
     def test_client_property(self):
         p = FlexPool.p2p_architecture(self._fld, init_func=lambda *args: None)
@@ -196,16 +193,6 @@ class TestFlexPool(unittest.TestCase):
             FlexRoleManager.is_server(actor_role)
             for _, actor_role in new_p._actors.items()
         )
-
-    def test_filter_dropout_correct(self):
-        p = FlexPool.p2p_architecture(self._fld, init_func=lambda *args: None)
-        clients = p.filter(lambda a, b: FlexRoleManager.is_client(b), node_dropout=0.33)
-        assert len(clients._actors) == 2
-
-    def test_filter_dropout_greater_one(self):
-        p = FlexPool.p2p_architecture(self._fld, init_func=lambda *args: None)
-        clients = p.filter(lambda a, b: FlexRoleManager.is_client(b), node_dropout=10)
-        assert len(clients._actors) == 0
 
     def test_reserved_server_id(self):
         fld = FedDataset(
