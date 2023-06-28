@@ -199,4 +199,3 @@ def check_min_arguments(func: Callable, min_args: int = 1):
     """
     signature = inspect.signature(func)
     return len(signature.parameters) >= min_args
-

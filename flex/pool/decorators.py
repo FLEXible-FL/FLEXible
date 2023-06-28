@@ -19,7 +19,9 @@ def init_server_model(func):
 
 def deploy_server_model(func):
     min_args = 1
-    assert check_min_arguments(func, min_args), ERROR_MSG_MIN_ARG_GENERATOR(func, min_args)
+    assert check_min_arguments(func, min_args), ERROR_MSG_MIN_ARG_GENERATOR(
+        func, min_args
+    )
 
     @functools.wraps(func)
     def _deploy_model_(
@@ -37,7 +39,9 @@ def deploy_server_model(func):
 
 def collect_clients_weights(func):
     min_args = 1
-    assert check_min_arguments(func, min_args), ERROR_MSG_MIN_ARG_GENERATOR(func, min_args)
+    assert check_min_arguments(func, min_args), ERROR_MSG_MIN_ARG_GENERATOR(
+        func, min_args
+    )
 
     @functools.wraps(func)
     def _collect_weights_(
@@ -57,7 +61,9 @@ def collect_clients_weights(func):
 
 def aggregate_weights(func):
     min_args = 1
-    assert check_min_arguments(func, min_args), ERROR_MSG_MIN_ARG_GENERATOR(func, min_args)
+    assert check_min_arguments(func, min_args), ERROR_MSG_MIN_ARG_GENERATOR(
+        func, min_args
+    )
 
     @functools.wraps(func)
     def _aggregate_weights_(aggregator_flex_model: FlexModel, _, *args, **kwargs):
@@ -71,7 +77,9 @@ def aggregate_weights(func):
 
 def set_aggregated_weights(func):
     min_args = 2
-    assert check_min_arguments(func, min_args), ERROR_MSG_MIN_ARG_GENERATOR(func, min_args)
+    assert check_min_arguments(func, min_args), ERROR_MSG_MIN_ARG_GENERATOR(
+        func, min_args
+    )
 
     @functools.wraps(func)
     def _deploy_aggregated_weights_(
@@ -93,7 +101,9 @@ def set_aggregated_weights(func):
 
 def evaluate_server_model(func):
     min_args = 1
-    assert check_min_arguments(func, min_args), ERROR_MSG_MIN_ARG_GENERATOR(func, min_args)
+    assert check_min_arguments(func, min_args), ERROR_MSG_MIN_ARG_GENERATOR(
+        func, min_args
+    )
 
     @functools.wraps(func)
     def _evaluate_server_model_(server_flex_model: FlexModel, _, *args, **kwargs):
