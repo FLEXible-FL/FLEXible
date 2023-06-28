@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import functools
 import random
-from typing import Callable, Hashable
+from typing import Callable, Hashable, Union
 
 from flex.actors.actors import FlexActors, FlexRole, FlexRoleManager
 from flex.data import FedDataset
@@ -126,40 +126,48 @@ class FlexPool:
         if all(ele is not None for ele in res):
             return res
 
-    def filter(self, func: Callable = None, node_dropout: float = 0.0, **kwargs):
-        """Function that filter the PoolManager by actors given a function.
-        The function must return True/False, and it recieves the args and kwargs arguments
-        for its internal uses. Also, the function recieves an actor_id and an actor_role.
-        The actor_id is a string, and the actor_role is a FlexRole.
+    def select(self, criteria: Union[int, Callable], *criteria_args, **criteria_kwargs):
+        """Function that returns a subset of a FlexPool meeting a certain criteria.
+        If criteria is an integer, a subset of the available nodes of size criteria is
+        randomly sampled. If criteria is a function, then we select those nodes where
+        the function returns True values. Note that, the function must have at least
+        two arguments, a client id and the roles associated to such client id.
+        The actor_id is a string, and the actor_role is a FlexRole object.
 
         Note: This function doesn't send a copy of the original pool, it sends a reference.
-            Changes made on the new pool may affect the original pool.
+            Changes made on the returned pool affect the original pool.
         Args:
-            func (Callable): Function to filter the pool by. The function must return True/False.
-            node_dropout (float): Percentage of node to drop from the training phase. This param
-            must be a value in the range [0, 1]. If the node_dropout > 1, it will return all the
-            pool without any changes. For negative values are ignored.
+            criteria (int, Callable): if a function is provided, then it must return
+            True/False values for each pair of client_id, client_roles. Additional arguments
+            required for the function are passed in criteria_args and criteria_kwargs.
+            Otherwise, criteria is interpreted as number of nodes to randomly sample from the pool.
+            criteria_args: additional args required for the criteria function. Otherwise ignored.
+            criteria_kwargs: additional keyword args required for the criteria function. Otherwise ignored.
+
         Returns:
-            FlexPool: New filtered pool.
+            FlexPool: a pool that contains the nodes that meet the criteria.
         """
-        node_dropout = max(0, node_dropout)
-        node_dropout = max(1 - min(node_dropout, 1), 0)
-        num_nodes = round(len(self._actors) * node_dropout)
-        selected_nodes = random.sample(list(self._actors.keys()), num_nodes)
         new_actors = FlexActors()
         new_data = FedDataset()
         new_models = {}
-        for actor_id in selected_nodes:
-            cond = (
-                True
-                if func is None
-                else func(actor_id, self._actors[actor_id], **kwargs)
-            )
-            if cond:
-                new_actors[actor_id] = self._actors[actor_id]
-                new_models[actor_id] = self._models[actor_id]
-                if actor_id in self._data:
-                    new_data[actor_id] = self._data[actor_id]
+        available_nodes = self._actors.keys()
+        if callable(criteria):
+            selected_keys = [
+                actor_id
+                for actor_id in available_nodes
+                if criteria(
+                    actor_id, self._actors[actor_id], *criteria_args, **criteria_kwargs
+                )
+            ]
+        else:
+            num_nodes = criteria
+            selected_keys = random.sample(available_nodes, num_nodes)
+
+        for actor_id in selected_keys:
+            new_actors[actor_id] = self._actors[actor_id]
+            new_models[actor_id] = self._models[actor_id]
+            if actor_id in self._data:
+                new_data[actor_id] = self._data[actor_id]
 
         return FlexPool(
             flex_actors=new_actors, flex_data=new_data, flex_models=new_models
@@ -179,7 +187,7 @@ class FlexPool:
         Returns:
             FlexPool: Pool containing all the clients from a pool
         """
-        return self.filter(lambda a, b: FlexRoleManager.is_client(b))
+        return self.select(lambda a, b: FlexRoleManager.is_client(b))
 
     @functools.cached_property
     def aggregators(self):
@@ -188,7 +196,7 @@ class FlexPool:
         Returns:
             FlexPool: Pool containing all the aggregators from a pool
         """
-        return self.filter(lambda a, b: FlexRoleManager.is_aggregator(b))
+        return self.select(lambda a, b: FlexRoleManager.is_aggregator(b))
 
     @functools.cached_property
     def servers(self):
@@ -197,7 +205,7 @@ class FlexPool:
         Returns:
             FlexPool: Pool containing all the servers from a pool
         """
-        return self.filter(lambda a, b: FlexRoleManager.is_server(b))
+        return self.select(lambda a, b: FlexRoleManager.is_server(b))
 
     def validate(self):  # sourcery skip: de-morgan
         """Function that checks whether the object is correct or not."""
