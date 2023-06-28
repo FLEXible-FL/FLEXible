@@ -1,6 +1,3 @@
-# ruff: noqa: D417
-# ruff: noqa: D401
-
 import inspect
 import os
 import zipfile
@@ -186,8 +183,7 @@ def download_dataset(
         )
 
 
-# We should consider reallocating this function in the future, so that we can reuse it
-def inspect_arguments(func: Callable, min_args: int = 1):
+def check_min_arguments(func: Callable, min_args: int = 1):
     """Function that inspect the minumum number of arguments of a given function.
 
     Args:
@@ -202,9 +198,7 @@ def inspect_arguments(func: Callable, min_args: int = 1):
         given function is lower than the min_args value.
     """
     signature = inspect.signature(func)
-    try:
-        assert len(signature.parameters) >= min_args
-    except AssertionError as er:
-        raise AssertionError(
-            f"The provided function: {func.__name__} is expected to have at least {min_args} argument/s. {er}"
-        ) from er
+    return len(signature.parameters) >= min_args
+
+
+# default_error_message = f"The provided function: {func.__name__} is expected to have at least {min_args} argument/s."
