@@ -200,5 +200,3 @@ def check_min_arguments(func: Callable, min_args: int = 1):
     signature = inspect.signature(func)
     return len(signature.parameters) >= min_args
 
-
-# default_error_message = f"The provided function: {func.__name__} is expected to have at least {min_args} argument/s."
