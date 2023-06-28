@@ -1,4 +1,5 @@
-from flex.data import Dataset, utils
+from flex.data import Dataset
+from flex.common import utils
 
 
 def emnist(out_dir: str = ".", split="digits", include_authors=False):
