@@ -150,7 +150,7 @@ class FlexPool:
         new_actors = FlexActors()
         new_data = FedDataset()
         new_models = {}
-        available_nodes = self._actors.keys()
+        available_nodes = list(self._actors.keys())
         if callable(criteria):
             selected_keys = [
                 actor_id
