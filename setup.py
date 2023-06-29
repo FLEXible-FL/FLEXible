@@ -15,7 +15,7 @@ HF_requires = ["datasets"]
 
 setup(
         name="flex",
-        version="0.0.1.dev0",
+        version="0.6.0",
         author="The FLEXible team",
         long_description=open("README.md", "r", encoding="utf-8").read(),
         long_description_content_type="text/markdown",
