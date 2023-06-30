@@ -3,7 +3,7 @@ from enum import Enum, EnumMeta
 
 class PluggableDataset(EnumMeta):
     def __contains__(self, item):
-        return item in [k for k in self.members()]
+        return item in list(self.members())
 
 
 class PluggableDatasetString(EnumMeta):
