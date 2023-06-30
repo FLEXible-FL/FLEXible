@@ -3,12 +3,7 @@ from enum import Enum, EnumMeta
 
 class PluggableDataset(EnumMeta):
     def __contains__(self, item):
-        try:
-            self(item)
-        except ValueError:
-            return False
-        else:
-            return True
+        return item in [k for k in self.members()]
 
 
 class PluggableDatasetString(EnumMeta):
@@ -17,8 +12,6 @@ class PluggableDatasetString(EnumMeta):
 
 
 class PluggableTorchtext(Enum, metaclass=PluggableDataset):
-    from torchtext import datasets
-
     """Class containing all the pluggable datasets to a Dataset without any preprocessing needed.
 
     Any other dataset from the TorchText library will need further preprocessing.
@@ -27,17 +20,18 @@ class PluggableTorchtext(Enum, metaclass=PluggableDataset):
         Enum (enum): torchtext class for each dataset than can be accepted on our platform.
     """
 
-    AG_NEWS_PT = datasets.AG_NEWS.__name__
-    AMAZON_REVIEW_FULL_PT = datasets.AmazonReviewFull.__name__
-    AMAZON_REVIEW_POLARITY_PT = datasets.AmazonReviewPolarity.__name__
-    DBPEDIA_PT = datasets.DBpedia.__name__
-    YAHOOANSWERS_PT = datasets.YahooAnswers.__name__
-    YELPREVIEWFULL_PT = datasets.YelpReviewFull.__name__
-    YELPREVIEWPOLARITY_PT = datasets.YelpReviewPolarity.__name__
+    def members():
+        from torchtext import datasets
+        yield datasets.AG_NEWS.__name__
+        yield datasets.AmazonReviewFull.__name__
+        yield datasets.AmazonReviewPolarity.__name__
+        yield datasets.DBpedia.__name__
+        yield datasets.YahooAnswers.__name__
+        yield datasets.YelpReviewFull.__name__
+        yield datasets.YelpReviewPolarity.__name__
 
 
 class PluggableTorchvision(Enum, metaclass=PluggableDataset):
-    from torchvision import datasets
 
     """Class containing all the pluggable datasets to a Dataset without any preprocessing needed.
 
@@ -46,38 +40,41 @@ class PluggableTorchvision(Enum, metaclass=PluggableDataset):
     Args:
         Enum (enum): torchvision class for each dataset than can be accepted on our platform.
     """
-    WIDERFace_PT = datasets.WIDERFace.__name__
-    Food101_PT = datasets.Food101.__name__
-    CelebA_PT = datasets.CelebA.__name__
-    CLEVRClassification_PT = datasets.CLEVRClassification.__name__
-    Country211_PT = datasets.Country211.__name__
-    FGVCAircraft_PT = datasets.FGVCAircraft.__name__
-    GTSRB_PT = datasets.GTSRB.__name__
-    Kitti_PT = datasets.Kitti.__name__
-    Flowers102_PT = datasets.Flowers102.__name__
-    StanfordCars_PT = datasets.StanfordCars.__name__
-    LFWPeople_PT = datasets.LFWPeople.__name__
-    Caltech256_PT = datasets.Caltech256.__name__
-    EuroSAT_PT = datasets.EuroSAT.__name__
-    CIFAR10_PT = datasets.CIFAR10.__name__
-    CIFAR100_PT = datasets.CIFAR100.__name__
-    MNIST_PT = datasets.MNIST.__name__
-    SUN397_PT = datasets.SUN397.__name__
-    SEMEION_PT = datasets.SEMEION.__name__
-    Omniglot_PT = datasets.Omniglot.__name__
-    KMNIST_PT = datasets.KMNIST.__name__
-    FashionMNIST_PT = datasets.FashionMNIST.__name__
-    OxfordIIITPet_PT = datasets.OxfordIIITPet.__name__
-    STL10_PT = datasets.STL10.__name__
-    PCAM_PT = datasets.PCAM.__name__
-    Caltech101_PT = datasets.Caltech101.__name__
-    QMNIST_PT = datasets.QMNIST.__name__
-    SVHN_PT = datasets.SVHN.__name__
-    DTD_PT = datasets.DTD.__name__
-    USPS_PT = datasets.USPS.__name__
-    RenderedSST2_PT = datasets.RenderedSST2.__name__
-    INaturalist_PT = datasets.INaturalist.__name__
-    EMNIST_PT = datasets.EMNIST.__name__
+
+    def members():
+        from torchvision import datasets
+        yield datasets.WIDERFace.__name__
+        yield datasets.Food101.__name__
+        yield datasets.CelebA.__name__
+        yield datasets.CLEVRClassification.__name__
+        yield datasets.Country211.__name__
+        yield datasets.FGVCAircraft.__name__
+        yield datasets.GTSRB.__name__
+        yield datasets.Kitti.__name__
+        yield datasets.Flowers102.__name__
+        yield datasets.StanfordCars.__name__
+        yield datasets.LFWPeople.__name__
+        yield datasets.Caltech256.__name__
+        yield datasets.EuroSAT.__name__
+        yield datasets.CIFAR10.__name__
+        yield datasets.CIFAR100.__name__
+        yield datasets.MNIST.__name__
+        yield datasets.SUN397.__name__
+        yield datasets.SEMEION.__name__
+        yield datasets.Omniglot.__name__
+        yield datasets.KMNIST.__name__
+        yield datasets.FashionMNIST.__name__
+        yield datasets.OxfordIIITPet.__name__
+        yield datasets.STL10.__name__
+        yield datasets.PCAM.__name__
+        yield datasets.Caltech101.__name__
+        yield datasets.QMNIST.__name__
+        yield datasets.SVHN.__name__
+        yield datasets.DTD.__name__
+        yield datasets.USPS.__name__
+        yield datasets.RenderedSST2.__name__
+        yield datasets.INaturalist.__name__
+        yield datasets.EMNIST.__name__
 
 
 class PluggableHuggingFace(Enum, metaclass=PluggableDatasetString):
