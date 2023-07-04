@@ -152,6 +152,26 @@ class TestFlexPool(unittest.TestCase):
         assert p._models.get("client_2") == FlexModel()
         assert p._models.get("client_3") == FlexModel()
 
+    def test_validate_flex_model_ids_in_pool_init(self):
+        client1_id = "client_1"
+        role1 = FlexRole.client
+        client2_id = "client_2"
+        role2 = FlexRole.client
+        client3_id = "client_3"
+        role3 = FlexRole.client
+        actors = FlexActors(
+            {
+                client1_id: role1,
+                client2_id: role2,
+                client3_id: role3,
+            }
+        )
+        flex_models = {k: FlexModel() for k in actors}
+        for k in flex_models:
+            flex_models[k].actor_id = 8
+        with pytest.raises(ValueError):
+            FlexPool(self._fld, actors, flex_models)
+
     def test_select(self):
         p = FlexPool.p2p_architecture(self._fld, init_func=lambda *args: None)
         new_p = p.select(lambda a, b: FlexRoleManager.is_client(b))
