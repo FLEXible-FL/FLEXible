@@ -55,6 +55,8 @@ class FlexPool:
         self._models = flex_models
         if self._models is None:
             self._models = {k: FlexModel() for k in self._actors}
+            for k in self._models:
+                self._models[k].actor_id = k
         self.validate()  # check if the provided arguments generate a valid object
 
     @classmethod
@@ -212,8 +214,6 @@ class FlexPool:
         actors_ids = self._actors.keys()
         data_ids = self._data.keys()
         models_ids = self._models.keys()
-        if not (actors_ids >= data_ids and actors_ids >= models_ids):
-            raise ValueError("Each node with data or model must have a role asigned")
         for actor_id in actors_ids:
             if (
                 FlexRoleManager.is_client(self._actors[actor_id])
@@ -226,6 +226,13 @@ class FlexPool:
                 raise ValueError(
                     f"All nodes must have a FlexModel object associated as a model, but {actor_id} does not."
                 )
+        flex_models_ids = {self._models[k].actor_id for k in self._models}
+        if not (
+            actors_ids >= data_ids
+            and actors_ids >= models_ids
+            and actors_ids >= flex_models_ids
+        ):  # noqa: E501
+            raise ValueError("Each node with data or model must have a role asigned")
 
     @classmethod
     def client_server_architecture(
