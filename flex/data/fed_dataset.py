@@ -30,7 +30,7 @@ class FedDataset(UserDict):
         except KeyError:
             return default
 
-    def map(
+    def apply(
         self,
         func: Callable,
         clients_ids: List[Hashable] = None,
@@ -154,7 +154,7 @@ class FedDataset(UserDict):
         Returns:
             FedDataset: The FlexDataset normalized.
         """
-        return self.map(normalize, clients_ids, num_proc, *args, **kwargs)
+        return self.apply(normalize, clients_ids, num_proc, *args, **kwargs)
 
     def one_hot_encoding(
         self,
@@ -174,4 +174,4 @@ class FedDataset(UserDict):
         Returns:
             FedDataset: The FlexDataset normalized.
         """
-        return self.map(one_hot_encoding, clients_ids, num_proc, *args, **kwargs)
+        return self.apply(one_hot_encoding, clients_ids, num_proc, *args, **kwargs)
