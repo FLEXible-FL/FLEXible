@@ -60,7 +60,7 @@ class TestFlexDataset(unittest.TestCase):
         assert all(client.y_data.shape[1] == 2 for _, client in new_fld.items())
 
     def test_map_method(self):
-        new_fld = self._fld.map(func=normalize)
+        new_fld = self._fld.apply(func=normalize)
         assert all(
             not np.array_equal(client_orig.X_data, client_mod.X_data)
             for client_orig, client_mod in zip(self._fld.values(), new_fld.values())
@@ -70,14 +70,14 @@ class TestFlexDataset(unittest.TestCase):
         def dummy_func(data, **kwargs):
             return data
 
-        new_fld = self._fld.map(func=dummy_func, num_proc=2)
+        new_fld = self._fld.apply(func=dummy_func, num_proc=2)
         assert all(
             np.array_equal(client_orig.X_data, client_mod.X_data)
             for client_orig, client_mod in zip(self._fld.values(), new_fld.values())
         )
 
     def test_proprocessing_custom_func_more_processes_than_clients(self):
-        new_fld = self._fld.map(func=normalize, num_proc=10)
+        new_fld = self._fld.apply(func=normalize, num_proc=10)
         assert all(
             not np.array_equal(client_orig.X_data, client_mod.X_data)
             for client_orig, client_mod in zip(self._fld.values(), new_fld.values())
@@ -85,7 +85,7 @@ class TestFlexDataset(unittest.TestCase):
 
     def test_chosen_clients_custom_func(self):
         chosen_clients = ["client_1", "client_2"]
-        new_fld = self._fld.map(func=normalize, num_proc=10, clients_ids=chosen_clients)
+        new_fld = self._fld.apply(func=normalize, num_proc=10, clients_ids=chosen_clients)
         assert any(
             np.array_equal(client_orig.X_data, client_mod.X_data)
             for client_orig, client_mod in zip(self._fld.values(), new_fld.values())
@@ -102,7 +102,7 @@ class TestFlexDataset(unittest.TestCase):
     def test_all_clients_in_flex_dataset_when_mapping_func(self):
         client_ids = ["client_1", "client_84"]
         with pytest.raises(ValueError):
-            self._fld.map(func=normalize, num_proc=10, clients_ids=client_ids)
+            self._fld.apply(func=normalize, num_proc=10, clients_ids=client_ids)
 
     def test_map_func_executes_secuential(self):
         chosen_clients = ["client_1"]
@@ -123,4 +123,4 @@ class TestFlexDataset(unittest.TestCase):
     def test_map_recieves_one_client_as_str_fails(self):
         client_ids = "client_8232"
         with pytest.raises(ValueError):
-            self._fld.map(func=normalize, num_proc=1, clients_ids=client_ids)
+            self._fld.apply(func=normalize, num_proc=1, clients_ids=client_ids)
