@@ -395,27 +395,60 @@ class TestFlexDataDistribution(unittest.TestCase):
             "as_supervised": True,
             "batch_size": -1,
         }
-        data = tfds.load("mnist", **other_options)
+        ds_name="mnist"
+        data = tfds.load(ds_name, **other_options)
         config = FedDatasetConfig(
             seed=0,
             n_clients=2,
             replacement=False,
             client_names=["client_0", "client_1"],
         )
-        build_data_and_check(data, config)
         # With batch_size = 20
         other_options["batch_size"] = 20
-        data = tfds.load("mnist", **other_options)
+        data = tfds.load(ds_name, **other_options)
         build_data_and_check(data, config)
         # Without batch_size
         del other_options["batch_size"]
-        data = tfds.load("mnist", **other_options)
+        data = tfds.load(ds_name, **other_options)
+        build_data_and_check(data, config)
+
+    def test_from_tfds_image_dataset_lay_array(self):
+        import tensorflow_datasets as tfds
+
+        # With batch_size -1
+        def build_data_and_check(data, config):
+            flex_dataset = FedDataDistribution.from_config_with_tfds_image_dataset(
+                data, config
+            )
+            assert len(flex_dataset) == config.n_clients
+            assert len(flex_dataset["client_0"]) == len(flex_dataset["client_1"])
+
+        other_options = {
+            "split": "train",
+            "shuffle_files": True,
+            "as_supervised": True,
+            "batch_size": -1,
+        }
+        ds_name = "cifar10"
+        data = tfds.load(ds_name, **other_options)
+        config = FedDatasetConfig(
+            seed=0,
+            n_clients=2,
+            replacement=False,
+            client_names=["client_0", "client_1"],
+        )
+        # With batch_size = 20
+        other_options["batch_size"] = 20
+        data = tfds.load(ds_name, **other_options)
+        build_data_and_check(data, config)
+        # Without batch_size
+        del other_options["batch_size"]
+        data = tfds.load(ds_name, **other_options)
         build_data_and_check(data, config)
 
     def test_from_tfds_text_dataset(self):
         import tensorflow_datasets as tfds
 
-        # With batch_size -1
         def build_data_and_check(data, config, X_columns, labels):
             flex_dataset = FedDataDistribution.from_config_with_tfds_text_dataset(
                 data, config, X_columns, labels
@@ -527,6 +560,7 @@ class TestFlexDataDistribution(unittest.TestCase):
         assert isclose(mean, 34.81, abs_tol=1e-1)
         assert isclose(std, 21.85, abs_tol=1e-1)
 
+    @pytest.mark.skip(reason="CelebA dataset from torchvision has a limited amount of downloads per day allowed")
     def test_loading_fedceleba_using_from_config(self):
         fed_data, test_data = load("federated_celeba", return_test=True)
         assert isinstance(fed_data, FedDataset)

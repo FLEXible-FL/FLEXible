@@ -1,0 +1,78 @@
+from typing import Union, Iterable
+from types import GeneratorType
+from inspect import isgeneratorfunction
+from collections import OrderedDict
+import numpy as np
+
+
+class LazySliceable:
+    def __init__(
+        self, iterable: Iterable, length=None, iterable_indexes=None, storage=None
+    ):
+        if iterable_indexes is None:
+            iterable_indexes = np.arange(length)
+        if storage is None:
+            storage = OrderedDict()
+        self._iterable = iterable
+        self._len = length
+        self._iterable_indexes = np.asarray(iterable_indexes)
+        self._storage = storage
+        # This last check is a little hacky
+        self._is_generator = (
+            isinstance(self._iterable, GeneratorType)
+            or isgeneratorfunction(self._iterable)
+            or "iterator" in type(self._iterable).__name__
+        )
+        self.validate()
+
+    def __repr__(self) -> str:
+        return (
+            f"len:{self._len}\n"
+            f"iterable_indexes:{self._iterable_indexes}\n"
+            f"storage:{self._storage}"
+        )
+
+    def __getitem__(self, s: Union[int, slice, list]):
+        if not isinstance(s, int):
+            return LazySliceable(
+                self._iterable,
+                iterable_indexes=self._iterable_indexes[s],
+                length=len(self._iterable_indexes[s]),
+                storage=self._storage,
+            )
+        if s < 0:  # Support negative indexing
+            s = self._len + s
+        index = s + min(self._iterable_indexes)
+        if index in self._storage:
+            return self._storage[index]
+        start = (
+            max(self._storage.keys()) + 1
+            if self._is_generator and len(self._storage) > 0
+            else 0
+        )
+        # Asumimos que si no está en el almacen es que se tiene que explorar
+        for i, element in enumerate(self._iterable, start=start):
+            self._storage[i] = element  # Todo lo que se consume, se tiene que guardar
+            if i in self._iterable_indexes and i == index:
+                return element
+        raise IndexError("Index out of range")
+
+    def validate(self):
+        ...
+
+    def to_numpy(self):
+        # Consume the entire iterable if possible
+        start = (
+            max(self._storage.keys()) + 1
+            if self._is_generator and len(self._storage) > 0
+            else 0
+        )
+        for i, element in enumerate(self._iterable, start=start):
+            if i not in self._storage:
+                self._storage[i] = element
+        tmp_list = [
+            self._storage[i]
+            for i in self._storage.keys()
+            if i in self._iterable_indexes
+        ]
+        return np.asarray(tmp_list)
