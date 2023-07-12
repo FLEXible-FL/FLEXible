@@ -6,7 +6,7 @@ from typing import Iterable, Union
 import numpy as np
 
 
-class LazySliceable:
+class LazyIndexable:
     def __init__(self, iterable: Iterable, length, iterable_indexes=None, storage=None):
         if iterable_indexes is None:
             iterable_indexes = np.arange(length)
@@ -35,7 +35,7 @@ class LazySliceable:
 
     def __getitem__(self, s: Union[int, slice, list]):
         if not isinstance(s, int):
-            return LazySliceable(
+            return LazyIndexable(
                 self._iterable,
                 iterable_indexes=self._iterable_indexes[s],
                 length=len(self._iterable_indexes[s]),
