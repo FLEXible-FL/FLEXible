@@ -1,5 +1,6 @@
 import random
 import unittest
+
 import pytest
 
 from flex.data.lazy_indexable import LazyIndexable
@@ -183,9 +184,9 @@ class TestLazySliceable(unittest.TestCase):
     def test_index_out_of_bounds_from_generator(self):
         from_gen = LazyIndexable(get_generator(), DEFAULT_LENGTH)
         with pytest.raises(IndexError):
-            from_gen[DEFAULT_LENGTH*DEFAULT_LENGTH]
+            from_gen[DEFAULT_LENGTH * DEFAULT_LENGTH]
 
     def test_index_out_of_bounds_from_iterator(self):
         from_iter = LazyIndexable(get_iterator(), DEFAULT_LENGTH)
         with pytest.raises(IndexError):
-            from_iter[DEFAULT_LENGTH*DEFAULT_LENGTH]
+            from_iter[DEFAULT_LENGTH * DEFAULT_LENGTH]
