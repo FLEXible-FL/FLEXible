@@ -1,5 +1,6 @@
-import unittest
 import random
+import unittest
+
 from flex.data.lazy_slices import LazySliceable
 
 DEFAULT_LENGTH = 10

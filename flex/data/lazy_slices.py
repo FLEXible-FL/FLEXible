@@ -1,7 +1,8 @@
-from typing import Union, Iterable
-from types import GeneratorType
-from inspect import isgeneratorfunction
 from collections import OrderedDict
+from inspect import isgeneratorfunction
+from types import GeneratorType
+from typing import Iterable, Union
+
 import numpy as np
 
 
