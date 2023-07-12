@@ -6,9 +6,7 @@ import numpy as np
 
 
 class LazySliceable:
-    def __init__(
-        self, iterable: Iterable, length, iterable_indexes=None, storage=None
-    ):
+    def __init__(self, iterable: Iterable, length, iterable_indexes=None, storage=None):
         if iterable_indexes is None:
             iterable_indexes = np.arange(length)
         if storage is None:
@@ -55,9 +53,9 @@ class LazySliceable:
             if self._is_generator and len(self._storage) > 0
             else 0
         )
-        # Asumimos que si no está en el almacen es que se tiene que explorar
+        # If it is not in the storage, we must consume the iterable
         for i, element in enumerate(self._iterable, start=start):
-            self._storage[i] = element  # Todo lo que se consume, se tiene que guardar
+            self._storage[i] = element  # Every we consume is stored for later usage
             if i in self._iterable_indexes and i == index:
                 return element
         raise IndexError("Index out of range")

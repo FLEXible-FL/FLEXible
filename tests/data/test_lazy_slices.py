@@ -1,38 +1,43 @@
 import unittest
 
-import numpy as np
-import pytest
-
 from flex.data.lazy_slices import LazySliceable
 
 DEFAULT_LENGTH = 10
 
+
 def get_generator(length=DEFAULT_LENGTH):
     return (x for x in range(length))
+
 
 def get_iterator(length=DEFAULT_LENGTH):
     return iter(range(length))
 
+
 def get_list(length=DEFAULT_LENGTH):
     return list(range(length))
 
+
 def same_contents(reference, sliceable: LazySliceable):
-    return all(x==y for x,y in zip(reference, sliceable))
+    return all(x == y for x, y in zip(reference, sliceable))
+
 
 def same_contects_negative_indexing(reference, sliceable: LazySliceable):
-    return all(sliceable[i-len(sliceable)] == x for i, x in enumerate(reference))
+    return all(sliceable[i - len(sliceable)] == x for i, x in enumerate(reference))
+
 
 def same_contents_slicing(reference, sliceable: LazySliceable):
     return all(sliceable[i:][0] == x for i, x in enumerate(reference))
+
 
 def same_contents_anidated_slicing(reference, sliceable: LazySliceable):
     result = []
     anidated_slice = sliceable
     for i, x in enumerate(reference):
-        if i>0 and i<(len(sliceable)-1):
+        if i > 0 and i < (len(sliceable) - 1):
             anidated_slice = anidated_slice[1:]
             result.append(anidated_slice[0] == x)
     return all(result)
+
 
 def same_contects_split_in_two_slices(reference, sliceable: LazySliceable, split_index):
     result = []
@@ -41,11 +46,11 @@ def same_contects_split_in_two_slices(reference, sliceable: LazySliceable, split
         if j < split_index:
             result.append(slice_1[j] == x)
         else:
-            result.append(slice_2[j-split_index] == x)
+            result.append(slice_2[j - split_index] == x)
     return all(result)
 
-class TestLazySliceable(unittest.TestCase):
 
+class TestLazySliceable(unittest.TestCase):
     def test_from_list(self):
         base_list = get_list()
         from_list = LazySliceable(base_list, DEFAULT_LENGTH)
@@ -70,7 +75,7 @@ class TestLazySliceable(unittest.TestCase):
         iterator = get_iterator()
         from_iter = LazySliceable(get_iterator(), DEFAULT_LENGTH)
         assert same_contects_negative_indexing(iterator, from_iter)
-    
+
     def test_from_list_to_numpy(self):
         base_list = get_list()
         from_list = LazySliceable(base_list, DEFAULT_LENGTH).to_numpy()
