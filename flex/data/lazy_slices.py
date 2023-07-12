@@ -7,7 +7,7 @@ import numpy as np
 
 class LazySliceable:
     def __init__(
-        self, iterable: Iterable, length=None, iterable_indexes=None, storage=None
+        self, iterable: Iterable, length, iterable_indexes=None, storage=None
     ):
         if iterable_indexes is None:
             iterable_indexes = np.arange(length)
@@ -23,7 +23,6 @@ class LazySliceable:
             or isgeneratorfunction(self._iterable)
             or "iterator" in type(self._iterable).__name__
         )
-        self.validate()
 
     def __repr__(self) -> str:
         return (
@@ -31,6 +30,9 @@ class LazySliceable:
             f"iterable_indexes:{self._iterable_indexes}\n"
             f"storage:{self._storage}"
         )
+
+    def __len__(self) -> int:
+        return self._len
 
     def __getitem__(self, s: Union[int, slice, list]):
         if not isinstance(s, int):
@@ -42,7 +44,10 @@ class LazySliceable:
             )
         if s < 0:  # Support negative indexing
             s = self._len + s
-        index = s + min(self._iterable_indexes)
+        try:
+            index = s + min(self._iterable_indexes)
+        except ValueError:
+            raise IndexError("Index out of range") from None
         if index in self._storage:
             return self._storage[index]
         start = (
@@ -56,9 +61,6 @@ class LazySliceable:
             if i in self._iterable_indexes and i == index:
                 return element
         raise IndexError("Index out of range")
-
-    def validate(self):
-        ...
 
     def to_numpy(self):
         # Consume the entire iterable if possible
