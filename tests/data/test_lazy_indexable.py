@@ -1,5 +1,6 @@
 import random
 import unittest
+import pytest
 
 from flex.data.lazy_indexable import LazyIndexable
 
@@ -168,3 +169,23 @@ class TestLazySliceable(unittest.TestCase):
             assert same_contents(
                 selected_indexes, from_gen[selected_indexes].to_numpy()
             )
+
+    def test_empty_slice_from_generator(self):
+        from_gen = LazyIndexable(get_generator(), DEFAULT_LENGTH)[:0]
+        with pytest.raises(IndexError):
+            from_gen[0]
+
+    def test_empty_slice_from_iterator(self):
+        from_iter = LazyIndexable(get_iterator(), DEFAULT_LENGTH)
+        with pytest.raises(IndexError):
+            from_iter[:0][0]
+
+    def test_index_out_of_bounds_from_generator(self):
+        from_gen = LazyIndexable(get_generator(), DEFAULT_LENGTH)
+        with pytest.raises(IndexError):
+            from_gen[DEFAULT_LENGTH*DEFAULT_LENGTH]
+
+    def test_index_out_of_bounds_from_iterator(self):
+        from_iter = LazyIndexable(get_iterator(), DEFAULT_LENGTH)
+        with pytest.raises(IndexError):
+            from_iter[DEFAULT_LENGTH*DEFAULT_LENGTH]

@@ -41,7 +41,8 @@ class LazyIndexable:
                 length=len(self._iterable_indexes[s]),
                 storage=self._storage,
             )
-
+        # If index not in self._iterable_indexes,
+        # IndexError is raised here automagically
         index = self._iterable_indexes[s]
         if index in self._storage:
             return self._storage[index]
@@ -55,7 +56,7 @@ class LazyIndexable:
             self._storage[i] = element  # Every we consume is stored for later usage
             if i in self._iterable_indexes and i == index:
                 return element
-        raise IndexError("Index out of range")
+        # raise IndexError("Index out of range")
 
     def to_numpy(self):
         # Consume the entire iterable if possible
