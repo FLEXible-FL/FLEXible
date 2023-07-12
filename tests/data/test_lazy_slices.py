@@ -1,5 +1,5 @@
 import unittest
-
+import random
 from flex.data.lazy_slices import LazySliceable
 
 DEFAULT_LENGTH = 10
@@ -122,3 +122,47 @@ class TestLazySliceable(unittest.TestCase):
             from_gen = LazySliceable(get_generator(), DEFAULT_LENGTH)
             generator = get_generator()
             assert same_contects_split_in_two_slices(generator, from_gen, i)
+
+    def test_random_indexing_from_iterator(self):
+        length = 100
+        sample_size = 10
+        random.seed(sample_size)
+        available_indexes = get_list(length)
+        for _ in range(50):
+            selected_indexes = random.sample(available_indexes, sample_size)
+            from_iter = LazySliceable(get_iterator(length=length), length)
+            assert same_contents(selected_indexes, from_iter[selected_indexes])
+
+    def test_random_indexing_from_generator(self):
+        length = 100
+        sample_size = 10
+        random.seed(sample_size)
+        available_indexes = get_list(length)
+        for _ in range(50):
+            selected_indexes = random.sample(available_indexes, sample_size)
+            from_gen = LazySliceable(get_generator(length=length), length)
+            assert same_contents(selected_indexes, from_gen[selected_indexes])
+
+    def test_random_indexing_from_iterator_to_numpy(self):
+        length = 100
+        sample_size = 10
+        random.seed(sample_size)
+        available_indexes = get_list(length)
+        for _ in range(50):
+            selected_indexes = random.sample(available_indexes, sample_size)
+            from_iter = LazySliceable(get_iterator(length=length), length)
+            assert same_contents(
+                selected_indexes, from_iter[selected_indexes].to_numpy()
+            )
+
+    def test_random_indexing_from_generator_to_numpy(self):
+        length = 100
+        sample_size = 10
+        random.seed(sample_size)
+        available_indexes = get_list(length)
+        for _ in range(50):
+            selected_indexes = random.sample(available_indexes, sample_size)
+            from_gen = LazySliceable(get_generator(length=length), length)
+            assert same_contents(
+                selected_indexes, from_gen[selected_indexes].to_numpy()
+            )

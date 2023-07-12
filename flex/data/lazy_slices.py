@@ -40,12 +40,8 @@ class LazySliceable:
                 length=len(self._iterable_indexes[s]),
                 storage=self._storage,
             )
-        if s < 0:  # Support negative indexing
-            s = self._len + s
-        try:
-            index = s + min(self._iterable_indexes)
-        except ValueError:
-            raise IndexError("Index out of range") from None
+
+        index = self._iterable_indexes[s]
         if index in self._storage:
             return self._storage[index]
         start = (
@@ -70,9 +66,5 @@ class LazySliceable:
         for i, element in enumerate(self._iterable, start=start):
             if i not in self._storage:
                 self._storage[i] = element
-        tmp_list = [
-            self._storage[i]
-            for i in self._storage.keys()
-            if i in self._iterable_indexes
-        ]
+        tmp_list = [self._storage[i] for i in self._iterable_indexes]
         return np.asarray(tmp_list)
