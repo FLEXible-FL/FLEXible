@@ -365,7 +365,7 @@ class TestFlexDataDistribution(unittest.TestCase):
     def test_from_torchtext_dataset(self):
         from torchtext.datasets import AG_NEWS
 
-        data = AG_NEWS(split="train")
+        data = AG_NEWS(split="test")
         config = FedDatasetConfig(
             seed=0,
             n_clients=2,
@@ -390,7 +390,7 @@ class TestFlexDataDistribution(unittest.TestCase):
             assert len(flex_dataset["client_0"]) == len(flex_dataset["client_1"])
 
         other_options = {
-            "split": "train",
+            "split": "test",
             "shuffle_files": True,
             "as_supervised": True,
             "batch_size": -1,
@@ -424,7 +424,7 @@ class TestFlexDataDistribution(unittest.TestCase):
             assert len(flex_dataset["client_0"]) == len(flex_dataset["client_1"])
 
         other_options = {
-            "split": "train",
+            "split": "test",
             "shuffle_files": True,
             "as_supervised": True,
             "batch_size": -1,
@@ -456,7 +456,7 @@ class TestFlexDataDistribution(unittest.TestCase):
             assert len(flex_dataset) == config.n_clients
             assert len(flex_dataset["client_0"]) == len(flex_dataset["client_1"])
 
-        other_options = {"split": "train", "batch_size": -1}
+        other_options = {"split": "test", "batch_size": -1}
         X_columns = ["title", "description"]
         labels = ["label"]
         data = tfds.load("ag_news_subset", **other_options)
@@ -479,7 +479,7 @@ class TestFlexDataDistribution(unittest.TestCase):
     def test_from_torchvision_dataset(self):
         from torchvision.datasets import MNIST
 
-        data = MNIST(root="./torch_datasets", train=True, download=True)
+        data = MNIST(root="./torch_datasets", train=False, download=True)
         config = FedDatasetConfig(
             seed=0,
             n_clients=2,
@@ -514,7 +514,7 @@ class TestFlexDataDistribution(unittest.TestCase):
     def test_from_huggingface_text_dataset(self):
         from datasets import load_dataset
 
-        data = load_dataset("ag_news", split="train")
+        data = load_dataset("ag_news", split="test")
         X_columns = "text"
         label_columns = "label"
         config = FedDatasetConfig(
