@@ -395,7 +395,7 @@ class TestFlexDataDistribution(unittest.TestCase):
             "as_supervised": True,
             "batch_size": -1,
         }
-        ds_name="mnist"
+        ds_name = "mnist"
         data = tfds.load(ds_name, **other_options)
         config = FedDatasetConfig(
             seed=0,
@@ -547,7 +547,9 @@ class TestFlexDataDistribution(unittest.TestCase):
         assert isclose(std, 11.17, abs_tol=1e-1)
 
     def test_loading_fedmnist_letters_using_from_config(self):
-        fed_data, test_data = load("federated_emnist", return_test=True, split="letters")
+        fed_data, test_data = load(
+            "federated_emnist", return_test=True, split="letters"
+        )
         assert isinstance(fed_data, FedDataset)
         assert isinstance(test_data, Dataset)
         num_samples = [len(fed_data[i]) for i in fed_data]
@@ -560,7 +562,9 @@ class TestFlexDataDistribution(unittest.TestCase):
         assert isclose(mean, 34.81, abs_tol=1e-1)
         assert isclose(std, 21.85, abs_tol=1e-1)
 
-    @pytest.mark.skip(reason="CelebA dataset from torchvision has a limited amount of downloads per day allowed")
+    @pytest.mark.skip(
+        reason="CelebA dataset from torchvision has a limited amount of downloads per day allowed"
+    )
     def test_loading_fedceleba_using_from_config(self):
         fed_data, test_data = load("federated_celeba", return_test=True)
         assert isinstance(fed_data, FedDataset)

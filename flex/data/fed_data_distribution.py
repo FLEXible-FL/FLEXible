@@ -59,7 +59,9 @@ class FedDataDistribution(object):
             X_columns (List): List that contains the columns names for the input features.
             label_columns (List): List that contains the columns names for the output features.
         """
-        centralized_data = Dataset.from_tfds_text_dataset(data, X_columns, label_columns)
+        centralized_data = Dataset.from_tfds_text_dataset(
+            data, X_columns, label_columns
+        )
         return cls.from_config(centralized_data, config)
 
     @classmethod
@@ -91,7 +93,9 @@ class FedDataDistribution(object):
             data (Dataset): The hugginface dataset
             config (FedDatasetConfig): FlexDatasetConfig with the configuration to federate the centralized dataset.
         """
-        centralized_data = Dataset.from_huggingface_dataset(data, X_columns, label_columns)
+        centralized_data = Dataset.from_huggingface_dataset(
+            data, X_columns, label_columns
+        )
         return cls.from_config(centralized_data, config)
 
     @classmethod
@@ -157,6 +161,11 @@ class FedDataDistribution(object):
         if config.client_names is None:
             config_.client_names = list(range(config_.n_clients))
 
+        centralized_data = Dataset(
+            X_data=centralized_data.X_data,
+            y_data=np.asarray(centralized_data.y_data),
+        )
+
         # Normalize weights when no replacement
         if (
             not config_.replacement
@@ -185,10 +194,14 @@ class FedDataDistribution(object):
         # Now we can start generating our federated dataset
         fed_dataset = FedDataset()
         if config_.indexes_per_client is not None:
-            for client_name, data in cls.__sample_dataset_with_indexes(centralized_data, config_):
+            for client_name, data in cls.__sample_dataset_with_indexes(
+                centralized_data, config_
+            ):
                 fed_dataset[client_name] = data
         elif config_.group_by_label_index is not None:
-            for client_name, data in cls.__group_by_label_index(centralized_data, config_):
+            for client_name, data in cls.__group_by_label_index(
+                centralized_data, config_
+            ):
                 fed_dataset[client_name] = data
         else:  # sample using weights or features
             remaining_data_indices = np.arange(len(centralized_data))
@@ -197,12 +210,15 @@ class FedDataDistribution(object):
                     sub_data_indices,
                     sub_features_indices,
                     remaining_data_indices,
-                ) = cls.__sample(rng, remaining_data_indices, centralized_data, config_, i)
-
+                ) = cls.__sample(
+                    rng, remaining_data_indices, centralized_data, config_, i
+                )
+                X_data = centralized_data.X_data[sub_data_indices]
+                if config.features_per_client is not None:
+                    X_data = np.asarray(X_data)
+                    X_data = X_data[:, sub_features_indices]
                 fed_dataset[config_.client_names[i]] = Dataset(
-                    X_data=centralized_data.X_data[sub_data_indices][:, sub_features_indices]
-                    if len(centralized_data.X_data.shape) > 1
-                    else centralized_data.X_data[sub_data_indices],
+                    X_data=X_data,
                     y_data=centralized_data.y_data[sub_data_indices]
                     if centralized_data.y_data is not None
                     else None,
@@ -211,13 +227,15 @@ class FedDataDistribution(object):
         return fed_dataset
 
     @classmethod
-    def __group_by_label_index(cls, centralized_data: Dataset, config: FedDatasetConfig):
+    def __group_by_label_index(
+        cls, centralized_data: Dataset, config: FedDatasetConfig
+    ):
         label_index = config.group_by_label_index
         label_to_client_id = {}
         x_data = defaultdict(list)
         y_data = defaultdict(list)
         for i, (x, y) in enumerate(centralized_data):
-            y = list(y) # TODO: enforce that y is only a list or a tuple
+            y = list(y)  # TODO: enforce that y is only a list or a tuple
             str_label = str(y.pop(label_index))  # Use str to make every label hashable
             if str_label not in label_to_client_id:
                 label_to_client_id[
@@ -228,7 +246,10 @@ class FedDataDistribution(object):
                 y = y[0]
             y_data[label_to_client_id[str_label]].append(y)
         for client_id in x_data:
-            yield client_id, Dataset(X_data=np.asarray(x_data[client_id]), y_data=np.asarray(y_data[client_id]))
+            yield client_id, Dataset(
+                X_data=np.asarray(x_data[client_id]),
+                y_data=np.asarray(y_data[client_id]),
+            )
 
     @classmethod
     def __sample_dataset_with_indexes(cls, data: Dataset, config: FedDatasetConfig):
@@ -320,16 +341,16 @@ class FedDataDistribution(object):
         if config.weights_per_class is not None:
             data_proportion = None
         elif config.weights is not None:
-            data_proportion = floor(len(data) * config.weights[client_i])
+            data_proportion = floor(len(data.y_data) * config.weights[client_i])
         else:  # No weights provided
-            data_proportion = floor(len(data) / config.n_clients)
+            data_proportion = floor(len(data.y_data) / config.n_clients)
 
         if data_proportion is not None:
             sub_data_indices = rng.choice(data_indices, data_proportion, replace=False)
         else:  # apply weights_per_class
             sub_data_indices = np.array([], dtype="uint32")
             sorted_classes = np.sort(np.unique(data.y_data))
-            all_indices = np.arange(len(data))
+            all_indices = np.arange(len(data.y_data))
             for j, c in enumerate(sorted_classes):
                 available_class_indices = all_indices[data.y_data == c]
                 proportion_per_class = floor(
@@ -363,7 +384,9 @@ class FedDataDistribution(object):
                     available_classes_indexes = np.arange(len(sorted_classes))
                     tmp_available_indexes = histogram < most_frequent
                     if sum(tmp_available_indexes) != 0:
-                        available_classes_indexes = available_classes_indexes[tmp_available_indexes]
+                        available_classes_indexes = available_classes_indexes[
+                            tmp_available_indexes
+                        ]
                     indx = rng.choice(available_classes_indexes, size=1, replace=False)
                     histogram[indx] = histogram[indx] + 1
                     individual_assigned_classes.append(sorted_classes[indx])
@@ -421,7 +444,7 @@ class FedDataDistribution(object):
         )
 
         # Sample feature indices
-        feature_indices = np.arange(data.X_data.shape[1])
+        feature_indices = np.arange(data.X_data[0].shape[1])
         if isinstance(  # We have a fixed number of features per client
             config.features_per_client, int
         ):

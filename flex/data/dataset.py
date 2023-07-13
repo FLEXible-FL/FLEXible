@@ -1,12 +1,11 @@
 import contextlib
 import warnings
 from dataclasses import dataclass, field
-from typing import Optional
+from typing import Optional, Union
 
-import numpy as np
 import numpy.typing as npt
-from cardinality import count
-from lazyarray import larray
+
+from flex.data.lazy_indexable import LazyIndexable
 
 
 @dataclass(frozen=True)
@@ -22,8 +21,8 @@ class Dataset:
         on an unsupervised learning task. Default None.
     """
 
-    X_data: npt.NDArray = field(init=True)
-    y_data: Optional[npt.NDArray] = field(default=None, init=True)
+    X_data: Union[npt.NDArray, LazyIndexable] = field(init=True)
+    y_data: Optional[Union[npt.NDArray, LazyIndexable]] = field(default=None, init=True)
 
     def __len__(self):
         try:
@@ -32,7 +31,10 @@ class Dataset:
             return self.X_data.shape[0]
 
     def __getitem__(self, index):
-        return self.X_data[index], self.y_data[index] if self.y_data is not None else None
+        return (
+            self.X_data[index],
+            self.y_data[index] if self.y_data is not None else None,
+        )
 
     def __iter__(self):
         return zip(
@@ -73,9 +75,16 @@ class Dataset:
         Returns:
             tensorflow.data.Dataset: tf dataset object instanciated using the contents of a Dataset
         """
-        from tensorflow.data import Dataset
         from tensorflow import type_spec_from_value
-        return Dataset.from_generator(self.__iter__, output_signature=(type_spec_from_value(self[0][0]), type_spec_from_value(self[0][1])))
+        from tensorflow.data import Dataset
+
+        return Dataset.from_generator(
+            self.__iter__,
+            output_signature=(
+                type_spec_from_value(self[0][0]),
+                type_spec_from_value(self[0][1]),
+            ),
+        )
 
     @classmethod
     def from_torchvision_dataset(cls, pytorch_dataset):
@@ -87,7 +96,6 @@ class Dataset:
         Returns:
             Dataset: a FlexDataObject which encapsulates the dataset.
         """
-        from torchvision.datasets import ImageFolder
 
         from flex.data.pluggable_datasets import PluggableTorchvision
 
@@ -97,37 +105,9 @@ class Dataset:
                 RuntimeWarning,
             )
 
-        length = count(pytorch_dataset)
-        if length > 60_000 or isinstance(
-            pytorch_dataset, ImageFolder
-        ):  # skip loading dataset in memory
+        X_data = LazyIndexable((x for x, _ in pytorch_dataset))
+        y_data = LazyIndexable((y for _, y in pytorch_dataset))
 
-            def lazy_1d_index(indices, ds, extra_dim=1):
-                try:
-                    iter(indices)
-                except TypeError:  # not iterable
-                    return ds[indices][extra_dim]
-                else:  # iterable
-                    return larray(
-                        lambda a: lazy_1d_index(indices[a], ds, extra_dim),
-                        shape=(len(indices),),
-                    )
-
-            X_data = larray(
-                lambda a: lazy_1d_index(a, pytorch_dataset, extra_dim=0),
-                shape=(length,),
-            )
-            dtype = type(pytorch_dataset[0][1])
-            y_data = np.fromiter(
-                (y for _, y in pytorch_dataset), dtype=dtype, count=length
-            )
-        else:
-            X_data, y_data = [], []
-            for x, y in pytorch_dataset:
-                X_data.append(x)
-                y_data.append(y)
-            X_data = np.asarray(X_data, dtype=object)
-            y_data = np.asarray(y_data)
         return cls(X_data=X_data, y_data=y_data)
 
     @classmethod
@@ -135,25 +115,25 @@ class Dataset:
         """Function to convert a dataset from tensorflow_datasets to a FlexDataObject.
 
         Args:
+        ----
             tdfs_dataset (tf.data.Datasets): a tf dataset
 
         Returns:
+        -------
             Dataset: a FlexDataObject which encapsulates the dataset.
         """
-        from tensorflow_datasets import as_numpy
 
-        # unbatch if possible
         if not isinstance(tfds_dataset, tuple):
+            # unbatch if required
             with contextlib.suppress(ValueError):
                 tfds_dataset = tfds_dataset.unbatch()
-            X_data, y_data = [], []
-            for x, y in tfds_dataset.as_numpy_iterator():
-                X_data.append(x)
-                y_data.append(y)
+            X_data = LazyIndexable((x for x, _ in tfds_dataset.as_numpy_iterator()))
+            y_data = LazyIndexable((y for _, y in tfds_dataset.as_numpy_iterator()))
         else:
-            X_data, y_data = as_numpy(tfds_dataset)
+            X_data = LazyIndexable((x for x, _ in tfds_dataset))
+            y_data = LazyIndexable((y for _, y in tfds_dataset))
 
-        return cls(X_data=np.asarray(X_data), y_data=np.asarray(y_data))
+        return cls(X_data=X_data, y_data=y_data)
 
     @classmethod
     def from_tfds_text_dataset(cls, tfds_dataset, X_columns=None, label_columns=None):
@@ -167,26 +147,41 @@ class Dataset:
         Returns:
             Dataset: a FlexDataObject which encapsulates the dataset.
         """
-        import pandas as pd
         from tensorflow.python.data.ops.dataset_ops import PrefetchDataset
-        from tensorflow_datasets import as_dataframe
 
         if isinstance(tfds_dataset, PrefetchDataset):
             # First case: Users used load func with batch_size != -1 or without indicating the batch_size
             if not isinstance(tfds_dataset, tuple):
                 with contextlib.suppress(ValueError):
                     tfds_dataset.unbatch()
-            X_data = as_dataframe(tfds_dataset)[X_columns].to_numpy()
-            y_data = as_dataframe(tfds_dataset)[label_columns].to_numpy()
+            if X_columns is None:
+                X_data_generator = iter(tfds_dataset.as_numpy_iterator())
+            else:
+                X_data_generator = (
+                    tuple(map(row.get, X_columns))
+                    for row in tfds_dataset.as_numpy_iterator()
+                )
+            X_data = LazyIndexable(X_data_generator)
+
+            if label_columns is None:
+                y_data_generator = iter(tfds_dataset.as_numpy_iterator())
+            else:
+                y_data_generator = (
+                    tuple(map(row.get, label_columns))
+                    for row in tfds_dataset.as_numpy_iterator()
+                )
         else:  # User used batch_size=-1 when using the load function
-            X_data = pd.DataFrame.from_dict(
-                {col: tfds_dataset[col].numpy() for col in X_columns}
-            ).to_numpy()
-            y_data = pd.DataFrame.from_dict(
-                {col: tfds_dataset[col].numpy() for col in label_columns}
-            ).to_numpy()
-        # if len(y_data.shape) == 2 and y_data.shape[1] == 1:
-        y_data = np.squeeze(y_data)  # .reshape((len(y_data),))
+            if X_columns is None:
+                X_data_generator = iter(map(tfds_dataset.get, tfds_dataset.keys()))
+            else:
+                X_data_generator = iter(map(tfds_dataset.get, X_columns))
+            X_data = LazyIndexable(X_data_generator)
+
+            if label_columns is None:
+                y_data_generator = iter(map(tfds_dataset.get, tfds_dataset.keys()))
+            else:
+                y_data_generator = iter(map(tfds_dataset.get, label_columns))
+        y_data = LazyIndexable(y_data_generator)
         return cls(X_data=X_data, y_data=y_data)
 
     @classmethod
@@ -233,8 +228,6 @@ class Dataset:
         Returns:
             Dataset: a FlexDataObject which encapsulates the dataset.
         """
-        import numpy as np
-        from torch.utils.data import DataLoader
 
         from flex.data.pluggable_datasets import PluggableTorchtext
 
@@ -244,19 +237,18 @@ class Dataset:
                 RuntimeWarning,
             )
 
-        loader = DataLoader(pytorch_text_dataset, batch_size=1)
-        X_data, y_data = [], []
-        for label, text in loader:
-            y_data.append(label.numpy()[0])
-            X_data.append(text[0])
-        X_data = np.asarray(X_data)
-        y_data = np.asarray(y_data)
+        X_data = LazyIndexable((text for label, text in pytorch_text_dataset))
+        y_data = LazyIndexable((label for label, text in pytorch_text_dataset))
 
         return cls(X_data=X_data, y_data=y_data)
 
     def validate(self):
         """Function that checks whether the object is correct or not."""
-        if self.y_data is not None and len(self) != len(self.y_data):
+        try:
+            y_data_length = len(self.y_data)
+        except TypeError:
+            y_data_length = self.y_data.shape[0]
+        if self.y_data is not None and len(self) != y_data_length:
             raise ValueError(
-                f"X_data and y_data must have equal lenght. X_data has {len(self)} elements and y_data has {len(self.y_data)} elements."
+                f"X_data and y_data must have equal lenght. X_data has {len(self)} elements and y_data has {y_data_length} elements."
             )

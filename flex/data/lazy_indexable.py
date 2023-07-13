@@ -1,7 +1,7 @@
 import warnings
 from inspect import isgeneratorfunction
 from types import GeneratorType
-from typing import Iterable, Sequence, Union
+from typing import Iterable, Union
 
 import numpy as np
 
@@ -17,15 +17,16 @@ def is_empty_slice(s: slice):
     return False
 
 
-def contains_negative_indexes(s: Union[int, Sequence]):
-    if isinstance(s, Sequence):
+def contains_negative_indexes(s: Union[int, list, np.ndarray]):
+    if isinstance(s, (list, np.ndarray)):
         return any(i < 0 for i in s)
     elif isinstance(s, slice):
         return (s.start is not None and s.start < 0) or (
             s.stop is not None and s.stop < 0
         )
-    # elif isinstance(s, int)
-    return s < 0
+    elif isinstance(s, int):
+        return s < 0
+    raise NotImplementedError(f"Indexing with type {type(s)} is not supported")
 
 
 class LazyIndexable:
@@ -75,7 +76,7 @@ class LazyIndexable:
             (self._iterable_indexes, new_indexes), axis=0
         )
 
-    def __getitem_with_seq(self, s: Union[slice, list]):
+    def __getitem_with_seq(self, s: Union[slice, list, np.ndarray]):
         return LazyIndexable(
             self._iterable,
             iterable_indexes=self._iterable_indexes[s],

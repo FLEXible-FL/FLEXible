@@ -38,7 +38,7 @@ def same_contents_anidated_slicing(reference, sliceable: LazyIndexable):
     result = []
     anidated_slice = sliceable
     for i, x in enumerate(reference):
-        if i > 0 and i < (len(sliceable) - 1):
+        if i > 0 and i < (DEFAULT_LENGTH - 1):
             anidated_slice = anidated_slice[1:]
             result.append(anidated_slice[0] == x)
     return all(result)
