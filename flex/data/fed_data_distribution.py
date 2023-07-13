@@ -444,7 +444,7 @@ class FedDataDistribution(object):
         )
 
         # Sample feature indices
-        feature_indices = np.arange(data.X_data[0].shape[1])
+        feature_indices = np.arange(len(data.X_data[0]))
         if isinstance(  # We have a fixed number of features per client
             config.features_per_client, int
         ):
