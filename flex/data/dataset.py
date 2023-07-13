@@ -105,8 +105,13 @@ class Dataset:
                 RuntimeWarning,
             )
 
-        X_data = LazyIndexable((x for x, _ in pytorch_dataset))
-        y_data = LazyIndexable((y for _, y in pytorch_dataset))
+        try:
+            length = len(pytorch_dataset)
+        except TypeError:
+            length = None
+
+        X_data = LazyIndexable((x for x, _ in pytorch_dataset), length=length)
+        y_data = LazyIndexable((y for _, y in pytorch_dataset), length=length)
 
         return cls(X_data=X_data, y_data=y_data)
 
@@ -130,8 +135,8 @@ class Dataset:
             X_data = LazyIndexable((x for x, _ in tfds_dataset.as_numpy_iterator()))
             y_data = LazyIndexable((y for _, y in tfds_dataset.as_numpy_iterator()))
         else:
-            X_data = LazyIndexable(iter(tfds_dataset[0]))
-            y_data = LazyIndexable(iter(tfds_dataset[1]))
+            X_data = LazyIndexable(iter(tfds_dataset[0]), length=len(tfds_dataset[0]))
+            y_data = LazyIndexable(iter(tfds_dataset[1]), length=len(tfds_dataset[1]))
 
         return cls(X_data=X_data, y_data=y_data)
 
@@ -164,24 +169,26 @@ class Dataset:
             X_data = LazyIndexable(X_data_generator)
 
             if label_columns is None:
-                y_data_generator = iter(tfds_dataset.as_numpy_iterator())
+                y_data = None
             else:
                 y_data_generator = (
                     tuple(map(row.get, label_columns))
                     for row in tfds_dataset.as_numpy_iterator()
                 )
+                y_data = LazyIndexable(y_data_generator)
         else:  # User used batch_size=-1 when using the load function
             if X_columns is None:
                 X_data_generator = iter(map(tfds_dataset.get, tfds_dataset.keys()))
             else:
                 X_data_generator = iter(map(tfds_dataset.get, X_columns))
-            X_data = LazyIndexable(X_data_generator)
+            X_data = LazyIndexable(X_data_generator, length=len(tfds_dataset))
 
             if label_columns is None:
-                y_data_generator = iter(map(tfds_dataset.get, tfds_dataset.keys()))
+                y_data = None
             else:
                 y_data_generator = iter(map(tfds_dataset.get, label_columns))
-        y_data = LazyIndexable(y_data_generator)
+                y_data = LazyIndexable(y_data_generator, length=len(tfds_dataset))
+
         return cls(X_data=X_data, y_data=y_data)
 
     @classmethod
@@ -236,9 +243,16 @@ class Dataset:
                 "The input dataset and arguments are not explicitly supported, therefore they might not work as expected.",
                 RuntimeWarning,
             )
-
-        X_data = LazyIndexable((text for label, text in pytorch_text_dataset))
-        y_data = LazyIndexable((label for label, text in pytorch_text_dataset))
+        try:
+            length = len(pytorch_text_dataset)
+        except TypeError:
+            length = None
+        X_data = LazyIndexable(
+            (text for label, text in pytorch_text_dataset), length=length
+        )
+        y_data = LazyIndexable(
+            (label for label, text in pytorch_text_dataset), length=length
+        )
 
         return cls(X_data=X_data, y_data=y_data)
 
