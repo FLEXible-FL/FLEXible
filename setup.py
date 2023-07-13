@@ -16,7 +16,7 @@ HF_requires = ["datasets"]
 setup(
         name="flex",
         version="0.6.0",
-        author="The FLEXible team",
+        author="Daniel Jiménez López y Alberto Argente del Castillo Garrido",
         long_description=open("README.md", "r", encoding="utf-8").read(),
         long_description_content_type="text/markdown",
         keywords="FL federated-learning flexible",
