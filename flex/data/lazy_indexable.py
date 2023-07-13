@@ -40,13 +40,14 @@ class LazyIndexable:
     ):
         if iterable_indexes is None:
             iterable_indexes = np.arange(
-                initial_length_guess if length is None else length
+                initial_length_guess if length is None else length,
+                dtype=np.uint32
             )
         if storage is None:
             storage = {}
         self._iterable = iterable
         self._len = length
-        self._iterable_indexes = np.asarray(iterable_indexes)
+        self._iterable_indexes = np.asarray(iterable_indexes, dtype=np.uint32)
         self._storage = storage
         # This last check is a little hacky
         self._is_generator = (
@@ -71,7 +72,7 @@ class LazyIndexable:
 
     def _increase_iterable_indexes_len(self, growth_rate=1.6):
         current_max = max(self._iterable_indexes) + 1
-        new_indexes = np.arange(current_max, round(current_max * growth_rate))
+        new_indexes = np.arange(current_max, round(current_max * growth_rate), dtype=np.uint32)
         self._iterable_indexes = np.concatenate(
             (self._iterable_indexes, new_indexes), axis=0
         )
