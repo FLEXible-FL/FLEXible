@@ -523,8 +523,8 @@ class TestFlexDataDistribution(unittest.TestCase):
         from datasets import load_dataset
 
         data = load_dataset("ag_news", split="test")
-        X_columns = "text"
-        label_columns = "label"
+        X_columns = ["text"]
+        label_columns = ["label"]
         config = FedDatasetConfig(
             seed=0,
             replacement=False,
