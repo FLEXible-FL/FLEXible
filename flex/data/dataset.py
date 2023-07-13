@@ -141,7 +141,9 @@ class Dataset:
         return cls(X_data=X_data, y_data=y_data)
 
     @classmethod
-    def from_tfds_text_dataset(cls, tfds_dataset, X_columns:list=None, label_columns:list=None):
+    def from_tfds_text_dataset(
+        cls, tfds_dataset, X_columns: list = None, label_columns: list = None
+    ):
         """Function to convert a dataset from tensorflow_datasets to a FlexDataObject.
 
         Args:
@@ -192,7 +194,9 @@ class Dataset:
         return cls(X_data=X_data, y_data=y_data)
 
     @classmethod
-    def from_huggingface_dataset(cls, hf_dataset, X_columns:list=None, label_columns:list=None):
+    def from_huggingface_dataset(
+        cls, hf_dataset, X_columns: list = None, label_columns: list = None
+    ):
         """Function to conver an arrow dataset from the Datasets package (HuggingFace datasets library)
         to a FlexDataObject.
 
@@ -224,15 +228,21 @@ class Dataset:
             length = None
 
         if X_columns is not None:
-            X_data_generator = (i for x in map(hf_dataset.__getitem__, X_columns) for i in x)
+            X_data_generator = (
+                i for x in map(hf_dataset.__getitem__, X_columns) for i in x
+            )
         else:
-            X_data_generator = (i for x in map(hf_dataset.__getitem__, hf_dataset.features) for i in x)
+            X_data_generator = (
+                i for x in map(hf_dataset.__getitem__, hf_dataset.features) for i in x
+            )
         X_data = LazyIndexable(X_data_generator, length=length)
 
         if label_columns is None:
             y_data = None
         else:
-            y_data_generator = (i for x in map(hf_dataset.__getitem__, label_columns) for i in x)
+            y_data_generator = (
+                i for x in map(hf_dataset.__getitem__, label_columns) for i in x
+            )
             y_data = LazyIndexable(y_data_generator, length=length)
 
         return cls(X_data=X_data, y_data=y_data)
