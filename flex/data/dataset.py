@@ -130,8 +130,8 @@ class Dataset:
             X_data = LazyIndexable((x for x, _ in tfds_dataset.as_numpy_iterator()))
             y_data = LazyIndexable((y for _, y in tfds_dataset.as_numpy_iterator()))
         else:
-            X_data = LazyIndexable((x for x, _ in tfds_dataset))
-            y_data = LazyIndexable((y for _, y in tfds_dataset))
+            X_data = LazyIndexable(iter(tfds_dataset[0]))
+            y_data = LazyIndexable(iter(tfds_dataset[1]))
 
         return cls(X_data=X_data, y_data=y_data)
 

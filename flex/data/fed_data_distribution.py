@@ -204,7 +204,7 @@ class FedDataDistribution(object):
             ):
                 fed_dataset[client_name] = data
         else:  # sample using weights or features
-            remaining_data_indices = np.arange(len(centralized_data))
+            remaining_data_indices = np.arange(len(centralized_data.y_data))
             for i in range(config_.n_clients):
                 (
                     sub_data_indices,
