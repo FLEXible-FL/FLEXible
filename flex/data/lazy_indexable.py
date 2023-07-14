@@ -1,7 +1,5 @@
 import warnings
 from collections import OrderedDict
-from inspect import isgeneratorfunction
-from types import GeneratorType
 from typing import Iterable, Union
 
 import numpy as np
@@ -49,13 +47,18 @@ class LazyIndexable:
         self._len = length
         self._iterable_indexes = np.asarray(iterable_indexes, dtype=np.uint32)
         self._storage = storage
+        try:
+            self._iterable[0]
+            self._is_generator = False
+        except TypeError:  # object is not subscriptable
+            self._is_generator = True
         # This last check is a little hacky
-        self._is_generator = (
-            isinstance(self._iterable, (GeneratorType, zip))
-            or isgeneratorfunction(self._iterable)
-            or "iterator" in type(self._iterable).__name__
-            or "Iterator" in type(self._iterable).__name__
-        )
+        # self._is_generator = (
+        #     isinstance(self._iterable, (GeneratorType, zip))
+        #     or isgeneratorfunction(self._iterable)
+        #     or "iterator" in type(self._iterable).__name__
+        #     or "Iterator" in type(self._iterable).__name__
+        # )
         if not self._is_generator:
             self._len = len(self._iterable)
 
