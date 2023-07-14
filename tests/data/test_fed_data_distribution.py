@@ -525,13 +525,36 @@ class TestFlexDataDistribution(unittest.TestCase):
         data = load_dataset("ag_news", split="test")
         X_columns = ["text"]
         label_columns = ["label"]
+        lazy=False
         config = FedDatasetConfig(
             seed=0,
             replacement=False,
             client_names=["client_0", "client_1"],
         )
         flex_dataset = FedDataDistribution.from_config_with_huggingface_dataset(
-            data, config, X_columns, label_columns
+            data, config, X_columns, label_columns, lazy
+        )
+        assert len(flex_dataset) == config.n_clients
+        assert len(flex_dataset["client_0"]) == len(flex_dataset["client_1"])
+        assert (
+            len(flex_dataset["client_0"]) + len(flex_dataset["client_1"])
+            == data.num_rows
+        )
+
+    def test_from_huggingface_text_dataset_lazy(self):
+        from datasets import load_dataset
+
+        data = load_dataset("ag_news", split="test")
+        X_columns = ["text"]
+        label_columns = ["label"]
+        lazy = True
+        config = FedDatasetConfig(
+            seed=0,
+            replacement=False,
+            client_names=["client_0", "client_1"],
+        )
+        flex_dataset = FedDataDistribution.from_config_with_huggingface_dataset(
+            data, config, X_columns, label_columns, lazy
         )
         assert len(flex_dataset) == config.n_clients
         assert len(flex_dataset["client_0"]) == len(flex_dataset["client_1"])
@@ -588,7 +611,7 @@ class TestFlexDataDistribution(unittest.TestCase):
         assert isclose(std, 8.92, abs_tol=1e-1)
 
     def test_loading_fedsentiment_using_from_config(self):
-        fed_data, test_data = load("federated_sentiment140", return_test=True)
+        fed_data, test_data = load("federated_sentiment140", return_test=True, lazy=False)
         assert isinstance(fed_data, FedDataset)
         assert isinstance(test_data, Dataset)
         num_samples = [len(fed_data[i]) for i in fed_data]

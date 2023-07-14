@@ -195,15 +195,16 @@ class Dataset:
 
     @classmethod
     def from_huggingface_dataset(
-        cls, hf_dataset, X_columns: list = None, label_columns: list = None
+        cls, hf_dataset, X_columns: list = None, label_columns: list = None,
+        lazy: bool = False
     ):
         """Function to conver an arrow dataset from the Datasets package (HuggingFace datasets library)
         to a FlexDataObject.
 
         Args:
             hf_dataset (datasets.arrow_dataset.Dataset): a dataset from the dataset library
-            X_columns (str, list):
-            label_columns (str, list): name of the label columns
+            X_columns (list): List containing the features names for training the model
+            label_columns (list): List containing the name or names of the label column
 
         Returns:
             Dataset: a FlexDataObject which encapsulates the dataset.
@@ -221,29 +222,33 @@ class Dataset:
                 "The input dataset doesn't have the property dataset.info.builder_name, so we can't check if is supported or not. Therefore, it might not work as expected.",
                 RuntimeWarning,
             )
+        if lazy:
+            try:
+                length = len(hf_dataset)
+            except TypeError:
+                length = None
 
-        try:
-            length = len(hf_dataset)
-        except TypeError:
-            length = None
+            if X_columns is None:
+                X_data_generator = (
+                    i for x in map(hf_dataset.__getitem__, hf_dataset.features) for i in x
+                )
+            else:
+                X_data_generator = (
+                    i for x in map(hf_dataset.__getitem__, X_columns) for i in x
+                )
+            X_data = LazyIndexable(X_data_generator, length=length)
 
-        if X_columns is not None:
-            X_data_generator = (
-                i for x in map(hf_dataset.__getitem__, X_columns) for i in x
-            )
+            if label_columns is None:
+                y_data = None
+            else:
+                y_data_generator = (
+                    i for x in map(hf_dataset.__getitem__, label_columns) for i in x
+                )
+                y_data = LazyIndexable(y_data_generator, length=length)
         else:
-            X_data_generator = (
-                i for x in map(hf_dataset.__getitem__, hf_dataset.features) for i in x
-            )
-        X_data = LazyIndexable(X_data_generator, length=length)
-
-        if label_columns is None:
-            y_data = None
-        else:
-            y_data_generator = (
-                i for x in map(hf_dataset.__getitem__, label_columns) for i in x
-            )
-            y_data = LazyIndexable(y_data_generator, length=length)
+            df = hf_dataset.to_pandas()
+            X_data = df.to_numpy() if X_columns is None else df[X_columns].to_numpy()
+            y_data = None if label_columns is None else df[label_columns].to_numpy()
 
         return cls(X_data=X_data, y_data=y_data)
 

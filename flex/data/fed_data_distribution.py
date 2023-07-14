@@ -83,7 +83,8 @@ class FedDataDistribution(object):
         data,
         config: FedDatasetConfig,
         X_columns: list,
-        label_columns: str,
+        label_columns: list,
+        lazy: bool,
     ):
         """This function federates a centralized hugginface dataset given a FlexDatasetConfig.
         This function will transform a dataset from the HuggingFace Hub datasets into a Dataset
@@ -92,9 +93,13 @@ class FedDataDistribution(object):
         Args:
             data (Dataset): The hugginface dataset
             config (FedDatasetConfig): FlexDatasetConfig with the configuration to federate the centralized dataset.
+            X_coluns (List[str]): List with the names of the columns to load.
+            label_columns (list): List with the names of the label columns.
+            lazy (bool): Whether to use or not the LazyIndexable dataset, so the dataset
+            is loaded with the streaming option as True. Default False.
         """
         centralized_data = Dataset.from_huggingface_dataset(
-            data, X_columns, label_columns
+            data, X_columns, label_columns, lazy
         )
         return cls.from_config(centralized_data, config)
 

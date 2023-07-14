@@ -71,7 +71,20 @@ class TestFlexDataObject(unittest.TestCase):
         X_columns = "text"
         label_columns = "label"
         fcd = Dataset.from_huggingface_dataset(
-            data, X_columns=X_columns, label_columns=label_columns
+            data, X_columns=X_columns, label_columns=label_columns,
+            lazy=False
+        )
+        fcd.validate()
+
+    def test_validate_from_huggingface_dataset_lazy(self):
+        from datasets import load_dataset
+
+        data = load_dataset("ag_news", split="train")
+        X_columns = "text"
+        label_columns = "label"
+        fcd = Dataset.from_huggingface_dataset(
+            data, X_columns=X_columns, label_columns=label_columns,
+            lazy=True
         )
         fcd.validate()
 
