@@ -104,7 +104,7 @@ class TestLazySliceable(unittest.TestCase):
     def test_from_list_to_numpy(self):
         base_list = get_list()
         from_list = LazyIndexable(base_list, initial_length_guess=TEST_INIT_LEN_GUESS)
-        from_list = np.asarray(from_list)
+        from_list = from_list.to_numpy()
         assert same_contents(base_list, from_list)
 
     def test_from_generator_to_numpy(self):
@@ -112,7 +112,7 @@ class TestLazySliceable(unittest.TestCase):
         from_gen = LazyIndexable(
             get_generator(), initial_length_guess=TEST_INIT_LEN_GUESS
         )
-        from_gen = np.asarray(from_gen)
+        from_gen = from_gen.to_numpy()
         assert same_contents(generator, from_gen)
 
     def test_from_iter_to_numpy(self):
@@ -120,7 +120,7 @@ class TestLazySliceable(unittest.TestCase):
         from_iter = LazyIndexable(
             get_iterator(), initial_length_guess=TEST_INIT_LEN_GUESS
         )
-        from_iter = np.asarray(from_iter)
+        from_iter = from_iter.to_numpy()
         assert same_contents(iterator, from_iter)
 
     def test_slicing_from_generator(self):
@@ -292,7 +292,7 @@ class TestLazySliceable(unittest.TestCase):
                 get_iterator(length=length), initial_length_guess=TEST_INIT_LEN_GUESS
             )
             assert same_contents(
-                selected_indexes, np.asarray(from_iter[selected_indexes])
+                selected_indexes, from_iter[selected_indexes].to_numpy()
             )
 
     def test_random_indexing_with_len_from_generator_to_numpy(self):
@@ -335,7 +335,7 @@ class TestLazySliceable(unittest.TestCase):
                 get_generator(length=length), initial_length_guess=TEST_INIT_LEN_GUESS
             )
             assert same_contents(
-                selected_indexes, np.asarray(from_gen[selected_indexes])
+                selected_indexes, from_gen[selected_indexes].to_numpy()
             )
 
     def test_empty_slice_with_len_from_generator(self):

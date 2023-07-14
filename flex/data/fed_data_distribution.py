@@ -8,6 +8,7 @@ import numpy.typing as npt
 from numpy.random import default_rng
 
 from flex.data import Dataset, FedDataset, FedDatasetConfig
+from flex.data.lazy_indexable import LazyIndexable
 
 
 class FedDataDistribution(object):
@@ -166,9 +167,14 @@ class FedDataDistribution(object):
         if config.client_names is None:
             config_.client_names = list(range(config_.n_clients))
 
+        if isinstance(centralized_data.y_data, LazyIndexable):
+            y_data = centralized_data.y_data.to_numpy()
+        else:
+            y_data = np.asarray(centralized_data.y_data)
+
         centralized_data = Dataset(
             X_data=centralized_data.X_data,
-            y_data=np.asarray(centralized_data.y_data),
+            y_data=y_data,
         )
 
         # Normalize weights when no replacement

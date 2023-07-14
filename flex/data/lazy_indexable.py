@@ -1,4 +1,5 @@
 import warnings
+from collections import OrderedDict
 from inspect import isgeneratorfunction
 from types import GeneratorType
 from typing import Iterable, Union
@@ -43,28 +44,35 @@ class LazyIndexable:
                 initial_length_guess if length is None else length, dtype=np.uint32
             )
         if storage is None:
-            storage = {}
+            storage = OrderedDict()  # np.empty(len(iterable_indexes), dtype=dtype)
         self._iterable = iterable
         self._len = length
         self._iterable_indexes = np.asarray(iterable_indexes, dtype=np.uint32)
         self._storage = storage
         # This last check is a little hacky
         self._is_generator = (
-            isinstance(self._iterable, GeneratorType)
+            isinstance(self._iterable, (GeneratorType, zip))
             or isgeneratorfunction(self._iterable)
             or "iterator" in type(self._iterable).__name__
+            or "Iterator" in type(self._iterable).__name__
         )
+        if not self._is_generator:
+            self._len = len(self._iterable)
 
     def __repr__(self) -> str:
+        length = "??" if self._len is None else self._len
         return (
-            f"len:{len(self)}\n"
-            f"len_is_guessed:{self._len is None}\n"
+            f"len:{length}\n"
+            f"len_is_guessed:{length is None}\n"
+            f"is_generator:{self._is_generator}\n"
             f"iterable_indexes:{self._iterable_indexes}\n"
             f"storage:{self._storage}"
         )
 
     def __len__(self, hide_warning=False) -> int:
-        if self._len is None and not hide_warning:
+        if self._len is not None:
+            return self._len
+        if not hide_warning:
             # trunk-ignore(ruff/B028)
             warnings.warn("The returned value is estimated", RuntimeWarning)
         return len(self._iterable_indexes)
@@ -82,23 +90,21 @@ class LazyIndexable:
         return LazyIndexable(
             self._iterable,
             iterable_indexes=self._iterable_indexes[s],
-            length=self._len if self._len is None else len(self._iterable_indexes[s]),
+            length=self._len,
             storage=self._storage,
         )
 
     def __getitem_with_int(self, s):
         index = self._iterable_indexes[s]
+        if not self._is_generator:
+            return self._iterable[index]
         if index in self._storage:
             return self._storage[index]
-        start = (
-            max(self._storage) + 1
-            if self._is_generator and len(self._storage) > 0
-            else 0
-        )
+        start = next(reversed(self._storage)) + 1 if len(self._storage) > 0 else 0
         # If it is not in the storage, we must consume the iterable
         for i, element in enumerate(self._iterable, start=start):
             self._storage[i] = element  # Every we consume is stored for later usage
-            if i in self._iterable_indexes and i == index:
+            if i == index:
                 return element
 
     def __getitem__(self, s: Union[int, slice, list]):
@@ -144,16 +150,11 @@ class LazyIndexable:
 
         return val
 
-    # Better use list()
-    # def to_list(self):
-    #     lst = list(self)
-    #     if self._len is None:
-    #         self._len = len(lst)
-    #     return lst
+    def to_list(self):
+        lst = list(self)
+        if self._len is None:
+            self._len = len(lst)
+        return lst
 
-    # better use np.array()
-    # def to_numpy(self):
-    #     lst = np.array(self)
-    #     if self._len is None:
-    #         self._len = len(lst)
-    #     return lst
+    def to_numpy(self):
+        return np.array(self.to_list())
