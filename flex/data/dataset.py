@@ -195,8 +195,11 @@ class Dataset:
 
     @classmethod
     def from_huggingface_dataset(
-        cls, hf_dataset, X_columns: list = None, label_columns: list = None,
-        lazy: bool = False
+        cls,
+        hf_dataset,
+        X_columns: list = None,
+        label_columns: list = None,
+        lazy: bool = False,
     ):
         """Function to conver an arrow dataset from the Datasets package (HuggingFace datasets library)
         to a FlexDataObject.
@@ -230,7 +233,9 @@ class Dataset:
 
             if X_columns is None:
                 X_data_generator = (
-                    i for x in map(hf_dataset.__getitem__, hf_dataset.features) for i in x
+                    i
+                    for x in map(hf_dataset.__getitem__, hf_dataset.features)
+                    for i in x
                 )
             else:
                 X_data_generator = (

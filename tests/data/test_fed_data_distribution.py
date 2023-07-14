@@ -525,7 +525,7 @@ class TestFlexDataDistribution(unittest.TestCase):
         data = load_dataset("ag_news", split="test")
         X_columns = ["text"]
         label_columns = ["label"]
-        lazy=False
+        lazy = False
         config = FedDatasetConfig(
             seed=0,
             replacement=False,
@@ -611,7 +611,9 @@ class TestFlexDataDistribution(unittest.TestCase):
         assert isclose(std, 8.92, abs_tol=1e-1)
 
     def test_loading_fedsentiment_using_from_config(self):
-        fed_data, test_data = load("federated_sentiment140", return_test=True, lazy=False)
+        fed_data, test_data = load(
+            "federated_sentiment140", return_test=True, lazy=False
+        )
         assert isinstance(fed_data, FedDataset)
         assert isinstance(test_data, Dataset)
         num_samples = [len(fed_data[i]) for i in fed_data]

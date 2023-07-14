@@ -57,7 +57,8 @@ def federated_celeba(out_dir: str = ".", return_test=False):
 
 def federated_sentiment140(out_dir: str = ".", return_test=False, **kwargs):
     from datasets import load_dataset
-    lazy = False if "lazy" not in kwargs.items() else kwargs['lazy']
+
+    lazy = False if "lazy" not in kwargs.items() else kwargs["lazy"]
     dataset = load_dataset("sentiment140")
     x_labels = "text"
     y_labels = ["user", "sentiment"]

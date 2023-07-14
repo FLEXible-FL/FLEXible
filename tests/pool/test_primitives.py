@@ -31,7 +31,7 @@ class TestFlexPoolPrimitives(unittest.TestCase):
         self.test_data = test_data
         X_columns = "text"
         label_columns = "label"
-        lazy=False
+        lazy = False
         self.f_imdb = FedDataDistribution.from_config_with_huggingface_dataset(
             train_data, self.config, X_columns, label_columns, lazy
         )

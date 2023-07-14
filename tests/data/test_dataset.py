@@ -71,8 +71,7 @@ class TestFlexDataObject(unittest.TestCase):
         X_columns = "text"
         label_columns = "label"
         fcd = Dataset.from_huggingface_dataset(
-            data, X_columns=X_columns, label_columns=label_columns,
-            lazy=False
+            data, X_columns=X_columns, label_columns=label_columns, lazy=False
         )
         fcd.validate()
 
@@ -83,25 +82,30 @@ class TestFlexDataObject(unittest.TestCase):
         X_columns = "text"
         label_columns = "label"
         fcd = Dataset.from_huggingface_dataset(
-            data, X_columns=X_columns, label_columns=label_columns,
-            lazy=True
+            data, X_columns=X_columns, label_columns=label_columns, lazy=True
         )
         fcd.validate()
 
     def test_to_torchvision_dataset_w_flex_datasets(self):
-        from flex.datasets import load
-        from torchvision import transforms
         import torch
+        from torchvision import transforms
+
+        from flex.datasets import load
 
         fcd, _ = load("emnist", split="digits")
         torch_fcd = fcd.to_torchvision_dataset(
             transform=transforms.ToTensor(),
-            target_transform=transforms.Compose([
-                                lambda x: torch.as_tensor(x).long(),
-                                lambda x: torch.nn.functional.one_hot(x, 10)])
-                            )
+            target_transform=transforms.Compose(
+                [
+                    lambda x: torch.as_tensor(x).long(),
+                    lambda x: torch.nn.functional.one_hot(x, 10),
+                ]
+            ),
+        )
         batch_size = 64
-        dataloader = torch.utils.data.DataLoader(torch_fcd, batch_size=batch_size, shuffle=True)
+        dataloader = torch.utils.data.DataLoader(
+            torch_fcd, batch_size=batch_size, shuffle=True
+        )
         train_features, train_labels = next(iter(dataloader))
 
         assert len(train_features) == batch_size
@@ -111,8 +115,9 @@ class TestFlexDataObject(unittest.TestCase):
         assert len(train_labels[0]) == 10  # number of classes
 
     def test_to_tf_dataset_w_flex_datasets(self):
-        from flex.datasets import load
         import tensorflow as tf
+
+        from flex.datasets import load
 
         fcd, _ = load("emnist", split="digits")
         tf_fcd = fcd.to_tf_dataset()
@@ -124,7 +129,6 @@ class TestFlexDataObject(unittest.TestCase):
         assert tf.is_tensor(train_features)
         assert len(train_labels) == batch_size
         assert tf.is_tensor(train_labels)
-
 
     def test_pluggable_datasets_in_property(self):
         from torchtext.datasets import AG_NEWS
