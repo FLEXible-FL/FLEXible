@@ -631,6 +631,22 @@ class TestFlexDataDistribution(unittest.TestCase):
         assert isclose(mean, 2.42, abs_tol=1e-1)
         assert isclose(std, 4.71, abs_tol=1e-1)
 
+    def test_loading_fedsentiment_using_from_config_lazyly(self):
+        fed_data, test_data = load(
+            "federated_sentiment140", return_test=True, lazy=True
+        )
+        assert isinstance(fed_data, FedDataset)
+        assert isinstance(test_data, Dataset)
+        num_samples = [len(fed_data[i]) for i in fed_data]
+        total_samples = np.sum(num_samples)
+        std = np.std(num_samples)
+        mean = np.mean(num_samples)
+        users = len(fed_data)
+        assert users == 659775
+        assert total_samples == 1600000
+        assert isclose(mean, 2.42, abs_tol=1e-1)
+        assert isclose(std, 4.71, abs_tol=1e-1)
+
     def test_loading_fedshakespeare_using_from_config(self):
         fed_data, test_data = load("federated_shakespeare", return_test=True)
         assert isinstance(fed_data, FedDataset)
