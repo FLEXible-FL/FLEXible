@@ -232,7 +232,9 @@ class Dataset:
                 length = None
 
             if X_columns is None:
-                X_data_generator = iter(zip(*map(hf_dataset.__getitem__, hf_dataset.features)))
+                X_data_generator = iter(
+                    zip(*map(hf_dataset.__getitem__, hf_dataset.features))
+                )
             elif len(X_columns) == 1:
                 X_data_generator = (
                     i for x in map(hf_dataset.__getitem__, X_columns) for i in x
@@ -250,7 +252,9 @@ class Dataset:
                 )
                 y_data = LazyIndexable(y_data_generator, length=length)
             else:
-                y_data_generator = iter(zip(*map(hf_dataset.__getitem__, label_columns)))
+                y_data_generator = iter(
+                    zip(*map(hf_dataset.__getitem__, label_columns))
+                )
                 y_data = LazyIndexable(y_data_generator, length=length)
         else:
             df = hf_dataset.to_pandas()
