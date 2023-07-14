@@ -82,7 +82,7 @@ class LazyIndexable:
         return LazyIndexable(
             self._iterable,
             iterable_indexes=self._iterable_indexes[s],
-            length=self._len,
+            length=self._len if self._len is None else len(self._iterable_indexes[s]),
             storage=self._storage,
         )
 

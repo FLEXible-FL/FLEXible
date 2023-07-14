@@ -237,22 +237,22 @@ class FedDataDistribution(object):
     ):
         label_index = config.group_by_label_index
         label_to_client_id = {}
-        x_data = defaultdict(list)
         y_data = defaultdict(list)
-        for i, (x, y) in enumerate(centralized_data):
+        x_data_indexes = defaultdict(list)
+        for i, y in enumerate(centralized_data.y_data):
             y = list(y)  # TODO: enforce that y is only a list or a tuple
             str_label = str(y.pop(label_index))  # Use str to make every label hashable
             if str_label not in label_to_client_id:
                 label_to_client_id[
                     str_label
                 ] = i  # Name each client using the first index where the label appears
-            x_data[label_to_client_id[str_label]].append(x)
+            x_data_indexes[label_to_client_id[str_label]].append(i)
             if len(y) == 1:
                 y = y[0]
             y_data[label_to_client_id[str_label]].append(y)
-        for client_id in x_data:
+        for client_id in y_data:
             yield client_id, Dataset(
-                X_data=np.asarray(x_data[client_id]),
+                X_data=centralized_data.X_data[x_data_indexes[client_id]],
                 y_data=np.asarray(y_data[client_id]),
             )
 
