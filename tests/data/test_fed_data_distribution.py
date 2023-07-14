@@ -1,3 +1,4 @@
+import sys
 import unittest
 from math import isclose
 
@@ -610,6 +611,10 @@ class TestFlexDataDistribution(unittest.TestCase):
         assert isclose(mean, 19.87, abs_tol=1e-1)
         assert isclose(std, 8.92, abs_tol=1e-1)
 
+    @pytest.mark.skipif(
+        condition=sys.version_info < (3, 9),
+        reason="Sentiment140 is very huge and exceed the RAM limit on GitHub.",
+    )
     def test_loading_fedsentiment_using_from_config(self):
         fed_data, test_data = load(
             "federated_sentiment140", return_test=True, lazy=False
