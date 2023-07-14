@@ -631,6 +631,10 @@ class TestFlexDataDistribution(unittest.TestCase):
         assert isclose(mean, 2.42, abs_tol=1e-1)
         assert isclose(std, 4.71, abs_tol=1e-1)
 
+    @pytest.mark.skipif(
+        condition=os.getenv("GITHUB_ACTIONS") == "true",
+        reason="Sentiment140 is very huge and exceed the RAM limit on GitHub.",
+    )
     def test_loading_fedsentiment_using_from_config_lazyly(self):
         fed_data, test_data = load(
             "federated_sentiment140", return_test=True, lazy=True
