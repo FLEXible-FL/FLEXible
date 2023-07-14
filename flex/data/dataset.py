@@ -298,11 +298,11 @@ class Dataset:
 
     def validate(self):
         """Function that checks whether the object is correct or not."""
-        # try:
-        #     y_data_length = len(self.y_data)
-        # except TypeError:
-        #     y_data_length = self.y_data.shape[0]
-        # if self.y_data is not None and len(self) != y_data_length:
-        #     raise ValueError(
-        #         f"X_data and y_data must have equal lenght. X_data has {len(self)} elements and y_data has {y_data_length} elements."
-        #     )
+        try:
+            y_data_length = len(self.y_data)
+        except TypeError:
+            y_data_length = self.y_data.shape[0]
+        if self.y_data is not None and len(self) != y_data_length:
+            raise ValueError(
+                f"X_data and y_data must have equal lenght. X_data has {len(self)} elements and y_data has {y_data_length} elements."
+            )
