@@ -1,4 +1,4 @@
-import sys
+import os
 import unittest
 from math import isclose
 
@@ -612,7 +612,7 @@ class TestFlexDataDistribution(unittest.TestCase):
         assert isclose(std, 8.92, abs_tol=1e-1)
 
     @pytest.mark.skipif(
-        condition=sys.version_info < (3, 9),
+        condition=os.getenv("GIHUB_ACTIONS") == "true",
         reason="Sentiment140 is very huge and exceed the RAM limit on GitHub.",
     )
     def test_loading_fedsentiment_using_from_config(self):
