@@ -1,6 +1,7 @@
+import numpy as np
+
 from flex.common import utils
 from flex.data import Dataset
-import numpy as np
 
 
 def emnist(out_dir: str = ".", split="digits", include_authors=False):
@@ -92,4 +93,6 @@ def shakespeare(out_dir: str = ".", include_actors=False):
                 test_y += node_ds["y"]
             test_x += node_ds["x"]
 
-    return Dataset(np.asarray(train_x), np.asarray(train_y)), Dataset(np.asarray(test_x), np.asarray(test_y))
+    return Dataset(np.asarray(train_x), np.asarray(train_y)), Dataset(
+        np.asarray(test_x), np.asarray(test_y)
+    )
