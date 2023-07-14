@@ -68,8 +68,8 @@ class TestFlexDataObject(unittest.TestCase):
         from datasets import load_dataset
 
         data = load_dataset("ag_news", split="train")
-        X_columns = "text"
-        label_columns = "label"
+        X_columns = ["text"]
+        label_columns = ["label"]
         fcd = Dataset.from_huggingface_dataset(
             data, X_columns=X_columns, label_columns=label_columns, lazy=False
         )
@@ -79,8 +79,8 @@ class TestFlexDataObject(unittest.TestCase):
         from datasets import load_dataset
 
         data = load_dataset("ag_news", split="train")
-        X_columns = "text"
-        label_columns = "label"
+        X_columns = ["text"]
+        label_columns = ["label"]
         fcd = Dataset.from_huggingface_dataset(
             data, X_columns=X_columns, label_columns=label_columns, lazy=True
         )
