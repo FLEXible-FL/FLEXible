@@ -1,13 +1,13 @@
 import random
 import unittest
 
-import numpy as np
 import pytest
 
 from flex.data.lazy_indexable import LazyIndexable
 
 DEFAULT_LENGTH = 10
 TEST_INIT_LEN_GUESS = 3
+TEST_BIGGER_INIT_LEN_GUESS = 150
 
 
 def get_generator(length=DEFAULT_LENGTH):
@@ -22,21 +22,24 @@ def get_list(length=DEFAULT_LENGTH):
     return list(range(length))
 
 
-def same_contents(reference, sliceable: LazyIndexable):
-    return all(x == y for x, y in zip(reference, sliceable))
+def same_contents(reference, indexable: LazyIndexable):
+    return all(x == y for x, y in zip(reference, indexable))
+
+def same_contents_with_length(reference, indexable: LazyIndexable, length=DEFAULT_LENGTH):
+    return all(x == y for x, y in zip(reference, indexable)) and len(indexable) == length
 
 
-def same_contects_negative_indexing(reference, sliceable: LazyIndexable):
-    return all(sliceable[i - DEFAULT_LENGTH] == x for i, x in enumerate(reference))
+def same_contects_negative_indexing(reference, indexable: LazyIndexable, length=DEFAULT_LENGTH):
+    return all(indexable[i - length] == x for i, x in enumerate(reference))
 
 
-def same_contents_slicing(reference, sliceable: LazyIndexable):
-    return all(sliceable[i:][0] == x for i, x in enumerate(reference))
+def same_contents_slicing(reference, indexable: LazyIndexable):
+    return all(indexable[i:][0] == x for i, x in enumerate(reference))
 
 
-def same_contents_anidated_slicing(reference, sliceable: LazyIndexable):
+def same_contents_anidated_slicing(reference, indexable: LazyIndexable):
     result = []
-    anidated_slice = sliceable
+    anidated_slice = indexable
     for i, x in enumerate(reference):
         if i > 0 and i < (DEFAULT_LENGTH - 1):
             anidated_slice = anidated_slice[1:]
@@ -44,9 +47,9 @@ def same_contents_anidated_slicing(reference, sliceable: LazyIndexable):
     return all(result)
 
 
-def same_contects_split_in_two_slices(reference, sliceable: LazyIndexable, split_index):
+def same_contects_split_in_two_slices(reference, indexable: LazyIndexable, split_index):
     result = []
-    slice_1, slice_2 = sliceable[:split_index], sliceable[split_index:]
+    slice_1, slice_2 = indexable[:split_index], indexable[split_index:]
     for j, x in enumerate(reference):
         if j < split_index:
             result.append(slice_1[j] == x)
@@ -67,11 +70,19 @@ class TestLazySliceable(unittest.TestCase):
             get_generator(), initial_length_guess=TEST_INIT_LEN_GUESS
         )
         assert same_contents(generator, from_gen)
+        from_gen = LazyIndexable(
+            get_generator(), initial_length_guess=TEST_BIGGER_INIT_LEN_GUESS
+        )
+        assert same_contents(generator, from_gen)
 
     def test_from_iter(self):
         iterator = get_iterator()
         from_iter = LazyIndexable(
             get_iterator(), initial_length_guess=TEST_INIT_LEN_GUESS
+        )
+        assert same_contents(iterator, from_iter)
+        from_iter = LazyIndexable(
+            get_iterator(), initial_length_guess=TEST_BIGGER_INIT_LEN_GUESS
         )
         assert same_contents(iterator, from_iter)
 
@@ -106,6 +117,10 @@ class TestLazySliceable(unittest.TestCase):
         from_list = LazyIndexable(base_list, initial_length_guess=TEST_INIT_LEN_GUESS)
         from_list = from_list.to_numpy()
         assert same_contents(base_list, from_list)
+        base_list = get_list()
+        from_list = LazyIndexable(base_list, initial_length_guess=TEST_BIGGER_INIT_LEN_GUESS)
+        from_list = from_list.to_numpy()
+        assert same_contents(base_list, from_list)
 
     def test_from_generator_to_numpy(self):
         generator = get_generator()
@@ -114,6 +129,27 @@ class TestLazySliceable(unittest.TestCase):
         )
         from_gen = from_gen.to_numpy()
         assert same_contents(generator, from_gen)
+        generator = get_generator()
+        from_gen = LazyIndexable(
+            get_generator(), initial_length_guess=TEST_BIGGER_INIT_LEN_GUESS
+        )
+        from_gen = from_gen.to_numpy()
+        assert same_contents(generator, from_gen)
+
+    def test_from_generator_with_len_to_numpy(self):
+        generator = get_generator()
+        from_gen = LazyIndexable(
+            get_generator(), length=DEFAULT_LENGTH, initial_length_guess=TEST_INIT_LEN_GUESS
+        )
+        from_gen = from_gen.to_numpy()
+        assert len(from_gen) == DEFAULT_LENGTH
+        assert same_contents(generator, from_gen)
+        generator = get_generator()
+        from_gen = LazyIndexable(
+            get_generator(), length=DEFAULT_LENGTH, initial_length_guess=TEST_BIGGER_INIT_LEN_GUESS
+        )
+        from_gen = from_gen.to_numpy()
+        assert same_contents_with_length(generator, from_gen)
 
     def test_from_iter_to_numpy(self):
         iterator = get_iterator()
@@ -121,12 +157,37 @@ class TestLazySliceable(unittest.TestCase):
             get_iterator(), initial_length_guess=TEST_INIT_LEN_GUESS
         )
         from_iter = from_iter.to_numpy()
-        assert same_contents(iterator, from_iter)
+        assert same_contents_with_length(iterator, from_iter)
+        iterator = get_iterator()
+        from_iter = LazyIndexable(
+            get_iterator(), initial_length_guess=TEST_BIGGER_INIT_LEN_GUESS
+        )
+        from_iter = from_iter.to_numpy()
+        assert same_contents_with_length(iterator, from_iter)
+
+    def test_from_iter_with_len_to_numpy(self):
+        iterator = get_iterator()
+        from_iter = LazyIndexable(
+            get_iterator(), length=DEFAULT_LENGTH, initial_length_guess=TEST_INIT_LEN_GUESS
+        )
+        from_iter = from_iter.to_numpy()
+        assert same_contents_with_length(iterator, from_iter)
+        iterator = get_iterator()
+        from_iter = LazyIndexable(
+            get_iterator(), length=DEFAULT_LENGTH, initial_length_guess=TEST_BIGGER_INIT_LEN_GUESS
+        )
+        from_iter = from_iter.to_numpy()
+        assert same_contents_with_length(iterator, from_iter)
 
     def test_slicing_from_generator(self):
         generator = get_generator()
         from_gen = LazyIndexable(
             get_generator(), initial_length_guess=TEST_INIT_LEN_GUESS
+        )
+        assert same_contents_slicing(generator, from_gen)
+        generator = get_generator()
+        from_gen = LazyIndexable(
+            get_generator(), initial_length_guess=TEST_BIGGER_INIT_LEN_GUESS
         )
         assert same_contents_slicing(generator, from_gen)
 
@@ -144,6 +205,11 @@ class TestLazySliceable(unittest.TestCase):
         iterator = get_iterator()
         from_iter = LazyIndexable(
             get_iterator(), initial_length_guess=TEST_INIT_LEN_GUESS
+        )
+        assert same_contents_slicing(iterator, from_iter)
+        iterator = get_iterator()
+        from_iter = LazyIndexable(
+            get_iterator(), initial_length_guess=TEST_BIGGER_INIT_LEN_GUESS
         )
         assert same_contents_slicing(iterator, from_iter)
 
@@ -207,7 +273,7 @@ class TestLazySliceable(unittest.TestCase):
         for _ in range(50):
             selected_indexes = random.sample(available_indexes, sample_size)
             from_iter = LazyIndexable(get_iterator(length=length), length)
-            assert same_contents(selected_indexes, from_iter[selected_indexes])
+            assert same_contents_with_length(selected_indexes, from_iter[selected_indexes], length=length)
 
     def test_random_negative_indexing_with_len_from_iterator(self):
         length = 100
@@ -219,7 +285,7 @@ class TestLazySliceable(unittest.TestCase):
             negative_indexes = [-i for i in selected_indexes]
             positive_equivalent = [i + length for i in negative_indexes]
             from_iter = LazyIndexable(get_iterator(length=length), length)
-            assert same_contents(positive_equivalent, from_iter[negative_indexes])
+            assert same_contents_with_length(positive_equivalent, from_iter[negative_indexes], length=length)
 
     def test_random_indexing_from_iterator(self):
         length = 100
@@ -232,6 +298,12 @@ class TestLazySliceable(unittest.TestCase):
                 get_iterator(length=length), initial_length_guess=TEST_INIT_LEN_GUESS
             )
             assert same_contents(selected_indexes, from_iter[selected_indexes])
+        for _ in range(50):
+            selected_indexes = random.sample(available_indexes, sample_size)
+            from_iter = LazyIndexable(
+                get_iterator(length=length), initial_length_guess=TEST_BIGGER_INIT_LEN_GUESS
+            )
+            assert same_contents(selected_indexes, from_iter[selected_indexes])
 
     def test_random_indexing_with_len_from_generator(self):
         length = 100
@@ -241,7 +313,7 @@ class TestLazySliceable(unittest.TestCase):
         for _ in range(50):
             selected_indexes = random.sample(available_indexes, sample_size)
             from_gen = LazyIndexable(get_generator(length=length), length)
-            assert same_contents(selected_indexes, from_gen[selected_indexes])
+            assert same_contents_with_length(selected_indexes, from_gen[selected_indexes], length=length)
 
     def test_random_negative_indexing_with_len_from_generator(self):
         length = 100
@@ -253,7 +325,7 @@ class TestLazySliceable(unittest.TestCase):
             negative_indexes = [-i for i in selected_indexes]
             positive_equivalent = [i + length for i in negative_indexes]
             from_gen = LazyIndexable(get_generator(length=length), length)
-            assert same_contents(positive_equivalent, from_gen[negative_indexes])
+            assert same_contents_with_length(positive_equivalent, from_gen[negative_indexes], length=length)
 
     def test_random_indexing_from_generator(self):
         length = 100
@@ -264,6 +336,12 @@ class TestLazySliceable(unittest.TestCase):
             selected_indexes = random.sample(available_indexes, sample_size)
             from_gen = LazyIndexable(
                 get_generator(length=length), initial_length_guess=TEST_INIT_LEN_GUESS
+            )
+            assert same_contents(selected_indexes, from_gen[selected_indexes])
+        for _ in range(50):
+            selected_indexes = random.sample(available_indexes, sample_size)
+            from_gen = LazyIndexable(
+                get_generator(length=length), initial_length_guess=TEST_BIGGER_INIT_LEN_GUESS
             )
             assert same_contents(selected_indexes, from_gen[selected_indexes])
 
@@ -277,8 +355,8 @@ class TestLazySliceable(unittest.TestCase):
             negative_indexes = [-i for i in selected_indexes]
             positive_equivalent = [i + length for i in negative_indexes]
             from_iter = LazyIndexable(get_iterator(length=length), length)
-            assert same_contents(
-                positive_equivalent, np.asarray(from_iter[negative_indexes])
+            assert same_contents_with_length(
+                positive_equivalent, from_iter[negative_indexes].to_numpy(), length=length
             )
 
     def test_random_indexing_from_iterator_to_numpy(self):
@@ -294,6 +372,14 @@ class TestLazySliceable(unittest.TestCase):
             assert same_contents(
                 selected_indexes, from_iter[selected_indexes].to_numpy()
             )
+        for _ in range(50):
+            selected_indexes = random.sample(available_indexes, sample_size)
+            from_iter = LazyIndexable(
+                get_iterator(length=length), initial_length_guess=TEST_BIGGER_INIT_LEN_GUESS
+            )
+            assert same_contents(
+                selected_indexes, from_iter[selected_indexes].to_numpy()
+            )
 
     def test_random_indexing_with_len_from_generator_to_numpy(self):
         length = 1000
@@ -304,8 +390,8 @@ class TestLazySliceable(unittest.TestCase):
         for _ in range(trials):
             selected_indexes = random.sample(available_indexes, sample_size)
             from_gen = LazyIndexable(get_generator(length=length), length)
-            assert same_contents(
-                selected_indexes, np.asarray(from_gen[selected_indexes])
+            assert same_contents_with_length(
+                selected_indexes, from_gen[selected_indexes].to_numpy(), length=length
             )
 
     def test_random_negative_indexing_with_len_from_generator_to_numpy(self):
@@ -319,12 +405,12 @@ class TestLazySliceable(unittest.TestCase):
             negative_indexes = [-i for i in selected_indexes]
             positive_equivalent = [i + length for i in negative_indexes]
             from_gen = LazyIndexable(get_generator(length=length), length)
-            assert same_contents(
-                positive_equivalent, np.asarray(from_gen[negative_indexes])
+            assert same_contents_with_length(
+                positive_equivalent, from_gen[negative_indexes].to_numpy(), length=length
             )
 
     def test_random_indexing_from_generator_to_numpy(self):
-        length = 1000
+        length = 100
         sample_size = 10
         trials = 100
         random.seed(sample_size)
@@ -333,6 +419,14 @@ class TestLazySliceable(unittest.TestCase):
             selected_indexes = random.sample(available_indexes, sample_size)
             from_gen = LazyIndexable(
                 get_generator(length=length), initial_length_guess=TEST_INIT_LEN_GUESS
+            )
+            assert same_contents(
+                selected_indexes, from_gen[selected_indexes].to_numpy()
+            )
+        for _ in range(trials):
+            selected_indexes = random.sample(available_indexes, sample_size)
+            from_gen = LazyIndexable(
+                get_generator(length=length), initial_length_guess=TEST_BIGGER_INIT_LEN_GUESS
             )
             assert same_contents(
                 selected_indexes, from_gen[selected_indexes].to_numpy()

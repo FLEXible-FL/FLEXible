@@ -52,15 +52,11 @@ class LazyIndexable:
             self._is_generator = False
         except TypeError:  # object is not subscriptable
             self._is_generator = True
-        # This last check is a little hacky
-        # self._is_generator = (
-        #     isinstance(self._iterable, (GeneratorType, zip))
-        #     or isgeneratorfunction(self._iterable)
-        #     or "iterator" in type(self._iterable).__name__
-        #     or "Iterator" in type(self._iterable).__name__
-        # )
         if not self._is_generator:
-            self._len = len(self._iterable)
+            try:
+                self._len = len(self._iterable)
+            except TypeError:
+                pass
 
     def __repr__(self) -> str:
         length = "??" if self._len is None else self._len
@@ -154,7 +150,7 @@ class LazyIndexable:
         return val
 
     def to_list(self):
-        lst = list(self)
+        lst = [i for i in self]
         if self._len is None:
             self._len = len(lst)
         return lst
