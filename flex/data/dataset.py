@@ -93,7 +93,9 @@ class Dataset:
         if self.y_data is None:
             return np.array(self.X_data, dtype=xdtype)
         else:
-            return np.array(self.X_data, dtype=xdtype), np.array(self.y_data, dtype=ydtype)
+            return np.array(self.X_data, dtype=xdtype), np.array(
+                self.y_data, dtype=ydtype
+            )
 
     def to_list(self):
         """Function to return the FlexDataObject as list."""

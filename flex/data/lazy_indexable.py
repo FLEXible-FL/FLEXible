@@ -66,8 +66,7 @@ class LazyIndexable:
         return val
 
     def tolist(self):
-        """Function that returns the LazyIndexable as list.
-        """
+        """Function that returns the LazyIndexable as list."""
         return list(self)
 
     def to_numpy(self, dtype=None):
