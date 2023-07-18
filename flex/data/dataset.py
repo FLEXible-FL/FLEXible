@@ -356,14 +356,14 @@ class Dataset:
             if not isinstance(X_array, np.ndarray) or not isinstance(
                 y_array, np.ndarray
             ):
-                warnings.warn(
+                warnings.warn(  # noqa: B028
                     "X_array or y_array are not a Numpy Array. The method might not work as expected.",
                     RuntimeWarning,
                 )
             length = len(y_array)
         else:
             if not isinstance(X_array, np.ndarray):
-                warnings.warn(
+                warnings.warn(  # noqa: B028
                     "X_array is not a Numpy Array. The method might not work as expected.",
                     RuntimeWarning,
                 )
@@ -389,14 +389,14 @@ class Dataset:
         """
         if y_array is not None:
             if not isinstance(X_array, list) or not isinstance(y_array, list):
-                warnings.warn(
+                warnings.warn(  # noqa: B028
                     "X_array or y_array are not a list. The method might not work as expected.",
                     RuntimeWarning,
                 )
             length = len(y_array)
         else:
             if not isinstance(X_array, list):
-                warnings.warn(
+                warnings.warn(  # noqa: B028
                     "X_array is not a list. The method might not work as expected.",
                     RuntimeWarning,
                 )
