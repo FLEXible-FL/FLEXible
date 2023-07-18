@@ -163,6 +163,11 @@ class Dataset:
                     tfds_dataset.unbatch()
             if X_columns is None:
                 X_data_generator = iter(tfds_dataset.as_numpy_iterator())
+            elif len(X_columns) == 1:
+                X_data_generator = (
+                    tuple(map(row.get, X_columns))[0]
+                    for row in tfds_dataset.as_numpy_iterator()
+                )
             else:
                 X_data_generator = (
                     tuple(map(row.get, X_columns))
@@ -172,6 +177,12 @@ class Dataset:
 
             if label_columns is None:
                 y_data = None
+            elif len(label_columns) == 1:
+                y_data_generator = (
+                    tuple(map(row.get, label_columns))[0]
+                    for row in tfds_dataset.as_numpy_iterator()
+                )
+                y_data = LazyIndexable(y_data_generator)
             else:
                 y_data_generator = (
                     tuple(map(row.get, label_columns))

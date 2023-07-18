@@ -224,7 +224,9 @@ class FedDataDistribution(object):
                 ) = cls.__sample(
                     rng, remaining_data_indices, centralized_data, config_, i
                 )
-                X_data = centralized_data.X_data[sub_data_indices]
+                X_data = centralized_data.X_data[
+                    sub_data_indices
+                ]  # los indices se muestrean bien
                 if config.features_per_client is not None:
                     X_data = np.asarray(X_data)
                     X_data = X_data[:, sub_features_indices]
