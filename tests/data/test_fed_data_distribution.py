@@ -558,12 +558,12 @@ class TestFlexDataDistribution(unittest.TestCase):
             data, config, X_columns, label_columns, lazy
         )
         assert len(flex_dataset) == config.n_clients
-        assert len(flex_dataset["client_0"].X_data.to_list()) == len(
-            flex_dataset["client_1"].X_data.to_list()
+        assert len(flex_dataset["client_0"].X_data.tolist()) == len(
+            flex_dataset["client_1"].X_data.tolist()
         )
         assert (
-            len(flex_dataset["client_0"].X_data.to_list())
-            + len(flex_dataset["client_1"].X_data.to_list())
+            len(flex_dataset["client_0"].X_data.tolist())
+            + len(flex_dataset["client_1"].X_data.tolist())
             == data.num_rows
         )
 

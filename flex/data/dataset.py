@@ -86,6 +86,22 @@ class Dataset:
             ),
         )
 
+    def to_numpy(self, xdtype, ydtype=None):
+        """Function to return the FlexDataObject as numpy arrays."""
+        import numpy as np
+
+        if self.y_data is None:
+            return np.array(self.X_data, dtype=xdtype)
+        else:
+            return np.array(self.X_data, dtype=xdtype), np.array(self.y_data, dtype=ydtype)
+
+    def to_list(self):
+        """Function to return the FlexDataObject as list."""
+        if self.y_data is None:
+            return self.X_data.tolist()
+        else:
+            return self.X_data.tolist(), self.y_data.tolist()
+
     @classmethod
     def from_torchvision_dataset(cls, pytorch_dataset):
         """Function to convert an object from torchvision.datasets.* to a FlexDataObject.
@@ -313,6 +329,79 @@ class Dataset:
             (text for label, text in pytorch_text_dataset), length=length
         )
         y_data = LazyIndexable(y_data, length=length)
+
+        return cls(X_data=X_data, y_data=y_data)
+
+    @classmethod
+    def from_numpy(cls, X_array, y_array=None):
+        """Function that create a numpy array into a FlexDataObject.
+            It is mandatory that the list given as argument has length = 2,
+            the first element will have the X_data and the second element
+            will have the y_data.
+
+        Args:
+        ----
+            X_array (npt.NDArray): Numpy array containing the X_data.
+            y_array (npt.NDArray): Numpy array containing the labels. Default None.
+
+        Returns:
+        -------
+            Dataset: a FlexDataObject which encapsulates the arrays.
+        """
+        import numpy as np
+
+        if y_array is not None:
+            if not isinstance(X_array, np.ndarray) or not isinstance(
+                y_array, np.ndarray
+            ):
+                warnings.warn(
+                    "X_array or y_array are not a Numpy Array. The method might not work as expected.",
+                    RuntimeWarning,
+                )
+            length = len(y_array)
+        else:
+            if not isinstance(X_array, np.ndarray):
+                warnings.warn(
+                    "X_array is not a Numpy Array. The method might not work as expected.",
+                    RuntimeWarning,
+                )
+            length = len(X_array)
+
+        X_data = LazyIndexable(X_array, length=length)
+        y_data = None if y_array is None else LazyIndexable(y_array, length=length)
+
+        return cls(X_data=X_data, y_data=y_data)
+
+    @classmethod
+    def from_list(cls, X_array, y_array=None):
+        """Function that create a list into a FlexDataObject.
+
+        Args:
+        ----
+            X_array (list): List containing X_data.
+            y_array (Optional[list]): List containing the y_data. Default None.
+
+        Returns:
+        -------
+            Dataset: a FlexDataObject which encasulates the dataset.
+        """
+        if y_array is not None:
+            if not isinstance(X_array, list) or not isinstance(y_array, list):
+                warnings.warn(
+                    "X_array or y_array are not a list. The method might not work as expected.",
+                    RuntimeWarning,
+                )
+            length = len(y_array)
+        else:
+            if not isinstance(X_array, list):
+                warnings.warn(
+                    "X_array is not a list. The method might not work as expected.",
+                    RuntimeWarning,
+                )
+            length = len(X_array)
+
+        X_data = LazyIndexable(X_array, length=length)
+        y_data = None if y_array is None else LazyIndexable(y_array, length=length)
 
         return cls(X_data=X_data, y_data=y_data)
 

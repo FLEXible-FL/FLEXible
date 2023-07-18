@@ -143,3 +143,55 @@ class TestFlexDataObject(unittest.TestCase):
         assert "random_string" not in PluggableTorchtext
         assert MNIST.__name__ in PluggableTorchvision
         assert "random_string" not in PluggableTorchvision
+
+    def test_from_numpy_arrays(self):
+        X_data = np.random.rand(100).reshape([20, 5])
+        y_data = np.random.choice(2, 20)
+        fcd = Dataset.from_numpy(X_data, y_data)
+        assert len(fcd.X_data) == len(self._fcd.X_data)
+        assert len(fcd.y_data) == len(self._fcd.y_data)
+
+    def test_from_numpy_arrays_y_none(self):
+        X_data = np.random.rand(100).reshape([20, 5])
+        fcd = Dataset.from_numpy(X_data)
+        assert len(fcd.X_data) == len(self._fcd.X_data)
+
+    def test_from_lists(self):
+        X_data = list(np.random.rand(100).reshape([20, 5]))
+        y_data = list(np.random.choice(2, 20))
+        fcd = Dataset.from_list(X_data, y_data)
+        assert len(fcd.X_data) == len(self._fcd.X_data)
+        assert len(fcd.y_data) == len(self._fcd.y_data)
+
+    def test_from_list_y_none(self):
+        X_data = list(np.random.rand(100).reshape([20, 5]))
+        fcd = Dataset.from_numpy(X_data)
+        assert len(fcd.X_data) == len(self._fcd.X_data)
+
+    def test_to_list(self):
+        X_data, y_data = self._fcd.to_list()
+        assert isinstance(X_data, list)
+        assert isinstance(y_data, list)
+        assert len(X_data) == len(self._fcd.X_data)
+        assert len(y_data) == len(self._fcd.y_data)
+
+    def test_to_list_y_none(self):
+        X_data = np.random.rand(100).reshape([20, 5])
+        fcd = Dataset.from_numpy(X_data)
+        X_data = fcd.to_list()
+        assert isinstance(X_data, list)
+        assert len(X_data) == len(self._fcd.X_data)
+
+    def test_to_numpy(self):
+        X_data, y_data = self._fcd.to_numpy(xdtype=np.int16, ydtype=np.int16)
+        assert isinstance(X_data, np.ndarray)
+        assert isinstance(y_data, np.ndarray)
+        assert len(X_data) == len(self._fcd.X_data)
+        assert len(y_data) == len(self._fcd.y_data)
+
+    def test_to_numpy_y_none(self):
+        X_data = np.random.rand(100).reshape([20, 5])
+        fcd = Dataset.from_numpy(X_data)
+        X_data = fcd.to_numpy(xdtype=np.int16)
+        assert isinstance(X_data, np.ndarray)
+        assert len(X_data) == len(self._fcd.X_data)

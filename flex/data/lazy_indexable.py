@@ -65,8 +65,10 @@ class LazyIndexable:
             raise IndexError("Index out of range")
         return val
 
-    def to_list(self):
+    def tolist(self):
+        """Function that returns the LazyIndexable as list.
+        """
         return list(self)
 
     def to_numpy(self, dtype=None):
-        return np.array(self.to_list(), dtype=dtype)
+        return np.array(self.tolist(), dtype=dtype)
