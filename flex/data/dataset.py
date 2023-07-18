@@ -132,8 +132,12 @@ class Dataset:
             # unbatch if required
             with contextlib.suppress(ValueError):
                 tfds_dataset = tfds_dataset.unbatch()
-            X_data = LazyIndexable((x for x, _ in tfds_dataset.as_numpy_iterator()))
-            y_data = LazyIndexable((y for _, y in tfds_dataset.as_numpy_iterator()))
+            import cardinality
+            # After unbatching, we can't now the length, so we have to get it.
+            # To get the length, we use count.
+            length = cardinality.count(tfds_dataset.as_numpy_iterator())
+            X_data = LazyIndexable((x for x, _ in tfds_dataset.as_numpy_iterator()), length=length)
+            y_data = LazyIndexable((y for _, y in tfds_dataset.as_numpy_iterator()), length=length)
         else:
             X_data = LazyIndexable(iter(tfds_dataset[0]), length=len(tfds_dataset[0]))
             y_data = LazyIndexable(iter(tfds_dataset[1]), length=len(tfds_dataset[1]))
@@ -158,6 +162,7 @@ class Dataset:
 
         if isinstance(tfds_dataset, PrefetchDataset):
             # First case: Users used load func with batch_size != -1 or without indicating the batch_size
+            length = len(tfds_dataset)
             if not isinstance(tfds_dataset, tuple):
                 with contextlib.suppress(ValueError):
                     tfds_dataset.unbatch()
@@ -173,7 +178,7 @@ class Dataset:
                     tuple(map(row.get, X_columns))
                     for row in tfds_dataset.as_numpy_iterator()
                 )
-            X_data = LazyIndexable(X_data_generator)
+            X_data = LazyIndexable(X_data_generator, length=length)
 
             if label_columns is None:
                 y_data = None
@@ -182,13 +187,13 @@ class Dataset:
                     tuple(map(row.get, label_columns))[0]
                     for row in tfds_dataset.as_numpy_iterator()
                 )
-                y_data = LazyIndexable(y_data_generator)
+                y_data = LazyIndexable(y_data_generator, length=length)
             else:
                 y_data_generator = (
                     tuple(map(row.get, label_columns))
                     for row in tfds_dataset.as_numpy_iterator()
                 )
-                y_data = LazyIndexable(y_data_generator)
+                y_data = LazyIndexable(y_data_generator, length=length)
         else:  # User used batch_size=-1 when using the load function
             if X_columns is None:
                 X_data_generator = iter(map(tfds_dataset.get, tfds_dataset.keys()))
@@ -297,12 +302,13 @@ class Dataset:
         try:
             length = len(pytorch_text_dataset)
         except TypeError:
-            length = None
+            y_data = [label for label, text in pytorch_text_dataset]
+            length = len(y_data)
         X_data = LazyIndexable(
             (text for label, text in pytorch_text_dataset), length=length
         )
         y_data = LazyIndexable(
-            (label for label, text in pytorch_text_dataset), length=length
+            y_data, length=length
         )
 
         return cls(X_data=X_data, y_data=y_data)
