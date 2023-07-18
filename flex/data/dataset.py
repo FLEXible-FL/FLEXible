@@ -133,11 +133,16 @@ class Dataset:
             with contextlib.suppress(ValueError):
                 tfds_dataset = tfds_dataset.unbatch()
             import cardinality
-            # After unbatching, we can't now the length, so we have to get it.
-            # To get the length, we use count.
+
+            # After unbatching, we can't now the length, so we have to get it.
+            # To get the length, we use count.
             length = cardinality.count(tfds_dataset.as_numpy_iterator())
-            X_data = LazyIndexable((x for x, _ in tfds_dataset.as_numpy_iterator()), length=length)
-            y_data = LazyIndexable((y for _, y in tfds_dataset.as_numpy_iterator()), length=length)
+            X_data = LazyIndexable(
+                (x for x, _ in tfds_dataset.as_numpy_iterator()), length=length
+            )
+            y_data = LazyIndexable(
+                (y for _, y in tfds_dataset.as_numpy_iterator()), length=length
+            )
         else:
             X_data = LazyIndexable(iter(tfds_dataset[0]), length=len(tfds_dataset[0]))
             y_data = LazyIndexable(iter(tfds_dataset[1]), length=len(tfds_dataset[1]))
@@ -307,9 +312,7 @@ class Dataset:
         X_data = LazyIndexable(
             (text for label, text in pytorch_text_dataset), length=length
         )
-        y_data = LazyIndexable(
-            y_data, length=length
-        )
+        y_data = LazyIndexable(y_data, length=length)
 
         return cls(X_data=X_data, y_data=y_data)
 
