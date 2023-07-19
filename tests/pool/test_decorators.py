@@ -63,9 +63,10 @@ class TestFlexPool(unittest.TestCase):
 
         @evaluate_server_model
         def evaluate_server(server_flex_model, test_data=None):
-            server_flex_model["model"].fit(test_data.X_data, test_data.y_data)
-            preds = server_flex_model["model"].predict(test_data.X_data)
-            return preds, accuracy_score(preds, test_data.y_data)
+            x, y = test_data.to_numpy()
+            server_flex_model["model"].fit(x, y)
+            preds = server_flex_model["model"].predict(x)
+            return preds, accuracy_score(preds, y)
 
         p = FlexPool.client_server_architecture(
             self.f_iris, init_func=build_server_model
