@@ -10,7 +10,7 @@ from flex.data.dataset import Dataset
 def fixture_simple_fex_data_object():
     X_data = np.random.rand(100).reshape([20, 5])
     y_data = np.random.choice(2, 20)
-    return Dataset(X_data=X_data, y_data=y_data)
+    return Dataset.from_numpy(X_data, y_data)
 
 
 class TestFlexDataObject(unittest.TestCase):
@@ -71,7 +71,7 @@ class TestFlexDataObject(unittest.TestCase):
         X_columns = ["text"]
         label_columns = ["label"]
         fcd = Dataset.from_huggingface_dataset(
-            data, X_columns=X_columns, label_columns=label_columns, lazy=False
+            data, X_columns=X_columns, label_columns=label_columns
         )
         fcd.validate()
 
@@ -82,7 +82,7 @@ class TestFlexDataObject(unittest.TestCase):
         X_columns = ["text"]
         label_columns = ["label"]
         fcd = Dataset.from_huggingface_dataset(
-            data, X_columns=X_columns, label_columns=label_columns, lazy=True
+            data, X_columns=X_columns, label_columns=label_columns
         )
         fcd.validate()
 
@@ -183,7 +183,14 @@ class TestFlexDataObject(unittest.TestCase):
         assert len(X_data) == len(self._fcd.X_data)
 
     def test_to_numpy(self):
-        X_data, y_data = self._fcd.to_numpy(xdtype=np.int16, ydtype=np.int16)
+        X_data, y_data = self._fcd.to_numpy(x_dtype=np.int16, y_dtype=np.int16)
+        assert isinstance(X_data, np.ndarray)
+        assert isinstance(y_data, np.ndarray)
+        assert len(X_data) == len(self._fcd.X_data)
+        assert len(y_data) == len(self._fcd.y_data)
+
+    def test_to_numpy_no_dtype(self):
+        X_data, y_data = self._fcd.to_numpy()
         assert isinstance(X_data, np.ndarray)
         assert isinstance(y_data, np.ndarray)
         assert len(X_data) == len(self._fcd.X_data)
@@ -192,6 +199,6 @@ class TestFlexDataObject(unittest.TestCase):
     def test_to_numpy_y_none(self):
         X_data = np.random.rand(100).reshape([20, 5])
         fcd = Dataset.from_numpy(X_data)
-        X_data = fcd.to_numpy(xdtype=np.int16)
+        X_data = fcd.to_numpy(x_dtype=np.int16)
         assert isinstance(X_data, np.ndarray)
         assert len(X_data) == len(self._fcd.X_data)

@@ -58,13 +58,12 @@ def federated_celeba(out_dir: str = ".", return_test=False):
 def federated_sentiment140(out_dir: str = ".", return_test=False, **kwargs):
     from datasets import load_dataset
 
-    lazy = kwargs.get("lazy", False)
     dataset = load_dataset("sentiment140")
     x_labels = ["text"]
     y_labels = ["user", "sentiment"]
     config = FedDatasetConfig(group_by_label_index=0)  # Label "user"
     federated_data = FedDataDistribution.from_config_with_huggingface_dataset(
-        dataset["train"], config, x_labels, y_labels, lazy
+        dataset["train"], config, x_labels, y_labels
     )
     if return_test:
         test_data = Dataset.from_huggingface_dataset(

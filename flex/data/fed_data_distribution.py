@@ -8,7 +8,6 @@ import numpy.typing as npt
 from numpy.random import default_rng
 
 from flex.data import Dataset, FedDataset, FedDatasetConfig
-from flex.data.lazy_indexable import LazyIndexable
 
 
 class FedDataDistribution(object):
@@ -85,7 +84,6 @@ class FedDataDistribution(object):
         config: FedDatasetConfig,
         X_columns: list,
         label_columns: list,
-        lazy: bool,
     ):
         """This function federates a centralized hugginface dataset given a FlexDatasetConfig.
         This function will transform a dataset from the HuggingFace Hub datasets into a Dataset
@@ -96,11 +94,9 @@ class FedDataDistribution(object):
             config (FedDatasetConfig): FlexDatasetConfig with the configuration to federate the centralized dataset.
             X_coluns (List[str]): List with the names of the columns to load.
             label_columns (list): List with the names of the label columns.
-            lazy (bool): Whether to use or not the LazyIndexable dataset, so the dataset
-            is loaded with the streaming option as True. Default False.
         """
         centralized_data = Dataset.from_huggingface_dataset(
-            data, X_columns, label_columns, lazy
+            data, X_columns, label_columns
         )
         return cls.from_config(centralized_data, config)
 
@@ -167,10 +163,9 @@ class FedDataDistribution(object):
         if config.client_names is None:
             config_.client_names = list(range(config_.n_clients))
 
-        if isinstance(centralized_data.y_data, LazyIndexable):
-            y_data = centralized_data.y_data.to_numpy()
-        else:
-            y_data = np.asarray(centralized_data.y_data)
+        # TODO: when LazyIndexable is enforced everywhere, we should change this logic
+        # of creating a new Dataset
+        y_data = centralized_data.y_data.to_numpy()
 
         centralized_data = Dataset(
             X_data=centralized_data.X_data,

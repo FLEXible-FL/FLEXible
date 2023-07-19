@@ -15,14 +15,14 @@ from flex.datasets import load
 def fixture_simple_fex_data_object():
     X_data = np.random.rand(100).reshape([20, 5])
     y_data = np.random.choice(2, 20)
-    return Dataset(X_data=X_data, y_data=y_data)
+    return Dataset.from_numpy(X_data, y_data)
 
 
 @pytest.fixture(name="fcd_ones_zeros")
 def fixture_simple_fex_data_object_ones_zeros():
     X_data = np.random.rand(100).reshape([20, 5])
     y_data = np.concatenate((np.zeros(10), np.ones(10)))
-    return Dataset(X_data=X_data, y_data=y_data)
+    return Dataset.from_numpy(X_data, y_data)
 
 
 @pytest.fixture(name="fcd_multiple_classes")
@@ -38,14 +38,14 @@ def fixture_simple_fex_data_object_multiple_classes():
             5 * np.ones(5),
         )
     )
-    return Dataset(X_data=X_data, y_data=y_data)
+    return Dataset.from_numpy(X_data, y_data)
 
 
 class TestFlexDataDistribution(unittest.TestCase):
     @pytest.fixture(autouse=True)
     def _fixture_iris_dataset(self):
         iris = load_iris()
-        self._iris = Dataset(X_data=iris.data, y_data=iris.target)
+        self._iris = Dataset.from_list(iris.data, iris.target)
 
     @pytest.fixture(autouse=True)
     def _fixture_simple_flex_data_object(self, fcd):
@@ -280,11 +280,13 @@ class TestFlexDataDistribution(unittest.TestCase):
         assert len(flex_dataset[0]) + len(flex_dataset[1]) == len(self._iris)
 
     def test_single_feature_data(self):
-        single_feature_dataset = Dataset(self._iris.X_data[:, 0], self._iris.y_data)
+        new_X_data = self._iris.X_data.to_numpy()
+        new_X_data = new_X_data[:, 0]
+        single_feature_dataset = Dataset.from_list(list(new_X_data), self._iris.y_data)
         federated_iris = FedDataDistribution.iid_distribution(
             centralized_data=single_feature_dataset
         )
-        assert len(federated_iris[0].X_data.shape) == 1
+        assert isinstance(federated_iris[0].X_data[0], float)
 
     def test_indexes_per_client(self):
         indexes = [[1, 3], [0, 2]]
@@ -305,10 +307,12 @@ class TestFlexDataDistribution(unittest.TestCase):
             self._iris, clustering_func=lambda x, _: kmeans.predict(x.reshape(1, -1))[0]
         )
         assert len(federated_iris) == n_clients
-        assert all(
-            self._iris.X_data[idx] in federated_iris[client].X_data
-            for idx, client in enumerate(kmeans.labels_)
-        )
+        for idx, client in enumerate(kmeans.labels_):
+            assert self._iris.X_data[idx] in federated_iris[client].X_data.to_numpy()
+
+        # assert all(
+        #     for idx, client in enumerate(kmeans.labels_)
+        # )
 
     def test_weight_per_classes_random_assigment(self):
         classes = np.unique(self._iris.y_data)
@@ -526,14 +530,13 @@ class TestFlexDataDistribution(unittest.TestCase):
         data = load_dataset("ag_news", split="test")
         X_columns = ["text"]
         label_columns = ["label"]
-        lazy = False
         config = FedDatasetConfig(
             seed=0,
             replacement=False,
             client_names=["client_0", "client_1"],
         )
         flex_dataset = FedDataDistribution.from_config_with_huggingface_dataset(
-            data, config, X_columns, label_columns, lazy
+            data, config, X_columns, label_columns
         )
         assert len(flex_dataset) == config.n_clients
         assert len(flex_dataset["client_0"]) == len(flex_dataset["client_1"])
@@ -548,22 +551,18 @@ class TestFlexDataDistribution(unittest.TestCase):
         data = load_dataset("ag_news", split="test")
         X_columns = ["text"]
         label_columns = ["label"]
-        lazy = True
         config = FedDatasetConfig(
             seed=0,
             replacement=False,
             client_names=["client_0", "client_1"],
         )
         flex_dataset = FedDataDistribution.from_config_with_huggingface_dataset(
-            data, config, X_columns, label_columns, lazy
+            data, config, X_columns, label_columns
         )
         assert len(flex_dataset) == config.n_clients
-        assert len(flex_dataset["client_0"].X_data.tolist()) == len(
-            flex_dataset["client_1"].X_data.tolist()
-        )
+        assert len(flex_dataset["client_0"]) == len(flex_dataset["client_1"])
         assert (
-            len(flex_dataset["client_0"].X_data.tolist())
-            + len(flex_dataset["client_1"].X_data.tolist())
+            len(flex_dataset["client_0"]) + len(flex_dataset["client_1"])
             == data.num_rows
         )
 
@@ -619,9 +618,7 @@ class TestFlexDataDistribution(unittest.TestCase):
         reason="Sentiment140 is very huge and exceed the RAM limit on GitHub.",
     )
     def test_loading_fedsentiment_using_from_config(self):
-        fed_data, test_data = load(
-            "federated_sentiment140", return_test=True, lazy=False
-        )
+        fed_data, test_data = load("federated_sentiment140", return_test=True)
         assert isinstance(fed_data, FedDataset)
         assert isinstance(test_data, Dataset)
         num_samples = [len(fed_data[i]) for i in fed_data]
@@ -639,16 +636,18 @@ class TestFlexDataDistribution(unittest.TestCase):
         reason="Sentiment140 is very huge and exceeds the RAM limit on GitHub.",
     )
     def test_loading_fedsentiment_using_from_config_lazyly(self):
-        fed_data, test_data = load(
-            "federated_sentiment140", return_test=True, lazy=True
-        )
+        fed_data, test_data = load("federated_sentiment140", return_test=True)
         assert isinstance(fed_data, FedDataset)
         assert isinstance(test_data, Dataset)
-        num_samples = [len(fed_data[i]) for i in fed_data]  # estimated length
+        num_samples = [len(fed_data[i]) for i in fed_data]
         total_samples = np.sum(num_samples)
+        std = np.std(num_samples)
+        mean = np.mean(num_samples)
         users = len(fed_data)
         assert users == 659775
-        assert total_samples >= 1600000  # it is estimated
+        assert total_samples == 1600000
+        assert isclose(mean, 2.42, abs_tol=1e-1)
+        assert isclose(std, 4.71, abs_tol=1e-1)
 
     def test_loading_fedshakespeare_using_from_config(self):
         fed_data, test_data = load("federated_shakespeare", return_test=True)

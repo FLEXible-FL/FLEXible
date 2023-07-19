@@ -37,7 +37,7 @@ class LazyIndexable:
         return LazyIndexable(
             self._iterable,
             iterable_indexes=self._iterable_indexes[s],
-            length=self._len,
+            length=len(self._iterable_indexes[s]),
             storage=self._storage,
         )
 
@@ -56,12 +56,13 @@ class LazyIndexable:
 
     def __getitem__(self, s: Union[int, slice, list]):
         #  Proceed with the actual getitem logic
-        if not isinstance(s, int):
+        try:
+            s = int(s)
+            val = self.__getitem_with_int(s)
+        except TypeError:
             return self.__getitem_with_seq(s)
-        val = self.__getitem_with_int(s)
         # Value not found in consumable
         if val is None:
-            # If the consumable is exhausted, then we now its exact length
             raise IndexError("Index out of range")
         return val
 

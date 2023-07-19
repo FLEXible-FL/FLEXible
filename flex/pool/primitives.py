@@ -129,7 +129,7 @@ def train_tf(client_flex_model, client_data, *args, **kwargs):
         flex_pool.clients.map(train_tf)
     """
     client_flex_model["model"].fit(
-        client_data.X_data, client_data.y_data, *args, **kwargs
+        client_data.X_data.tolist(), client_data.y_data.tolist(), *args, **kwargs
     )
 
 

@@ -245,7 +245,7 @@ class TestLazySliceable(unittest.TestCase):
             selected_indexes = random.sample(available_indexes, sample_size)
             from_iter = LazyIndexable(get_iterator(length=length), length)
             assert same_contents_with_length(
-                selected_indexes, from_iter[selected_indexes], length=length
+                selected_indexes, from_iter[selected_indexes], length=sample_size
             ), f"Error at iteration: {i}"
 
     def test_random_negative_indexing_with_len_from_iterator(self):
@@ -259,7 +259,7 @@ class TestLazySliceable(unittest.TestCase):
             positive_equivalent = [i + length for i in negative_indexes]
             from_iter = LazyIndexable(get_iterator(length=length), length)
             assert same_contents_with_length(
-                positive_equivalent, from_iter[negative_indexes], length=length
+                positive_equivalent, from_iter[negative_indexes], length=sample_size
             ), f"Error at iteration: {i}"
 
     def test_random_indexing_from_iterator(self):
@@ -295,7 +295,7 @@ class TestLazySliceable(unittest.TestCase):
             selected_indexes = random.sample(available_indexes, sample_size)
             from_gen = LazyIndexable(get_generator(length=length), length)
             assert same_contents_with_length(
-                selected_indexes, from_gen[selected_indexes], length=length
+                selected_indexes, from_gen[selected_indexes], length=sample_size
             ), f"Error at iteration: {i}"
 
     def test_random_negative_indexing_with_len_from_generator(self):
@@ -309,7 +309,7 @@ class TestLazySliceable(unittest.TestCase):
             positive_equivalent = [i + length for i in negative_indexes]
             from_gen = LazyIndexable(get_generator(length=length), length)
             assert same_contents_with_length(
-                positive_equivalent, from_gen[negative_indexes], length=length
+                positive_equivalent, from_gen[negative_indexes], length=sample_size
             ), f"Error at iteration: {j}"
 
     def test_random_indexing_from_generator(self):

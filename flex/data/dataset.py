@@ -1,9 +1,9 @@
 import contextlib
 import warnings
 from dataclasses import dataclass, field
-from typing import Optional, Union
+from typing import Optional
 
-import numpy.typing as npt
+from cardinality import count
 
 from flex.data.lazy_indexable import LazyIndexable
 
@@ -14,21 +14,18 @@ class Dataset:
 
     Attributes
     ----------
-    X_data: numpy.typing.ArrayLike
+    X_data: LazyIndexable
         A numpy.array containing the data for the client.
-    y_data: numpy.typing.ArrayLike
+    y_data: LazyIndexable
         A numpy.array containing the labels for the training data. Can be None if working
         on an unsupervised learning task. Default None.
     """
 
-    X_data: Union[npt.NDArray, LazyIndexable] = field(init=True)
-    y_data: Optional[Union[npt.NDArray, LazyIndexable]] = field(default=None, init=True)
+    X_data: LazyIndexable = field(init=True)
+    y_data: Optional[LazyIndexable] = field(default=None, init=True)
 
     def __len__(self):
-        try:
-            return len(self.X_data)
-        except TypeError:
-            return self.X_data.shape[0]
+        return len(self.X_data)
 
     def __getitem__(self, index):
         return (
@@ -76,9 +73,9 @@ class Dataset:
             tensorflow.data.Dataset: tf dataset object instanciated using the contents of a Dataset
         """
         from tensorflow import type_spec_from_value
-        from tensorflow.data import Dataset
+        from tensorflow.data import Dataset as tf_Dataset
 
-        return Dataset.from_generator(
+        return tf_Dataset.from_generator(
             self.__iter__,
             output_signature=(
                 type_spec_from_value(self[0][0]),
@@ -86,16 +83,13 @@ class Dataset:
             ),
         )
 
-    def to_numpy(self, xdtype, ydtype=None):
+    def to_numpy(self, x_dtype=None, y_dtype=None):
         """Function to return the FlexDataObject as numpy arrays."""
-        import numpy as np
 
         if self.y_data is None:
-            return np.array(self.X_data, dtype=xdtype)
+            return self.X_data.to_numpy(dtype=x_dtype)
         else:
-            return np.array(self.X_data, dtype=xdtype), np.array(
-                self.y_data, dtype=ydtype
-            )
+            return self.X_data.to_numpy(x_dtype), self.y_data.to_numpy(dtype=y_dtype)
 
     def to_list(self):
         """Function to return the FlexDataObject as list."""
@@ -123,10 +117,7 @@ class Dataset:
                 RuntimeWarning,
             )
 
-        try:
-            length = len(pytorch_dataset)
-        except TypeError:
-            length = None
+        length = count(pytorch_dataset)
 
         X_data = LazyIndexable((x for x, _ in pytorch_dataset), length=length)
         y_data = LazyIndexable((y for _, y in pytorch_dataset), length=length)
@@ -150,11 +141,10 @@ class Dataset:
             # unbatch if required
             with contextlib.suppress(ValueError):
                 tfds_dataset = tfds_dataset.unbatch()
-            import cardinality
 
-            # After unbatching, we can't now the length, so we have to get it.
+            # After unbatching, we can't get the length, so we have to get it.
             # To get the length, we use count.
-            length = cardinality.count(tfds_dataset.as_numpy_iterator())
+            length = count(tfds_dataset.as_numpy_iterator())
             X_data = LazyIndexable(
                 (x for x, _ in tfds_dataset.as_numpy_iterator()), length=length
             )
@@ -238,7 +228,6 @@ class Dataset:
         hf_dataset,
         X_columns: list = None,
         label_columns: list = None,
-        lazy: bool = False,
     ):
         """Function to conver an arrow dataset from the Datasets package (HuggingFace datasets library)
         to a FlexDataObject.
@@ -264,42 +253,32 @@ class Dataset:
                 "The input dataset doesn't have the property dataset.info.builder_name, so we can't check if is supported or not. Therefore, it might not work as expected.",
                 RuntimeWarning,
             )
-        if lazy:
-            try:
-                length = len(hf_dataset)
-            except TypeError:
-                length = None
 
-            if X_columns is None:
-                X_data_generator = iter(
-                    zip(*map(hf_dataset.__getitem__, hf_dataset.features))
-                )
-            elif len(X_columns) == 1:
-                X_data_generator = (
-                    i for x in map(hf_dataset.__getitem__, X_columns) for i in x
-                )
-            else:
-                X_data_generator = iter(zip(*map(hf_dataset.__getitem__, X_columns)))
+        length = count(hf_dataset)
 
-            X_data = LazyIndexable(X_data_generator, length=length)
-
-            if label_columns is None:
-                y_data = None
-            elif len(label_columns) == 1:
-                y_data_generator = (
-                    i for x in map(hf_dataset.__getitem__, label_columns) for i in x
-                )
-                y_data = LazyIndexable(y_data_generator, length=length)
-            else:
-                y_data_generator = iter(
-                    zip(*map(hf_dataset.__getitem__, label_columns))
-                )
-                y_data = LazyIndexable(y_data_generator, length=length)
+        if X_columns is None:
+            X_data_generator = iter(
+                zip(*map(hf_dataset.__getitem__, hf_dataset.features))
+            )
+        elif len(X_columns) == 1:
+            X_data_generator = (
+                i for x in map(hf_dataset.__getitem__, X_columns) for i in x
+            )
         else:
-            df = hf_dataset.to_pandas()
-            X_data = df.to_numpy() if X_columns is None else df[X_columns].to_numpy()
-            y_data = None if label_columns is None else df[label_columns].to_numpy()
+            X_data_generator = iter(zip(*map(hf_dataset.__getitem__, X_columns)))
 
+        X_data = LazyIndexable(X_data_generator, length=length)
+
+        if label_columns is None:
+            y_data = None
+        elif len(label_columns) == 1:
+            y_data_generator = (
+                i for x in map(hf_dataset.__getitem__, label_columns) for i in x
+            )
+            y_data = LazyIndexable(y_data_generator, length=length)
+        else:
+            y_data_generator = iter(zip(*map(hf_dataset.__getitem__, label_columns)))
+            y_data = LazyIndexable(y_data_generator, length=length)
         return cls(X_data=X_data, y_data=y_data)
 
     @classmethod
@@ -325,10 +304,10 @@ class Dataset:
         try:
             length = len(pytorch_text_dataset)
         except TypeError:
-            y_data = [label for label, text in pytorch_text_dataset]
+            y_data = [label for label, _ in pytorch_text_dataset]
             length = len(y_data)
         X_data = LazyIndexable(
-            (text for label, text in pytorch_text_dataset), length=length
+            (text for _, text in pytorch_text_dataset), length=length
         )
         y_data = LazyIndexable(y_data, length=length)
 

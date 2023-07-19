@@ -29,11 +29,10 @@ class TestFlexPoolPrimitives(unittest.TestCase):
         self.config = config
         train_data, test_data = load_dataset("imdb", split=["train", "test"])
         self.test_data = test_data
-        X_columns = "text"
-        label_columns = "label"
-        lazy = False
+        X_columns = ["text"]
+        label_columns = ["label"]
         self.f_imdb = FedDataDistribution.from_config_with_huggingface_dataset(
-            train_data, self.config, X_columns, label_columns, lazy
+            train_data, self.config, X_columns, label_columns
         )
 
     def test_primitives_tf(self):
