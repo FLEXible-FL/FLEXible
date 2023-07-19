@@ -71,4 +71,6 @@ class LazyIndexable:
         return list(self)
 
     def to_numpy(self, dtype=None):
+        if isinstance(self._iterable, (np.ndarray, np.generic)):
+            return self._iterable[self._iterable_indexes]
         return np.array(self.tolist(), dtype=dtype)
