@@ -128,9 +128,8 @@ def train_tf(client_flex_model, client_data, *args, **kwargs):
 
         flex_pool.clients.map(train_tf)
     """
-    client_flex_model["model"].fit(
-        client_data.X_data.tolist(), client_data.y_data.tolist(), *args, **kwargs
-    )
+    x, y = client_data.to_numpy()
+    client_flex_model["model"].fit(x, y, *args, **kwargs)
 
 
 @collect_clients_weights

@@ -8,6 +8,7 @@ import numpy.typing as npt
 from numpy.random import default_rng
 
 from flex.data import Dataset, FedDataset, FedDatasetConfig
+from flex.data.lazy_indexable import LazyIndexable
 
 
 class FedDataDistribution(object):
@@ -163,14 +164,7 @@ class FedDataDistribution(object):
         if config.client_names is None:
             config_.client_names = list(range(config_.n_clients))
 
-        # TODO: when LazyIndexable is enforced everywhere, we should change this logic
-        # of creating a new Dataset
-        y_data = centralized_data.y_data.to_numpy()
-
-        centralized_data = Dataset(
-            X_data=centralized_data.X_data,
-            y_data=y_data,
-        )
+        labels = centralized_data.y_data.to_numpy()
 
         # Normalize weights when no replacement
         if (
@@ -183,7 +177,7 @@ class FedDataDistribution(object):
             )
         # Ensure that classes_per_client is translated to weights_per_class
         if config_.classes_per_client is not None:
-            cls.__configure_weights_per_class(rng, config_, centralized_data)
+            cls.__configure_weights_per_class(rng, config_, labels)
         # Normalize weights_per_class when no replacement
         if (
             not config_.replacement
@@ -210,14 +204,14 @@ class FedDataDistribution(object):
             ):
                 fed_dataset[client_name] = data
         else:  # sample using weights or features
-            remaining_data_indices = np.arange(len(centralized_data.y_data))
+            remaining_data_indices = np.arange(len(labels))
             for i in range(config_.n_clients):
                 (
                     sub_data_indices,
                     sub_features_indices,
                     remaining_data_indices,
                 ) = cls.__sample(
-                    rng, remaining_data_indices, centralized_data, config_, i
+                    rng, remaining_data_indices, centralized_data, labels, config_, i
                 )
                 X_data = centralized_data.X_data[
                     sub_data_indices
@@ -256,7 +250,7 @@ class FedDataDistribution(object):
         for client_id in y_data:
             yield client_id, Dataset(
                 X_data=centralized_data.X_data[x_data_indexes[client_id]],
-                y_data=np.asarray(y_data[client_id]),
+                y_data=LazyIndexable(y_data[client_id], len(y_data[client_id])),
             )
 
     @classmethod
@@ -285,6 +279,7 @@ class FedDataDistribution(object):
         rng: np.random.Generator,
         data_indices: npt.NDArray[np.int_],
         data: Dataset,
+        labels: npt.ArrayLike,
         config: FedDatasetConfig,
         client_i: int,
     ) -> Tuple[npt.NDArray[np.int_], npt.NDArray[np.int_], npt.NDArray[np.int_]]:
@@ -305,11 +300,11 @@ class FedDataDistribution(object):
         """
         if config.features_per_client is None:
             sub_data_indices, sub_features_indices = cls.__sample_with_weights(
-                rng, data_indices, data, config, client_i
+                rng, data_indices, labels, config, client_i
             )
         else:
             sub_data_indices, sub_features_indices = cls.__sample_with_features(
-                rng, data_indices, data, config, client_i
+                rng, data_indices, data, labels, config, client_i
             )
 
         # Update remaning data indices
@@ -326,7 +321,7 @@ class FedDataDistribution(object):
         cls,
         rng: np.random.Generator,
         data_indices: npt.NDArray[np.int_],
-        data: Dataset,
+        labels: npt.ArrayLike,
         config: FedDatasetConfig,
         client_i: int,
     ):
@@ -349,18 +344,18 @@ class FedDataDistribution(object):
         if config.weights_per_class is not None:
             data_proportion = None
         elif config.weights is not None:
-            data_proportion = floor(len(data.y_data) * config.weights[client_i])
+            data_proportion = floor(len(labels) * config.weights[client_i])
         else:  # No weights provided
-            data_proportion = floor(len(data.y_data) / config.n_clients)
+            data_proportion = floor(len(labels) / config.n_clients)
 
         if data_proportion is not None:
             sub_data_indices = rng.choice(data_indices, data_proportion, replace=False)
         else:  # apply weights_per_class
             sub_data_indices = np.array([], dtype="uint32")
-            sorted_classes = np.sort(np.unique(data.y_data))
-            all_indices = np.arange(len(data.y_data))
+            sorted_classes = np.sort(np.unique(labels))
+            all_indices = np.arange(len(labels))
             for j, c in enumerate(sorted_classes):
-                available_class_indices = all_indices[data.y_data == c]
+                available_class_indices = all_indices[labels == c]
                 proportion_per_class = floor(
                     len(available_class_indices) * config.weights_per_class[client_i][j]
                 )
@@ -379,9 +374,9 @@ class FedDataDistribution(object):
 
     @classmethod
     def __configure_weights_per_class(
-        cls, rng: np.random.Generator, config: FedDatasetConfig, data: Dataset
+        cls, rng: np.random.Generator, config: FedDatasetConfig, labels: npt.ArrayLike
     ):
-        sorted_classes = np.sort(np.unique(data.y_data))
+        sorted_classes = np.sort(np.unique(labels))
         assigned_classes = []
         if isinstance(config.classes_per_client, int):
             histogram = np.zeros_like(sorted_classes)
@@ -428,6 +423,7 @@ class FedDataDistribution(object):
         rng,
         data_indices: npt.NDArray[np.int_],
         data: Dataset,
+        labels: npt.ArrayLike,
         config: FedDatasetConfig,
         client_i: int,
     ):
@@ -448,7 +444,7 @@ class FedDataDistribution(object):
         """
         # Sample data indices
         sub_data_indices, _ = cls.__sample_with_weights(
-            rng, data_indices, data, config, client_i
+            rng, data_indices, labels, config, client_i
         )
 
         # Sample feature indices

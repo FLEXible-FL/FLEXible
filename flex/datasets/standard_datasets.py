@@ -93,6 +93,4 @@ def shakespeare(out_dir: str = ".", include_actors=False):
                 test_y += node_ds["y"]
             test_x += node_ds["x"]
 
-    return Dataset.from_list(train_x, train_y), Dataset.from_list(
-        test_x, test_y
-    )
+    return Dataset.from_list(train_x, train_y), Dataset.from_list(test_x, test_y)
