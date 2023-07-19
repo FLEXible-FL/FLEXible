@@ -157,4 +157,6 @@ __MACOSX/
 
 # Datasets
 torch_datasets/
-data/
+data/train
+data/test
+data/all_data

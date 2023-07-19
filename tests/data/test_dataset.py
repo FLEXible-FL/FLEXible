@@ -10,7 +10,7 @@ from flex.data.dataset import Dataset
 def fixture_simple_fex_data_object():
     X_data = np.random.rand(100).reshape([20, 5])
     y_data = np.random.choice(2, 20)
-    return Dataset(X_data=X_data, y_data=y_data)
+    return Dataset.from_numpy(X_data, y_data)
 
 
 class TestFlexDataObject(unittest.TestCase):
@@ -68,27 +68,44 @@ class TestFlexDataObject(unittest.TestCase):
         from datasets import load_dataset
 
         data = load_dataset("ag_news", split="train")
-        X_columns = "text"
-        label_columns = "label"
+        X_columns = ["text"]
+        label_columns = ["label"]
+        fcd = Dataset.from_huggingface_dataset(
+            data, X_columns=X_columns, label_columns=label_columns
+        )
+        fcd.validate()
+
+    def test_validate_from_huggingface_dataset_lazy(self):
+        from datasets import load_dataset
+
+        data = load_dataset("ag_news", split="train")
+        X_columns = ["text"]
+        label_columns = ["label"]
         fcd = Dataset.from_huggingface_dataset(
             data, X_columns=X_columns, label_columns=label_columns
         )
         fcd.validate()
 
     def test_to_torchvision_dataset_w_flex_datasets(self):
-        from flex.datasets import load
-        from torchvision import transforms
         import torch
+        from torchvision import transforms
+
+        from flex.datasets import load
 
         fcd, _ = load("emnist", split="digits")
         torch_fcd = fcd.to_torchvision_dataset(
             transform=transforms.ToTensor(),
-            target_transform=transforms.Compose([
-                                lambda x: torch.as_tensor(x).long(),
-                                lambda x: torch.nn.functional.one_hot(x, 10)])
-                            )
+            target_transform=transforms.Compose(
+                [
+                    lambda x: torch.as_tensor(x).long(),
+                    lambda x: torch.nn.functional.one_hot(x, 10),
+                ]
+            ),
+        )
         batch_size = 64
-        dataloader = torch.utils.data.DataLoader(torch_fcd, batch_size=batch_size, shuffle=True)
+        dataloader = torch.utils.data.DataLoader(
+            torch_fcd, batch_size=batch_size, shuffle=True
+        )
         train_features, train_labels = next(iter(dataloader))
 
         assert len(train_features) == batch_size
@@ -98,8 +115,9 @@ class TestFlexDataObject(unittest.TestCase):
         assert len(train_labels[0]) == 10  # number of classes
 
     def test_to_tf_dataset_w_flex_datasets(self):
-        from flex.datasets import load
         import tensorflow as tf
+
+        from flex.datasets import load
 
         fcd, _ = load("emnist", split="digits")
         tf_fcd = fcd.to_tf_dataset()
@@ -111,7 +129,6 @@ class TestFlexDataObject(unittest.TestCase):
         assert tf.is_tensor(train_features)
         assert len(train_labels) == batch_size
         assert tf.is_tensor(train_labels)
-
 
     def test_pluggable_datasets_in_property(self):
         from torchtext.datasets import AG_NEWS
@@ -126,3 +143,62 @@ class TestFlexDataObject(unittest.TestCase):
         assert "random_string" not in PluggableTorchtext
         assert MNIST.__name__ in PluggableTorchvision
         assert "random_string" not in PluggableTorchvision
+
+    def test_from_numpy_arrays(self):
+        X_data = np.random.rand(100).reshape([20, 5])
+        y_data = np.random.choice(2, 20)
+        fcd = Dataset.from_numpy(X_data, y_data)
+        assert len(fcd.X_data) == len(self._fcd.X_data)
+        assert len(fcd.y_data) == len(self._fcd.y_data)
+
+    def test_from_numpy_arrays_y_none(self):
+        X_data = np.random.rand(100).reshape([20, 5])
+        fcd = Dataset.from_numpy(X_data)
+        assert len(fcd.X_data) == len(self._fcd.X_data)
+
+    def test_from_lists(self):
+        X_data = list(np.random.rand(100).reshape([20, 5]))
+        y_data = list(np.random.choice(2, 20))
+        fcd = Dataset.from_list(X_data, y_data)
+        assert len(fcd.X_data) == len(self._fcd.X_data)
+        assert len(fcd.y_data) == len(self._fcd.y_data)
+
+    def test_from_list_y_none(self):
+        X_data = list(np.random.rand(100).reshape([20, 5]))
+        fcd = Dataset.from_numpy(X_data)
+        assert len(fcd.X_data) == len(self._fcd.X_data)
+
+    def test_to_list(self):
+        X_data, y_data = self._fcd.to_list()
+        assert isinstance(X_data, list)
+        assert isinstance(y_data, list)
+        assert len(X_data) == len(self._fcd.X_data)
+        assert len(y_data) == len(self._fcd.y_data)
+
+    def test_to_list_y_none(self):
+        X_data = np.random.rand(100).reshape([20, 5])
+        fcd = Dataset.from_numpy(X_data)
+        X_data = fcd.to_list()
+        assert isinstance(X_data, list)
+        assert len(X_data) == len(self._fcd.X_data)
+
+    def test_to_numpy(self):
+        X_data, y_data = self._fcd.to_numpy(x_dtype=np.int16, y_dtype=np.int16)
+        assert isinstance(X_data, np.ndarray)
+        assert isinstance(y_data, np.ndarray)
+        assert len(X_data) == len(self._fcd.X_data)
+        assert len(y_data) == len(self._fcd.y_data)
+
+    def test_to_numpy_no_dtype(self):
+        X_data, y_data = self._fcd.to_numpy()
+        assert isinstance(X_data, np.ndarray)
+        assert isinstance(y_data, np.ndarray)
+        assert len(X_data) == len(self._fcd.X_data)
+        assert len(y_data) == len(self._fcd.y_data)
+
+    def test_to_numpy_y_none(self):
+        X_data = np.random.rand(100).reshape([20, 5])
+        fcd = Dataset.from_numpy(X_data)
+        X_data = fcd.to_numpy(x_dtype=np.int16)
+        assert isinstance(X_data, np.ndarray)
+        assert len(X_data) == len(self._fcd.X_data)

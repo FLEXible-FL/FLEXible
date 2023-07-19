@@ -1,9 +1,10 @@
+import numpy as np
+
 from flex.common import utils
 from flex.data import Dataset
 
 
 def emnist(out_dir: str = ".", split="digits", include_authors=False):
-    import numpy as np
     from scipy.io import loadmat
 
     if split == "digits":
@@ -45,8 +46,8 @@ def emnist(out_dir: str = ".", split="digits", include_authors=False):
         test_labels = [
             (label, test_writers[i][0]) for i, label in enumerate(test_labels)
         ]
-    train_data_object = Dataset(X_data=np.asarray(train_data), y_data=train_labels)
-    test_data_object = Dataset(X_data=np.asarray(test_data), y_data=test_labels)
+    train_data_object = Dataset.from_numpy(np.asarray(train_data), train_labels)
+    test_data_object = Dataset.from_numpy(np.asarray(test_data), test_labels)
     return train_data_object, test_data_object
 
 
@@ -92,4 +93,4 @@ def shakespeare(out_dir: str = ".", include_actors=False):
                 test_y += node_ds["y"]
             test_x += node_ds["x"]
 
-    return Dataset(train_x, train_y), Dataset(test_x, test_y)
+    return Dataset.from_list(train_x, train_y), Dataset.from_list(test_x, test_y)
