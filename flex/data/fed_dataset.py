@@ -5,9 +5,9 @@ from typing import Any, Callable, Hashable, List, Optional
 
 from multiprocess import Pool
 
+from flex.common.utils import check_min_arguments
 from flex.data.dataset import Dataset
 from flex.data.preprocessing_utils import normalize, one_hot_encoding
-from flex.common.utils import check_min_arguments
 
 
 class FedDataset(UserDict):

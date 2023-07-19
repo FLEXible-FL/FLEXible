@@ -1,6 +1,7 @@
+import copy
 import random
 import unittest
-import copy
+
 import pytest
 
 from flex.data.lazy_indexable import LazyIndexable
@@ -66,7 +67,6 @@ def same_contects_split_in_two_slices(reference, indexable: LazyIndexable, split
 
 
 class TestLazySliceable(unittest.TestCase):
-
     def test_copy_operator_from_list(self):
         base_list = get_list()
         from_list = LazyIndexable(base_list, length=DEFAULT_LENGTH)
@@ -78,7 +78,7 @@ class TestLazySliceable(unittest.TestCase):
         from_iter = LazyIndexable(base_iter, length=DEFAULT_LENGTH)
         from_iter_copy = copy.deepcopy(from_iter)
         assert same_contents_with_length(from_iter, from_iter_copy)
-    
+
     def test_copy_operator_from_generator(self):
         generator = get_generator()
         from_gen = LazyIndexable(generator, length=DEFAULT_LENGTH)
@@ -89,14 +89,18 @@ class TestLazySliceable(unittest.TestCase):
         base_list = get_list()
         from_list = LazyIndexable(base_list, length=DEFAULT_LENGTH)
         from_list_copy = copy.deepcopy(from_list)
-        assert same_contents_with_length(from_list.to_numpy(), from_list_copy.to_numpy())
+        assert same_contents_with_length(
+            from_list.to_numpy(), from_list_copy.to_numpy()
+        )
 
     def test_copy_operator_from_iter_to_numpy(self):
         base_iter = get_iterator()
         from_iter = LazyIndexable(base_iter, length=DEFAULT_LENGTH)
         from_iter_copy = copy.deepcopy(from_iter)
-        assert same_contents_with_length(from_iter.to_numpy(), from_iter_copy.to_numpy())
-    
+        assert same_contents_with_length(
+            from_iter.to_numpy(), from_iter_copy.to_numpy()
+        )
+
     def test_copy_operator_from_generator_to_numpy(self):
         generator = get_generator()
         from_gen = LazyIndexable(generator, length=DEFAULT_LENGTH)
