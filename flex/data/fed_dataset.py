@@ -66,8 +66,8 @@ class FedDataset(UserDict):
         error_msg = f"The provided function: {func.__name__} is expected to have at least 1 argument/s."
         assert check_min_arguments(func, min_args=1), error_msg
 
-        if any(self[i].X_data._is_generator for i in clients_ids):
-            raise NotImplementedError("LazyIndexable with generators will be supported soon")
+        # if any(self[i].X_data._is_generator for i in clients_ids):
+        #     raise NotImplementedError("LazyIndexable with generators will be supported soon")
 
         if num_proc < 2:
             updates = self._map_single(func, clients_ids, **kwargs)

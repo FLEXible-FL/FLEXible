@@ -1,8 +1,9 @@
 from collections import OrderedDict
+import itertools
 from typing import Iterable, Union
 
 import numpy as np
-
+import copy
 
 class LazyIndexable:
     def __init__(
@@ -74,3 +75,19 @@ class LazyIndexable:
         if isinstance(self._iterable, (np.ndarray, np.generic)):
             return self._iterable[self._iterable_indexes]
         return np.array(self.tolist(), dtype=dtype)
+    
+    def __deepcopy__(self, memo):
+        """Overwrites deepcopy method.
+        """
+        if self._is_generator:
+            self._iterable, new_iterable = itertools.tee(self._iterable, 2)
+        else:
+            new_iterable = copy.deepcopy(self._iterable)
+        result = LazyIndexable(
+            iterable=new_iterable, 
+            length=copy.deepcopy(self._len),
+            iterable_indexes=copy.deepcopy(self._iterable_indexes),
+            storage=copy.deepcopy(self._storage)
+        )
+        memo[id(self)] = result
+        return result
