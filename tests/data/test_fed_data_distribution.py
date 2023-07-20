@@ -505,6 +505,10 @@ class TestFlexDataDistribution(unittest.TestCase):
         assert len(flex_dataset) == config.n_clients
         assert len(flex_dataset["client_0"]) == len(flex_dataset["client_1"])
 
+    @pytest.mark.skipif(
+        condition=os.getenv("GITHUB_ACTIONS") == "true",
+        reason="Sentiment140 is very huge and exceed the RAM limit on GitHub.",
+    )
     def test_from_torchvision_dataset_lazyly(self):
         from torchvision.datasets import Food101
 
