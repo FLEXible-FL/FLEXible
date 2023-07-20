@@ -331,25 +331,21 @@ class Dataset:
         """
         import numpy as np
 
-        if y_array is not None:
-            if not isinstance(X_array, np.ndarray) or not isinstance(
-                y_array, np.ndarray
-            ):
-                warnings.warn(  # noqa: B028
-                    "X_array or y_array are not a Numpy Array. The method might not work as expected.",
-                    RuntimeWarning,
-                )
-            length = len(y_array)
-        else:
+        if y_array is None:
             if not isinstance(X_array, np.ndarray):
                 warnings.warn(  # noqa: B028
                     "X_array is not a Numpy Array. The method might not work as expected.",
                     RuntimeWarning,
                 )
-            length = len(X_array)
-
-        X_data = LazyIndexable(X_array, length=length)
-        y_data = None if y_array is None else LazyIndexable(y_array, length=length)
+        elif not isinstance(X_array, np.ndarray) or not isinstance(y_array, np.ndarray):
+            warnings.warn(  # noqa: B028
+                "X_array or y_array are not a Numpy Array. The method might not work as expected.",
+                RuntimeWarning,
+            )
+        X_data = LazyIndexable(X_array, length=len(X_array))
+        y_data = (
+            None if y_array is None else LazyIndexable(y_array, length=len(y_array))
+        )
 
         return cls(X_data=X_data, y_data=y_data)
 

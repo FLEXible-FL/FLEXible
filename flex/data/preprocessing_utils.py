@@ -3,6 +3,7 @@ from copy import deepcopy
 import numpy as np
 
 from flex.data.dataset import Dataset
+from flex.data.lazy_indexable import LazyIndexable
 
 
 def normalize(client, *args, **kwargs):
@@ -14,10 +15,11 @@ def normalize(client, *args, **kwargs):
     Returns:
         Dataset: Returns the client with the X_data property normalized.
     """
-    norms = np.linalg.norm(client.X_data, axis=0)
-    norms = np.where(norms == 0, np.finfo(client.X_data.dtype).eps, norms)
-    new_X_data = deepcopy(client.X_data) / norms
-    return Dataset(X_data=new_X_data, y_data=deepcopy(client.y_data))
+    X_data = client.X_data.to_numpy()
+    norms = np.linalg.norm(X_data, axis=0)
+    norms = np.where(norms == 0, np.finfo(X_data.dtype).eps, norms)
+    new_X_data = X_data / norms
+    return Dataset.from_numpy(new_X_data, client.y_data.to_numpy())
 
 
 def one_hot_encoding(client, *args, **kwargs):
@@ -36,8 +38,12 @@ def one_hot_encoding(client, *args, **kwargs):
         raise ValueError(
             "No number of classes given. The parameter n_classes must be given through kwargs."
         )
+    y_data = client.y_data.to_numpy()
     n_classes = int(kwargs["n_classes"])
-    one_hot_classes = np.zeros((client.y_data.size, n_classes))
-    one_hot_classes[np.arange(client.y_data.size), client.y_data] = 1
+    one_hot_classes = np.zeros((y_data.size, n_classes))
+    one_hot_classes[np.arange(y_data.size), y_data] = 1
     new_client_y_data = one_hot_classes
-    return Dataset(X_data=deepcopy(client.X_data), y_data=new_client_y_data)
+    return Dataset(
+        X_data=deepcopy(client.X_data),
+        y_data=LazyIndexable(new_client_y_data, len(new_client_y_data)),
+    )
