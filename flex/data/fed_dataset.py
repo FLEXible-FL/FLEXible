@@ -5,9 +5,9 @@ from typing import Any, Callable, Hashable, List, Optional
 
 from multiprocess import Pool
 
+from flex.common.utils import check_min_arguments
 from flex.data.dataset import Dataset
 from flex.data.preprocessing_utils import normalize, one_hot_encoding
-from flex.common.utils import check_min_arguments
 
 
 class FedDataset(UserDict):
@@ -65,6 +65,9 @@ class FedDataset(UserDict):
 
         error_msg = f"The provided function: {func.__name__} is expected to have at least 1 argument/s."
         assert check_min_arguments(func, min_args=1), error_msg
+
+        # if any(self[i].X_data._is_generator for i in clients_ids):
+        #     raise NotImplementedError("LazyIndexable with generators will be supported soon")
 
         if num_proc < 2:
             updates = self._map_single(func, clients_ids, **kwargs)
