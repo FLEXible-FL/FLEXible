@@ -1,5 +1,6 @@
 import copy
 import itertools
+import warnings
 from collections import OrderedDict
 from typing import Iterable, Union
 
@@ -28,6 +29,7 @@ class LazyIndexable:
         return (
             f"len:{self._len}\n"
             f"is_generator:{self._is_generator}\n"
+            f"iterable:{self._iterable}\n"
             f"iterable_indexes:{self._iterable_indexes}\n"
             f"storage:{self._storage}"
         )
@@ -76,6 +78,23 @@ class LazyIndexable:
         if isinstance(self._iterable, (np.ndarray, np.generic)):
             return self._iterable[self._iterable_indexes]
         return np.array(self.tolist(), dtype=dtype)
+
+    def __getstate__(self):
+        """Required to make LazyIndexable pickable when self._is_generator==True."""
+        state_dict = copy.copy(self.__dict__)
+        iterable_is_consumed = False
+        for key in state_dict:
+            if key == "_iterable" and state_dict["_is_generator"]:
+                warnings.warn(  # noqa: B028
+                    "Pickling an LazyIndexable fully loads its into memory",
+                    RuntimeWarning,
+                )
+                state_dict[key] = self.tolist()
+                iterable_is_consumed = True
+        if iterable_is_consumed:  # Ditch is_generator state and _storage
+            state_dict["_is_generator"] = False
+            state_dict["_storage"] = OrderedDict()
+        return state_dict
 
     def __deepcopy__(self, memo):
         # """Overwrites deepcopy method."""
