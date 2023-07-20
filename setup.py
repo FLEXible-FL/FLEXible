@@ -26,7 +26,6 @@ setup(
                         "multiprocess",
                         "scikit-learn",
                         "cardinality",
-                        "lazyarray",
                         "sultan",
                         "tqdm",
                         "scipy",
