@@ -78,16 +78,14 @@ class LazyIndexable:
         return np.array(self.tolist(), dtype=dtype)
 
     def __deepcopy__(self, memo):
-        """Overwrites deepcopy method."""
-        if self._is_generator:
-            self._iterable, new_iterable = itertools.tee(self._iterable, 2)
-        else:
-            new_iterable = copy.deepcopy(self._iterable)
-        result = LazyIndexable(
-            iterable=new_iterable,
-            length=copy.deepcopy(self._len),
-            iterable_indexes=copy.deepcopy(self._iterable_indexes),
-            storage=copy.deepcopy(self._storage),
-        )
+        # """Overwrites deepcopy method."""
+        cls = self.__class__
+        result = cls.__new__(cls)
         memo[id(self)] = result
+        for k, v in self.__dict__.items():
+            if k == "_iterable" and self._is_generator:
+                self._iterable, new_iterable = itertools.tee(self._iterable, 2)
+                setattr(result, k, new_iterable)
+            else:
+                setattr(result, k, copy.deepcopy(v, memo))
         return result

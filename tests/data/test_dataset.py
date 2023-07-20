@@ -35,14 +35,14 @@ class TestFlexDataObject(unittest.TestCase):
     def test_getitem_property(self):
         X_data = np.random.rand(100).reshape([20, 5])
         y_data = np.random.choice(2, 20)
-        fcd = Dataset(X_data=X_data, y_data=y_data)
+        fcd = Dataset.from_numpy(X_data, y_data)
         for x, y, (x_bis, y_bis) in zip(X_data, y_data, fcd):
             assert np.array_equal(x, x_bis)
             assert y == y_bis
 
     def test_getitem_property_y_data_none(self):
         X_data = np.random.rand(100).reshape([20, 5])
-        fcd = Dataset(X_data=X_data, y_data=None)
+        fcd = Dataset.from_numpy(X_data)
         for x, (x_bis, y_bis) in zip(X_data, fcd):
             assert np.array_equal(x, x_bis)
             assert y_bis is None
@@ -53,7 +53,7 @@ class TestFlexDataObject(unittest.TestCase):
     def test_len_X_data_differs_len_y_data(self):
         X_data = np.random.rand(100).reshape([20, 5])
         y_data = np.random.choice(2, 19)
-        fcd = Dataset(X_data=X_data, y_data=y_data)
+        fcd = Dataset.from_numpy(X_data, y_data)
         with pytest.raises(ValueError):
             fcd.validate()
 

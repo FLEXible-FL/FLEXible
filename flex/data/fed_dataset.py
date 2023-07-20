@@ -75,7 +75,9 @@ class FedDataset(UserDict):
             f = partial(self._map_single, func)
             updates = self._map_parallel(f, clients_ids, num_proc=num_proc, **kwargs)
 
-        new_fld = deepcopy(self)
+        new_fld = deepcopy(
+            self
+        )  # seguramente solo haga falta copiar los que no están en clients_ids
         new_fld.update(updates)
         return new_fld
 
