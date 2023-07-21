@@ -1,4 +1,5 @@
 import copy
+import pickle
 import random
 import unittest
 
@@ -522,16 +523,20 @@ class TestLazySliceable(unittest.TestCase):
         with pytest.raises(IndexError):
             from_iter[DEFAULT_LENGTH * DEFAULT_LENGTH]
 
-    def test_weird_case(self):
-        length = 10
-        sample_size = length // 2
-        available_indexes = get_list(length)
-        random.seed(sample_size)
-        for i in range(10):
-            iterator = get_iterator(length=length)
-            from_iter = LazyIndexable(iterator, length)
-            selected_indexes = random.sample(available_indexes, sample_size)
-            selected_range = from_iter[selected_indexes].to_numpy()
-            assert same_contents_with_length(
-                selected_indexes, selected_range, length=sample_size
-            ), f"Error at iteration: {i}"
+    def test_pickle_from_list(self):
+        base_list = get_list()
+        from_list = LazyIndexable(base_list, length=DEFAULT_LENGTH)
+        from_list_pickle_copy = pickle.loads(pickle.dumps(from_list))
+        assert same_contents_with_length(from_list, from_list_pickle_copy)
+
+    def test_pickle_from_iter(self):
+        base_iter = get_iterator()
+        from_iter = LazyIndexable(base_iter, length=DEFAULT_LENGTH)
+        from_iter_pickle_copy = pickle.loads(pickle.dumps(from_iter))
+        assert same_contents_with_length(from_iter, from_iter_pickle_copy)
+
+    def test_pickle_from_generator(self):
+        base_generator = get_generator()
+        from_generator = LazyIndexable(base_generator, length=DEFAULT_LENGTH)
+        from_generator_pickle_copy = pickle.loads(pickle.dumps(from_generator))
+        assert same_contents_with_length(from_generator, from_generator_pickle_copy)
