@@ -55,7 +55,7 @@ def init_server_model_tf(
         if any([optimizer, loss, metrics] is None):
             raise ValueError(
                 "If the model is not compiled, then optimizer, loss and metrics can't be None. Please, provide a "
-                "value for this arguments. "
+                "value for these arguments. "
             )
         server_flex_model["optimizer"] = optimizer
         server_flex_model["loss"] = loss
@@ -104,6 +104,9 @@ def deploy_server_model_tf(server_flex_model, *args, **kwargs):
     client_flex_model["model"] = model
     return client_flex_model
 
+@deploy_server_model
+def deploy_server_model_pt(server_flex_model, *args, **kwargs):
+    return deepcopy(server_flex_model)
 
 def train_tf(client_flex_model, client_data, *args, **kwargs):
     """Function of general purpose to train a TensorFlow model
@@ -128,8 +131,9 @@ def train_tf(client_flex_model, client_data, *args, **kwargs):
 
         flex_pool.clients.map(train_tf)
     """
-    x, y = client_data.to_numpy()
-    client_flex_model["model"].fit(x, y, *args, **kwargs)
+    client_flex_model["model"].fit(
+        client_data.X_data, client_data.y_data, *args, **kwargs
+    )
 
 
 @collect_clients_weights
@@ -162,9 +166,13 @@ def collect_clients_weights_tf(client_flex_model, *args, **kwargs):
     """
     return client_flex_model["model"].get_weights()
 
+def check_ignored_weights_pt(name, ignore_weights=None):
+    if ignore_weights is None:
+        ignore_weights = ['num_batches_tracked']
+    return any(ignored in name for ignored in ignore_weights)
 
 @collect_clients_weights
-def collect_clients_weights_pt(client_flex_mode, *args, **kwargs):
+def collect_clients_weights_pt(client_flex_model, *args, **kwargs):
     """Function that collect the weights for a PyTorch model.
 
     This function returns all the weights of the model.
@@ -191,9 +199,15 @@ def collect_clients_weights_pt(client_flex_mode, *args, **kwargs):
 
         flex_pool.clients.map(collect_weights_pt, flex_pool.aggregators)
     """
-    return [
-        param.cpu().data.numpy() for param in client_flex_mode["model"].parameters()
-    ]
+
+    ignore_weights = kwargs.get("ignore_weights", None)
+    parameters = []
+    weight_dict = client_flex_model["model"].state_dict()
+    for name in weight_dict:
+        if check_ignored_weights_pt(name, ignore_weights=ignore_weights):
+            continue
+        parameters.append(weight_dict[name].cpu().data.numpy())
+    return parameters
 
 
 @set_aggregated_weights
