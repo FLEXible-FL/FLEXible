@@ -9,6 +9,7 @@ Note that each function is using the decorators we've created to facilitate the 
 understanding on how the platform works, please go to the flex_decorators file.
 """
 from copy import deepcopy
+import numpy as np
 
 from flex.pool.decorators import (
     collect_clients_weights,
@@ -166,10 +167,63 @@ def collect_clients_weights_tf(client_flex_model, *args, **kwargs):
     """
     return client_flex_model["model"].get_weights()
 
-def check_ignore_weights_pt(name, ignore_weights=None):
+def check_ignored_weights_pt(name, ignore_weights=None):
     if ignore_weights is None:
         ignore_weights = ['num_batches_tracked']
     return any(ignored in name for ignored in ignore_weights)
+
+@collect_clients_weights
+def collect_client_diff_weights_pt(client_flex_model, *args, **kwargs):
+    # sourcery skip: raise-specific-error
+    """Function that collect the weights for a PyTorch model. Particularly,
+        it collects the difference between the model before and after training, \
+        that is, what the model has learnt in its local training step. Also note \
+        that the weights of the model before training are assume to be stored \
+        used `previous_model` as key.
+
+    This function returns the weights of the model.
+
+    Args:
+        client_flex_model (FlexModel): A client's FlexModel
+        ignore_weights (list): the name of the weights not to collect, by default,
+        those containind the words `num_batches_tracked`are not collected, as they
+        only make sense in the local model
+
+    Returns:
+        List: List with the weights of the client's model
+
+    Example of use assuming you are using a client-server architecture:
+
+        from flex.pool import collect_client_diff_weights_pt
+
+        clients = flex_pool.clients
+        aggregator = flex_pool.aggregators
+
+        clients.map(collect_client_diff_weights_pt, aggregator)
+
+    Example of using the FlexPool without separating clients
+    and aggregator, and following a client-server architecture.
+
+        from flex.pool import collect_client_diff_weights_pt
+
+        flex_pool.clients.map(collect_client_diff_weights_pt, flex_pool.aggregators)
+    """
+    ignore_weights = kwargs.get("ignore_weights", None)
+    weight_dict = client_flex_model["model"].state_dict()
+    try:
+        previous_weight_dict = client_flex_model["previous_model"].state_dict()
+    except KeyError as e:
+        raise Exception(
+            "A copy of the model before training must be stored in client FlexModel using key: \"previous_model\""
+        ) from e
+    parameters = []
+    for name in weight_dict:
+        if check_ignored_weights_pt(name, ignore_weights=ignore_weights):
+            parameters.append(np.array([]))
+            continue
+        weight_diff = weight_dict[name].cpu()-previous_weight_dict[name].cpu()
+        parameters.append(weight_diff.data.numpy())
+    return parameters
 
 @collect_clients_weights
 def collect_clients_weights_pt(client_flex_model, *args, **kwargs):
@@ -179,13 +233,16 @@ def collect_clients_weights_pt(client_flex_model, *args, **kwargs):
 
     Args:
         client_flex_model (FlexModel): A client's FlexModel
+        ignore_weights (list): the name of the weights not to collect, by default,
+        those containind the words `num_batches_tracked`are not collected, as they
+        only make sense in the local model
 
     Returns:
         List: List with all the weights of the client's model
 
     Example of use assuming you are using a client-server architecture:
 
-        from flex.pool.primitive_functions import collect_weights_pt
+        from flex.pool import collect_weights_pt
 
         clients = flex_pool.clients
         aggregator = flex_pool.aggregators
@@ -195,7 +252,7 @@ def collect_clients_weights_pt(client_flex_model, *args, **kwargs):
     Example of using the FlexPool without separating clients
     and aggregator, and following a client-server architecture.
 
-        from flex.pool.primitive_functions import collect_weights_pt
+        from flex.pool import collect_weights_pt
 
         flex_pool.clients.map(collect_weights_pt, flex_pool.aggregators)
     """
@@ -204,9 +261,10 @@ def collect_clients_weights_pt(client_flex_model, *args, **kwargs):
     parameters = []
     weight_dict = client_flex_model["model"].state_dict()
     for name in weight_dict:
-        if check_ignore_weights_pt(name, ignore_weights=ignore_weights):
-            parameters.append([])
-        parameters.append(weight_dict[name].cpu().data.numpy())
+        w = weight_dict[name].cpu().data.numpy()
+        if check_ignored_weights_pt(name, ignore_weights=ignore_weights):
+            w = np.array([])        
+        parameters.append(w)
     return parameters
 
 
@@ -249,12 +307,50 @@ def set_aggregated_weights_pt(server_flex_model, aggregated_weights, *args, **kw
     import torch
 
     with torch.no_grad():
-        for old, new in zip(
-            server_flex_model["model"].parameters(), aggregated_weights
+        old_weight_dict = server_flex_model["model"].state_dict()
+        for old, new in zip(old_weight_dict, aggregated_weights
         ):
-            if len(new) != 0: # Do not copy empty layers
-                old.data = torch.from_numpy(new).float()
+            try:
+                if len(new) != 0: # Do not copy empty layers
+                    old_weight_dict[old].data = torch.from_numpy(new).float()
+            except TypeError: # new has no len property
+                old_weight_dict[old].data = torch.from_numpy(new).float()
 
+@set_aggregated_weights
+def set_aggregated_diff_weights_pt(server_flex_model, aggregated_weights, *args, **kwargs):
+    """Function to set the aggregated weights to the server
+
+    Args:
+        server_flex_model (FlexModel): The server's FlexModel
+        aggregated_weights (np.array): Aggregated weights
+
+    Example of use assuming you are using a client-server architecture:
+
+        from flex.pool import set_aggregated_diff_weights_pt
+
+        aggregator = flex_pool.aggregators
+
+        aggregator.map(set_aggregated_diff_weights_pt)
+
+    Example of using the FlexPool without separating clients
+    and aggregator, and following a client-server architecture.
+
+        from flex.pool import set_aggregated_diff_weights_pt
+
+        flex_pool.aggregators.map(set_aggregated_diff_weights_pt)
+    """
+    import torch
+
+    with torch.no_grad():
+        server_flex_model["model"] = server_flex_model["model"].to('cpu')
+        old_weight_dict = server_flex_model["model"].state_dict()
+        for old, new in zip(old_weight_dict, aggregated_weights
+        ):
+            try:
+                if len(new) != 0: # Do not copy empty layers
+                    old_weight_dict[old].data += torch.from_numpy(new).float()
+            except TypeError: # new has no len property
+                old_weight_dict[old].data += torch.from_numpy(new).float()
 
 @evaluate_server_model
 def evaluate_server_model_tf(server_flex_model, test_data, test_labels):
