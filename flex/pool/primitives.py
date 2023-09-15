@@ -166,7 +166,7 @@ def collect_clients_weights_tf(client_flex_model, *args, **kwargs):
     """
     return client_flex_model["model"].get_weights()
 
-def check_ignored_weights_pt(name, ignore_weights=None):
+def check_ignore_weights_pt(name, ignore_weights=None):
     if ignore_weights is None:
         ignore_weights = ['num_batches_tracked']
     return any(ignored in name for ignored in ignore_weights)
@@ -204,8 +204,8 @@ def collect_clients_weights_pt(client_flex_model, *args, **kwargs):
     parameters = []
     weight_dict = client_flex_model["model"].state_dict()
     for name in weight_dict:
-        if check_ignored_weights_pt(name, ignore_weights=ignore_weights):
-            continue
+        if check_ignore_weights_pt(name, ignore_weights=ignore_weights):
+            parameters.append([])
         parameters.append(weight_dict[name].cpu().data.numpy())
     return parameters
 
@@ -252,7 +252,8 @@ def set_aggregated_weights_pt(server_flex_model, aggregated_weights, *args, **kw
         for old, new in zip(
             server_flex_model["model"].parameters(), aggregated_weights
         ):
-            old.data = torch.from_numpy(new).float()
+            if len(new) != 0: # Do not copy empty layers
+                old.data = torch.from_numpy(new).float()
 
 
 @evaluate_server_model
