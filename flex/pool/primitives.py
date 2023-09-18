@@ -9,6 +9,7 @@ Note that each function is using the decorators we've created to facilitate the 
 understanding on how the platform works, please go to the flex_decorators file.
 """
 from copy import deepcopy
+
 import numpy as np
 
 from flex.pool.decorators import (
@@ -105,9 +106,11 @@ def deploy_server_model_tf(server_flex_model, *args, **kwargs):
     client_flex_model["model"] = model
     return client_flex_model
 
+
 @deploy_server_model
 def deploy_server_model_pt(server_flex_model, *args, **kwargs):
     return deepcopy(server_flex_model)
+
 
 def train_tf(client_flex_model, client_data, *args, **kwargs):
     """Function of general purpose to train a TensorFlow model
@@ -167,19 +170,23 @@ def collect_clients_weights_tf(client_flex_model, *args, **kwargs):
     """
     return client_flex_model["model"].get_weights()
 
+
 def check_ignored_weights_pt(name, ignore_weights=None):
-    """Checks wether name contains any of the words in ignore_weights
+    """Checks wether name contains any of the words in ignore_weights.
 
     Args:
+    ----
         name (str): name to check
         ignore_weights (list, optional): A list of str. Defaults to None.
 
     Returns:
+    -------
         bool: True if any og the elements of list ignore_weights is present in name, otherwise False.
     """
     if ignore_weights is None:
-        ignore_weights = ['num_batches_tracked']
+        ignore_weights = ["num_batches_tracked"]
     return any(ignored in name for ignored in ignore_weights)
+
 
 @collect_clients_weights
 def collect_client_diff_weights_pt(client_flex_model, *args, **kwargs):
@@ -193,12 +200,14 @@ def collect_client_diff_weights_pt(client_flex_model, *args, **kwargs):
     This function returns the weights of the model.
 
     Args:
+    ----
         client_flex_model (FlexModel): A client's FlexModel
         ignore_weights (list): the name of the weights not to collect, by default,
         those containind the words `num_batches_tracked` are not collected, as they
         only make sense in the local model
 
     Returns:
+    -------
         List: List with the weights of the client's model
 
     Example of use assuming you are using a client-server architecture:
@@ -223,16 +232,17 @@ def collect_client_diff_weights_pt(client_flex_model, *args, **kwargs):
         previous_weight_dict = client_flex_model["previous_model"].state_dict()
     except KeyError as e:
         raise Exception(
-            "A copy of the model before training must be stored in client FlexModel using key: \"previous_model\""
+            'A copy of the model before training must be stored in client FlexModel using key: "previous_model"'
         ) from e
     parameters = []
     for name in weight_dict:
         if check_ignored_weights_pt(name, ignore_weights=ignore_weights):
             parameters.append(np.array([]))
             continue
-        weight_diff = weight_dict[name].cpu()-previous_weight_dict[name].cpu()
+        weight_diff = weight_dict[name].cpu() - previous_weight_dict[name].cpu()
         parameters.append(weight_diff.data.numpy())
     return parameters
+
 
 @collect_clients_weights
 def collect_clients_weights_pt(client_flex_model, *args, **kwargs):
@@ -273,7 +283,7 @@ def collect_clients_weights_pt(client_flex_model, *args, **kwargs):
         w = weight_dict[name].cpu().data.numpy()
         if check_ignored_weights_pt(name, ignore_weights=ignore_weights):
             w = np.array([])
-            continue   
+            continue
         parameters.append(w)
     return parameters
 
@@ -317,19 +327,22 @@ def set_aggregated_weights_pt(server_flex_model, aggregated_weights, *args, **kw
 
     with torch.no_grad():
         old_weight_dict = server_flex_model["model"].state_dict()
-        for old, new in zip(old_weight_dict, aggregated_weights
-        ):
+        for old, new in zip(old_weight_dict, aggregated_weights):
             try:
-                if len(new) != 0: # Do not copy empty layers
+                if len(new) != 0:  # Do not copy empty layers
                     old_weight_dict[old].data = torch.from_numpy(new).float()
-            except TypeError: # new has no len property
+            except TypeError:  # new has no len property
                 old_weight_dict[old].data = torch.from_numpy(new).float()
 
+
 @set_aggregated_weights
-def set_aggregated_diff_weights_pt(server_flex_model, aggregated_diff_weights, *args, **kwargs):
+def set_aggregated_diff_weights_pt(
+    server_flex_model, aggregated_diff_weights, *args, **kwargs
+):
     """Function to add the aggregated weights to the server.
 
     Args:
+    ----
         server_flex_model (FlexModel): The server's FlexModel
         aggregated_diff_weights (np.array): Aggregated weights
 
@@ -351,15 +364,15 @@ def set_aggregated_diff_weights_pt(server_flex_model, aggregated_diff_weights, *
     import torch
 
     with torch.no_grad():
-        server_flex_model["model"] = server_flex_model["model"].to('cpu')
+        server_flex_model["model"] = server_flex_model["model"].to("cpu")
         old_weight_dict = server_flex_model["model"].state_dict()
-        for old, new in zip(old_weight_dict, aggregated_diff_weights
-        ):
+        for old, new in zip(old_weight_dict, aggregated_diff_weights):
             try:
-                if len(new) != 0: # Do not copy empty layers
+                if len(new) != 0:  # Do not copy empty layers
                     old_weight_dict[old].data += torch.from_numpy(new).float()
-            except TypeError: # new has no len property
+            except TypeError:  # new has no len property
                 old_weight_dict[old].data += torch.from_numpy(new).float()
+
 
 @evaluate_server_model
 def evaluate_server_model_tf(server_flex_model, test_data, test_labels):

@@ -33,9 +33,10 @@ def emnist(out_dir: str = ".", split="digits", include_authors=False):
     )
     train_labels = np.squeeze(dataset["train"][0, 0]["labels"][0, 0])
     if include_authors:
-        train_labels = np.asarray([
-            (label, train_writers[i][0]) for i, label in enumerate(train_labels)
-        ], dtype=np.int64)
+        train_labels = np.asarray(
+            [(label, train_writers[i][0]) for i, label in enumerate(train_labels)],
+            dtype=np.int64,
+        )
 
     test_writers = dataset["test"][0, 0]["writers"][0, 0]
     test_data = np.reshape(
@@ -43,9 +44,10 @@ def emnist(out_dir: str = ".", split="digits", include_authors=False):
     )
     test_labels = np.squeeze(dataset["test"][0, 0]["labels"][0, 0])
     if include_authors:
-        test_labels = np.asarray([
-            (label, test_writers[i][0]) for i, label in enumerate(test_labels)
-        ], dtype=np.int64)
+        test_labels = np.asarray(
+            [(label, test_writers[i][0]) for i, label in enumerate(test_labels)],
+            dtype=np.int64,
+        )
     train_data_object = Dataset.from_numpy(train_data, train_labels)
     test_data_object = Dataset.from_numpy(test_data, test_labels)
     return train_data_object, test_data_object
