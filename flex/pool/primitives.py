@@ -195,7 +195,7 @@ def collect_client_diff_weights_pt(client_flex_model, *args, **kwargs):
     Args:
         client_flex_model (FlexModel): A client's FlexModel
         ignore_weights (list): the name of the weights not to collect, by default,
-        those containind the words `num_batches_tracked`are not collected, as they
+        those containind the words `num_batches_tracked` are not collected, as they
         only make sense in the local model
 
     Returns:
@@ -272,7 +272,8 @@ def collect_clients_weights_pt(client_flex_model, *args, **kwargs):
     for name in weight_dict:
         w = weight_dict[name].cpu().data.numpy()
         if check_ignored_weights_pt(name, ignore_weights=ignore_weights):
-            w = np.array([])        
+            w = np.array([])
+            continue   
         parameters.append(w)
     return parameters
 
