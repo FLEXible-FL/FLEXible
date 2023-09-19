@@ -112,6 +112,7 @@ def deploy_server_model_pt(server_flex_model, *args, **kwargs):
     """Creates a copy of the server_flex_model and it is set to client nodes using the decorator @deploy_server_model.
 
     Args:
+    ----
         server_flex_model (FlexModel): object storing information needed to run a Pytorch model
 
     """
@@ -142,9 +143,7 @@ def train_tf(client_flex_model, client_data, *args, **kwargs):
         flex_pool.clients.map(train_tf)
     """
     X, y = client_data.to_numpy()
-    client_flex_model["model"].fit(
-        X, y, *args, **kwargs
-    )
+    client_flex_model["model"].fit(X, y, *args, **kwargs)
 
 
 @collect_clients_weights
