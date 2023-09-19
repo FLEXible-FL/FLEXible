@@ -6,6 +6,7 @@ from flex.pool.pool import FlexPool
 
 from flex.pool.primitives import init_server_model_tf
 from flex.pool.primitives import deploy_server_model_tf
+from flex.pool.primitives import deploy_server_model_pt
 from flex.pool.primitives import train_tf
 from flex.pool.primitives import collect_clients_weights_tf
 from flex.pool.primitives import collect_clients_weights_pt
