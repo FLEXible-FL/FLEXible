@@ -16,7 +16,7 @@ HF_requires = ["datasets"]
 setup(
         name="flex",
         version="0.6.0",
-        author="The FLEXible team",
+        author="Jimenez-Lopez Daniel and Argente-Garrido Alberto",
         long_description=open("README.md", "r", encoding="utf-8").read(),
         long_description_content_type="text/markdown",
         keywords="FL federated-learning flexible",
@@ -26,7 +26,6 @@ setup(
                         "multiprocess",
                         "scikit-learn",
                         "cardinality",
-                        "lazyarray",
                         "sultan",
                         "tqdm",
                         "scipy",

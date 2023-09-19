@@ -5,9 +5,9 @@ from typing import Any, Callable, Hashable, List, Optional
 
 from multiprocess import Pool
 
+from flex.common.utils import check_min_arguments
 from flex.data.dataset import Dataset
 from flex.data.preprocessing_utils import normalize, one_hot_encoding
-from flex.common.utils import check_min_arguments
 
 
 class FedDataset(UserDict):
@@ -30,7 +30,7 @@ class FedDataset(UserDict):
         except KeyError:
             return default
 
-    def map(
+    def apply(
         self,
         func: Callable,
         clients_ids: List[Hashable] = None,
@@ -66,13 +66,18 @@ class FedDataset(UserDict):
         error_msg = f"The provided function: {func.__name__} is expected to have at least 1 argument/s."
         assert check_min_arguments(func, min_args=1), error_msg
 
+        # if any(self[i].X_data._is_generator for i in clients_ids):
+        #     raise NotImplementedError("LazyIndexable with generators will be supported soon")
+
         if num_proc < 2:
             updates = self._map_single(func, clients_ids, **kwargs)
         else:
             f = partial(self._map_single, func)
             updates = self._map_parallel(f, clients_ids, num_proc=num_proc, **kwargs)
 
-        new_fld = deepcopy(self)
+        new_fld = deepcopy(
+            self
+        )  # seguramente solo haga falta copiar los que no están en clients_ids
         new_fld.update(updates)
         return new_fld
 
@@ -154,7 +159,7 @@ class FedDataset(UserDict):
         Returns:
             FedDataset: The FlexDataset normalized.
         """
-        return self.map(normalize, clients_ids, num_proc, *args, **kwargs)
+        return self.apply(normalize, clients_ids, num_proc, *args, **kwargs)
 
     def one_hot_encoding(
         self,
@@ -174,4 +179,4 @@ class FedDataset(UserDict):
         Returns:
             FedDataset: The FlexDataset normalized.
         """
-        return self.map(one_hot_encoding, clients_ids, num_proc, *args, **kwargs)
+        return self.apply(one_hot_encoding, clients_ids, num_proc, *args, **kwargs)

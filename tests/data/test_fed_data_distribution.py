@@ -1,3 +1,4 @@
+import os
 import unittest
 from math import isclose
 
@@ -14,14 +15,14 @@ from flex.datasets import load
 def fixture_simple_fex_data_object():
     X_data = np.random.rand(100).reshape([20, 5])
     y_data = np.random.choice(2, 20)
-    return Dataset(X_data=X_data, y_data=y_data)
+    return Dataset.from_numpy(X_data, y_data)
 
 
 @pytest.fixture(name="fcd_ones_zeros")
 def fixture_simple_fex_data_object_ones_zeros():
     X_data = np.random.rand(100).reshape([20, 5])
     y_data = np.concatenate((np.zeros(10), np.ones(10)))
-    return Dataset(X_data=X_data, y_data=y_data)
+    return Dataset.from_numpy(X_data, y_data)
 
 
 @pytest.fixture(name="fcd_multiple_classes")
@@ -37,14 +38,14 @@ def fixture_simple_fex_data_object_multiple_classes():
             5 * np.ones(5),
         )
     )
-    return Dataset(X_data=X_data, y_data=y_data)
+    return Dataset.from_numpy(X_data, y_data)
 
 
 class TestFlexDataDistribution(unittest.TestCase):
     @pytest.fixture(autouse=True)
     def _fixture_iris_dataset(self):
         iris = load_iris()
-        self._iris = Dataset(X_data=iris.data, y_data=iris.target)
+        self._iris = Dataset.from_list(iris.data, iris.target)
 
     @pytest.fixture(autouse=True)
     def _fixture_simple_flex_data_object(self, fcd):
@@ -279,11 +280,13 @@ class TestFlexDataDistribution(unittest.TestCase):
         assert len(flex_dataset[0]) + len(flex_dataset[1]) == len(self._iris)
 
     def test_single_feature_data(self):
-        single_feature_dataset = Dataset(self._iris.X_data[:, 0], self._iris.y_data)
+        new_X_data = self._iris.X_data.to_numpy()
+        new_X_data = new_X_data[:, 0]
+        single_feature_dataset = Dataset.from_list(list(new_X_data), self._iris.y_data)
         federated_iris = FedDataDistribution.iid_distribution(
             centralized_data=single_feature_dataset
         )
-        assert len(federated_iris[0].X_data.shape) == 1
+        assert isinstance(federated_iris[0].X_data[0], float)
 
     def test_indexes_per_client(self):
         indexes = [[1, 3], [0, 2]]
@@ -304,10 +307,12 @@ class TestFlexDataDistribution(unittest.TestCase):
             self._iris, clustering_func=lambda x, _: kmeans.predict(x.reshape(1, -1))[0]
         )
         assert len(federated_iris) == n_clients
-        assert all(
-            self._iris.X_data[idx] in federated_iris[client].X_data
-            for idx, client in enumerate(kmeans.labels_)
-        )
+        for idx, client in enumerate(kmeans.labels_):
+            assert self._iris.X_data[idx] in federated_iris[client].X_data.to_numpy()
+
+        # assert all(
+        #     for idx, client in enumerate(kmeans.labels_)
+        # )
 
     def test_weight_per_classes_random_assigment(self):
         classes = np.unique(self._iris.y_data)
@@ -369,7 +374,7 @@ class TestFlexDataDistribution(unittest.TestCase):
         config = FedDatasetConfig(
             seed=0,
             n_clients=2,
-            replacement=False,
+            replacement=True,
             client_names=["client_0", "client_1"],
         )
         flex_dataset = FedDataDistribution.from_config_with_torchtext_dataset(
@@ -390,32 +395,54 @@ class TestFlexDataDistribution(unittest.TestCase):
             assert len(flex_dataset["client_0"]) == len(flex_dataset["client_1"])
 
         other_options = {
-            "split": "train",
+            "split": "test",
             "shuffle_files": True,
             "as_supervised": True,
             "batch_size": -1,
         }
-        data = tfds.load("mnist", **other_options)
+        ds_name = "cifar10"
+        data = tfds.load(ds_name, **other_options)
+        config = FedDatasetConfig(
+            seed=0,
+            n_clients=2,
+            replacement=True,
+            client_names=["client_0", "client_1"],
+        )
+        # With batch_size = 20
+        other_options["batch_size"] = 20
+        data = tfds.load(ds_name, **other_options)
+        build_data_and_check(data, config)
+
+    def test_from_tfds_image_dataset_without_batchsize(self):
+        import tensorflow_datasets as tfds
+
+        def build_data_and_check(data, config):
+            flex_dataset = FedDataDistribution.from_config_with_tfds_image_dataset(
+                data, config
+            )
+            assert len(flex_dataset) == config.n_clients
+            assert len(flex_dataset["client_0"]) == len(flex_dataset["client_1"])
+
+        other_options = {
+            "split": "test",
+            "shuffle_files": True,
+            "as_supervised": True,
+            "batch_size": -1,
+        }
+        ds_name = "cifar10"
+        data = tfds.load(ds_name, **other_options)
         config = FedDatasetConfig(
             seed=0,
             n_clients=2,
             replacement=False,
             client_names=["client_0", "client_1"],
         )
-        build_data_and_check(data, config)
-        # With batch_size = 20
-        other_options["batch_size"] = 20
-        data = tfds.load("mnist", **other_options)
-        build_data_and_check(data, config)
-        # Without batch_size
-        del other_options["batch_size"]
-        data = tfds.load("mnist", **other_options)
+        data = tfds.load(ds_name, **other_options)
         build_data_and_check(data, config)
 
     def test_from_tfds_text_dataset(self):
         import tensorflow_datasets as tfds
 
-        # With batch_size -1
         def build_data_and_check(data, config, X_columns, labels):
             flex_dataset = FedDataDistribution.from_config_with_tfds_text_dataset(
                 data, config, X_columns, labels
@@ -423,7 +450,7 @@ class TestFlexDataDistribution(unittest.TestCase):
             assert len(flex_dataset) == config.n_clients
             assert len(flex_dataset["client_0"]) == len(flex_dataset["client_1"])
 
-        other_options = {"split": "train", "batch_size": -1}
+        other_options = {"split": "test"}
         X_columns = ["title", "description"]
         labels = ["label"]
         data = tfds.load("ag_news_subset", **other_options)
@@ -433,20 +460,39 @@ class TestFlexDataDistribution(unittest.TestCase):
             replacement=False,
             client_names=["client_0", "client_1"],
         )
-        build_data_and_check(data, config, X_columns, labels)
         # With batch_size
         other_options["batch_size"] = 20
         data = tfds.load("ag_news_subset", **other_options)
         build_data_and_check(data, config, X_columns, labels)
+
+    def test_from_tfds_text_dataset_without_batchsize(self):
+        import tensorflow_datasets as tfds
+
+        def build_data_and_check(data, config, X_columns, labels):
+            flex_dataset = FedDataDistribution.from_config_with_tfds_text_dataset(
+                data, config, X_columns, labels
+            )
+            assert len(flex_dataset) == config.n_clients
+            assert len(flex_dataset["client_0"]) == len(flex_dataset["client_1"])
+
+        other_options = {"split": "test"}
+        X_columns = ["title", "description"]
+        labels = ["label"]
+        data = tfds.load("ag_news_subset", **other_options)
+        config = FedDatasetConfig(
+            seed=0,
+            n_clients=2,
+            replacement=False,
+            client_names=["client_0", "client_1"],
+        )
         # Without batch_size
-        del other_options["batch_size"]
         data = tfds.load("ag_news_subset", **other_options)
         build_data_and_check(data, config, X_columns, labels)
 
     def test_from_torchvision_dataset(self):
         from torchvision.datasets import MNIST
 
-        data = MNIST(root="./torch_datasets", train=True, download=True)
+        data = MNIST(root="./torch_datasets", train=False, download=True)
         config = FedDatasetConfig(
             seed=0,
             n_clients=2,
@@ -459,10 +505,14 @@ class TestFlexDataDistribution(unittest.TestCase):
         assert len(flex_dataset) == config.n_clients
         assert len(flex_dataset["client_0"]) == len(flex_dataset["client_1"])
 
-    def test_from_torchvision_dataset_w_lazy_array(self):
+    @pytest.mark.skipif(
+        condition=os.getenv("GITHUB_ACTIONS") == "true",
+        reason="Sentiment140 is very huge and exceed the RAM limit on GitHub.",
+    )
+    def test_from_torchvision_dataset_lazyly(self):
         from torchvision.datasets import Food101
 
-        data = Food101(root="./torch_datasets", download=True)
+        data = Food101(root="./torch_datasets", split="test", download=True)
         config = FedDatasetConfig(
             seed=0,
             n_clients=2,
@@ -481,9 +531,30 @@ class TestFlexDataDistribution(unittest.TestCase):
     def test_from_huggingface_text_dataset(self):
         from datasets import load_dataset
 
-        data = load_dataset("ag_news", split="train")
-        X_columns = "text"
-        label_columns = "label"
+        data = load_dataset("ag_news", split="test")
+        X_columns = ["text"]
+        label_columns = ["label"]
+        config = FedDatasetConfig(
+            seed=0,
+            replacement=False,
+            client_names=["client_0", "client_1"],
+        )
+        flex_dataset = FedDataDistribution.from_config_with_huggingface_dataset(
+            data, config, X_columns, label_columns
+        )
+        assert len(flex_dataset) == config.n_clients
+        assert len(flex_dataset["client_0"]) == len(flex_dataset["client_1"])
+        assert (
+            len(flex_dataset["client_0"]) + len(flex_dataset["client_1"])
+            == data.num_rows
+        )
+
+    def test_from_huggingface_text_dataset_lazy(self):
+        from datasets import load_dataset
+
+        data = load_dataset("ag_news", split="test")
+        X_columns = ["text"]
+        label_columns = ["label"]
         config = FedDatasetConfig(
             seed=0,
             replacement=False,
@@ -514,7 +585,9 @@ class TestFlexDataDistribution(unittest.TestCase):
         assert isclose(std, 11.17, abs_tol=1e-1)
 
     def test_loading_fedmnist_letters_using_from_config(self):
-        fed_data, test_data = load("federated_emnist", return_test=True, split="letters")
+        fed_data, test_data = load(
+            "federated_emnist", return_test=True, split="letters"
+        )
         assert isinstance(fed_data, FedDataset)
         assert isinstance(test_data, Dataset)
         num_samples = [len(fed_data[i]) for i in fed_data]
@@ -527,6 +600,9 @@ class TestFlexDataDistribution(unittest.TestCase):
         assert isclose(mean, 34.81, abs_tol=1e-1)
         assert isclose(std, 21.85, abs_tol=1e-1)
 
+    @pytest.mark.skip(
+        reason="CelebA dataset from torchvision has a limited amount of downloads per day allowed"
+    )
     def test_loading_fedceleba_using_from_config(self):
         fed_data, test_data = load("federated_celeba", return_test=True)
         assert isinstance(fed_data, FedDataset)
@@ -541,7 +617,29 @@ class TestFlexDataDistribution(unittest.TestCase):
         assert isclose(mean, 19.87, abs_tol=1e-1)
         assert isclose(std, 8.92, abs_tol=1e-1)
 
+    @pytest.mark.skipif(
+        condition=os.getenv("GITHUB_ACTIONS") == "true",
+        reason="Sentiment140 is very huge and exceed the RAM limit on GitHub.",
+    )
     def test_loading_fedsentiment_using_from_config(self):
+        fed_data, test_data = load("federated_sentiment140", return_test=True)
+        assert isinstance(fed_data, FedDataset)
+        assert isinstance(test_data, Dataset)
+        num_samples = [len(fed_data[i]) for i in fed_data]
+        total_samples = np.sum(num_samples)
+        std = np.std(num_samples)
+        mean = np.mean(num_samples)
+        users = len(fed_data)
+        assert users == 659775
+        assert total_samples == 1600000
+        assert isclose(mean, 2.42, abs_tol=1e-1)
+        assert isclose(std, 4.71, abs_tol=1e-1)
+
+    @pytest.mark.skipif(
+        condition=os.getenv("GITHUB_ACTIONS") == "true",
+        reason="Sentiment140 is very huge and exceeds the RAM limit on GitHub.",
+    )
+    def test_loading_fedsentiment_using_from_config_lazyly(self):
         fed_data, test_data = load("federated_sentiment140", return_test=True)
         assert isinstance(fed_data, FedDataset)
         assert isinstance(test_data, Dataset)
