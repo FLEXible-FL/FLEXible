@@ -46,23 +46,7 @@ class Dataset:
             torvhcision.datasets.VisionDataset: a torchvision dataset with the contents of datasets. \
                 Note that transforms should be pased as arguments.
         """
-        from torchvision.datasets import VisionDataset
-
-        class DefaultVision(VisionDataset):
-            def __init__(other_self, data, **other_kwargs):
-                super().__init__(root="", **other_kwargs)
-                other_self.data = data
-
-            def __getitem__(other_self, index: int):
-                image, label = other_self.data[index]
-                if other_self.transform:
-                    image = other_self.transform(image)
-                if other_self.target_transform:
-                    label = other_self.target_transform(label)
-                return image, label
-
-            def __len__(other_self):
-                return len(other_self.data)
+        from .dataset_pt_utils import DefaultVision
 
         return DefaultVision(self, **kwargs)
 

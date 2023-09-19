@@ -6,12 +6,15 @@ from flex.pool.pool import FlexPool
 
 from flex.pool.primitives import init_server_model_tf
 from flex.pool.primitives import deploy_server_model_tf
+from flex.pool.primitives import deploy_server_model_pt
 from flex.pool.primitives import train_tf
 from flex.pool.primitives import collect_clients_weights_tf
 from flex.pool.primitives import collect_clients_weights_pt
 from flex.pool.primitives import set_aggregated_weights_tf
 from flex.pool.primitives import set_aggregated_weights_pt
 from flex.pool.primitives import evaluate_server_model_tf
+from flex.pool.primitives import set_aggregated_diff_weights_pt
+from flex.pool.primitives import collect_client_diff_weights_pt
 
 from flex.pool.aggregators import fed_avg
 

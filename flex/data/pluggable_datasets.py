@@ -22,6 +22,7 @@ class PluggableTorchtext(Enum, metaclass=PluggableDataset):
 
     def members():
         from torchtext import datasets
+
         yield datasets.AG_NEWS.__name__
         yield datasets.AmazonReviewFull.__name__
         yield datasets.AmazonReviewPolarity.__name__
@@ -43,6 +44,7 @@ class PluggableTorchvision(Enum, metaclass=PluggableDataset):
 
     def members():
         from torchvision import datasets
+
         yield datasets.WIDERFace.__name__
         yield datasets.Food101.__name__
         yield datasets.CelebA.__name__
