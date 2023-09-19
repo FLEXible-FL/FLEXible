@@ -332,13 +332,13 @@ def set_aggregated_weights_pt(server_flex_model, aggregated_weights, *args, **kw
     import torch
 
     with torch.no_grad():
-        old_weight_dict = server_flex_model["model"].state_dict()
-        for old, new in zip(old_weight_dict, aggregated_weights):
+        weight_dict = server_flex_model["model"].state_dict()
+        for layer_key, new in zip(weight_dict, aggregated_weights):
             try:
                 if len(new) != 0:  # Do not copy empty layers
-                    old_weight_dict[old].data = torch.from_numpy(new).float()
+                    weight_dict[layer_key].copy_(torch.from_numpy(new).float())
             except TypeError:  # new has no len property
-                old_weight_dict[old].data = torch.from_numpy(new).float()
+                weight_dict[layer_key].copy_(torch.from_numpy(new).float())
 
 
 @set_aggregated_weights
@@ -371,13 +371,13 @@ def set_aggregated_diff_weights_pt(
 
     with torch.no_grad():
         server_flex_model["model"] = server_flex_model["model"].to("cpu")
-        old_weight_dict = server_flex_model["model"].state_dict()
-        for old, new in zip(old_weight_dict, aggregated_diff_weights):
+        weight_dict = server_flex_model["model"].state_dict()
+        for layer_key, new in zip(weight_dict, aggregated_diff_weights):
             try:
                 if len(new) != 0:  # Do not copy empty layers
-                    old_weight_dict[old].data += torch.from_numpy(new).float()
+                    weight_dict[layer_key].add_(torch.from_numpy(new).float())
             except TypeError:  # new has no len property
-                old_weight_dict[old].data += torch.from_numpy(new).float()
+                weight_dict[layer_key].add_(torch.from_numpy(new).float())
 
 
 @evaluate_server_model
