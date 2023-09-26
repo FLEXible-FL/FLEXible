@@ -28,10 +28,16 @@ class Dataset:
         return len(self.X_data)
 
     def __getitem__(self, index):
-        return (
-            self.X_data[index],
-            self.y_data[index] if self.y_data is not None else None,
-        )
+        if isinstance(index, int):
+            return (
+                self.X_data[index],
+                self.y_data[index] if self.y_data is not None else None,
+            )
+        elif isinstance(index, (slice, list)):
+            return Dataset(self.X_data[index], self.y_data[index] if self.y_data is not None else None)
+        else:
+            raise IndexError(f"Index with type {type(index)} is not supported")
+
 
     def __iter__(self):
         return zip(
