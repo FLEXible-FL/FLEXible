@@ -3,6 +3,7 @@ import warnings
 from dataclasses import dataclass, field
 from typing import Optional
 
+import numpy as np
 from cardinality import count
 
 from flex.data.lazy_indexable import LazyIndexable
@@ -28,7 +29,7 @@ class Dataset:
         return len(self.X_data)
 
     def __getitem__(self, index):
-        if isinstance(index, int):
+        if isinstance(index, (int, np.integer)):
             return (
                 self.X_data[index],
                 self.y_data[index] if self.y_data is not None else None,
@@ -39,7 +40,9 @@ class Dataset:
                 self.y_data[index] if self.y_data is not None else None,
             )
         else:
-            raise IndexError(f"Index with type {type(index)} is not supported")
+            raise IndexError(
+                f"Indexing with element {index} of type {type(index)} is not supported"
+            )
 
     def __iter__(self):
         return zip(
