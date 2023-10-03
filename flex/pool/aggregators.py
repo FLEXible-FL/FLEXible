@@ -19,11 +19,41 @@ development of a federated model in FLEXible.
 This aggregators also can work as examples for creating a custom aggregator.
 """
 
+import tensorly as tl
+
 from flex.pool.decorators import aggregate_weights
 
 
+def flatten(xs):
+    for x in xs:
+        if isinstance(x, (list, tuple)):
+            yield from flatten(x)
+        else:
+            yield x
+
+
+def set_tensorly_backend(
+    aggregated_weights_as_list: list, supported_modules: list = None
+):  # jax support is planned
+    if supported_modules is None:
+        supported_modules = ["tensorflow", "torch"]
+    # Default backend
+    # tl.set_backend('numpy')
+    for modulename in supported_modules:
+        try:
+            tmp_import = __import__(modulename)
+            if all(
+                tmp_import.is_tensor(t) for t in flatten(aggregated_weights_as_list)
+            ):
+                if modulename == "torch":
+                    modulename = f"py{modulename}"
+                tl.set_backend(modulename)
+        except ImportError:
+            ...
+
+
 @aggregate_weights
-def fed_avg(aggregated_weights_as_list, *args, **kwargs):
+def fed_avg(aggregated_weights_as_list: list, *args, **kwargs):
     """Function that implements de FedAvg aggregation method
 
     Args:
@@ -48,6 +78,13 @@ def fed_avg(aggregated_weights_as_list, *args, **kwargs):
 
         flex_pool.aggregators.map(flex_pool.servers, fed_avg)
     """
-    import numpy as np
-
-    return np.mean(np.array(aggregated_weights_as_list, dtype=object), axis=0)
+    set_tensorly_backend(aggregated_weights_as_list)
+    agg_weights = []
+    for layer_index in range(len(aggregated_weights_as_list[0])):
+        weights_per_layer = [
+            weights[layer_index] for weights in aggregated_weights_as_list
+        ]
+        weights_per_layer = tl.stack(weights_per_layer)
+        agg_layer = tl.mean(weights_per_layer, axis=0)
+        agg_weights.append(agg_layer)
+    return agg_weights
