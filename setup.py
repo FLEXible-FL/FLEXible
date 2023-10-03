@@ -29,7 +29,8 @@ setup(
                         "sultan",
                         "tqdm",
                         "scipy",
-                        "gdown"
+                        "gdown",
+                        "tensorly"
                         ],
         extras_require={
                 "tensorflow": TF_requires,
