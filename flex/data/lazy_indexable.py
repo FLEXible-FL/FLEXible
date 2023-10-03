@@ -1,7 +1,7 @@
 import copy
 import itertools
 import warnings
-from collections import OrderedDict
+from collections import deque
 from typing import Iterable, Union
 
 import numpy as np
@@ -9,16 +9,26 @@ import numpy as np
 
 class LazyIndexable:
     def __init__(
-        self, iterable: Iterable, length: int, iterable_indexes=None, storage=None
+        self,
+        iterable: Iterable,
+        length: int,
+        iterable_indexes=None,
+        storage: dict = None,
+        last_access: deque = None,
     ):
         if iterable_indexes is None:
             iterable_indexes = np.arange(length, dtype=np.uint32)
         if storage is None:
-            storage = OrderedDict()
+            storage = {}
         self._iterable = iterable
         self._len = length
         self._iterable_indexes = np.asarray(iterable_indexes, dtype=np.uint32)
         self._storage = storage
+        if last_access is None:
+            self._last_access = deque(maxlen=1)
+            self._last_access.append(0)
+        else:
+            self._last_access = last_access
         try:
             self._iterable[0]
             self._is_generator = False
@@ -43,6 +53,7 @@ class LazyIndexable:
             iterable_indexes=self._iterable_indexes[s],
             length=len(self._iterable_indexes[s]),
             storage=self._storage,
+            last_access=self._last_access,
         )
 
     def __getitem_with_int(self, s):
@@ -51,12 +62,15 @@ class LazyIndexable:
             return self._iterable[index]
         if index in self._storage:
             return self._storage[index]
-        start = next(reversed(self._storage)) + 1 if len(self._storage) > 0 else 0
+        start = self._last_access[-1]
         # If it is not in the storage, we must consume the iterable
         for i, element in enumerate(self._iterable, start=start):
             self._storage[i] = element  # Every we consume is stored for later usage
+            self._last_access.append(i + 1)
             if i == index:
                 return element
+        # Value not found in consumable
+        raise IndexError(f"Index {index} out of range")
 
     def __getitem__(self, s: Union[int, slice, list]):
         #  Proceed with the actual getitem logic
@@ -64,10 +78,7 @@ class LazyIndexable:
             s = int(s)
             val = self.__getitem_with_int(s)
         except TypeError:
-            return self.__getitem_with_seq(s)
-        # Value not found in consumable
-        if val is None:
-            raise IndexError("Index out of range")
+            val = self.__getitem_with_seq(s)
         return val
 
     def tolist(self):
@@ -93,7 +104,7 @@ class LazyIndexable:
                 iterable_is_consumed = True
         if iterable_is_consumed:  # Ditch is_generator state and _storage
             state_dict["_is_generator"] = False
-            state_dict["_storage"] = OrderedDict()
+            state_dict["_storage"] = {}
         return state_dict
 
     def __deepcopy__(self, memo):
