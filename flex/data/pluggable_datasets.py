@@ -106,6 +106,15 @@ class PluggableHuggingFace(Enum, metaclass=PluggableDatasetString):
     """
 
     IMDB_HF = ("imdb", "text", "label")
+    AG_NEWS_HF = ("ag_news", "text", "label")
+    TWEET_EVAL_EMOJI_HF = ("tweet_eval", "text", "label")  # We support all subsets
+    ROTTEN_TOMATOES_HF = ("rotten_tomatoes", "text", "label")
+    GLUE_COLA_HF = ("glue", "sentence", "label")
+    FINANCIAL_PHRASEBANK = (
+        "financial_phrasebank",
+        "sentence",
+        "label",
+    )  # We support all subsets"
     SQUAD_HF = ("squad", ["context", "question"], "answers")
     APPREVIEWS_HF = ("app_reviews", "review", "star")
     AMAZON_POLARITY_HF = ("amazon_polarity", ["title", "content"], "label")
