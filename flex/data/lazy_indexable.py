@@ -69,6 +69,8 @@ class LazyIndexable:
             self._last_access.append(i + 1)
             if i == index:
                 return element
+        # Value not found in consumable
+        raise IndexError(f"Index {index} out of range")
 
     def __getitem__(self, s: Union[int, slice, list]):
         #  Proceed with the actual getitem logic
@@ -76,10 +78,7 @@ class LazyIndexable:
             s = int(s)
             val = self.__getitem_with_int(s)
         except TypeError:
-            return self.__getitem_with_seq(s)
-        # Value not found in consumable
-        if val is None:
-            raise IndexError("Index out of range")
+            val = self.__getitem_with_seq(s)
         return val
 
     def tolist(self):
