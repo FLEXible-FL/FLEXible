@@ -570,6 +570,36 @@ class TestFlexDataDistribution(unittest.TestCase):
             == data.num_rows
         )
 
+    def test_from_huggingface_text_dataset_lazy_str_no_subset(self):
+        data = "ag_news;train"
+        X_columns = ["text"]
+        label_columns = ["label"]
+        config = FedDatasetConfig(
+            seed=0,
+            replacement=False,
+            client_names=["client_0", "client_1"],
+        )
+        flex_dataset = FedDataDistribution.from_config_with_huggingface_dataset(
+            data, config, X_columns, label_columns
+        )
+        assert len(flex_dataset) == config.n_clients
+        assert len(flex_dataset["client_0"]) == len(flex_dataset["client_1"])
+
+    def test_from_huggingface_text_dataset_lazy_str_and_subset(self):
+        data = "tweet_eval;emoji;train"
+        X_columns = ["text"]
+        label_columns = ["label"]
+        config = FedDatasetConfig(
+            seed=0,
+            replacement=False,
+            client_names=["client_0", "client_1"],
+        )
+        flex_dataset = FedDataDistribution.from_config_with_huggingface_dataset(
+            data, config, X_columns, label_columns
+        )
+        assert len(flex_dataset) == config.n_clients
+        assert len(flex_dataset["client_0"]) == len(flex_dataset["client_1"])
+
     def test_loading_fedmnist_digits_using_from_config(self):
         fed_data, test_data = load("federated_emnist", return_test=True, split="digits")
         assert isinstance(fed_data, FedDataset)
