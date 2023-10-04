@@ -22,8 +22,7 @@ def set_tensorly_backend(
 ):  # jax support is planned
     if supported_modules is None:
         supported_modules = ["tensorflow", "torch"]
-    # Default backend
-    # tl.set_backend('numpy')
+    backend_set = False
     for modulename in supported_modules:
         try:
             tmp_import = __import__(modulename)
@@ -33,8 +32,15 @@ def set_tensorly_backend(
                 if modulename == "torch":
                     modulename = f"py{modulename}"
                 tl.set_backend(modulename)
+                backend_set = True
+                break
+            else:
+                del tmp_import
         except ImportError:
             ...
+    # Default backend
+    if not backend_set:
+        tl.set_backend("numpy")
 
 
 @aggregate_weights
