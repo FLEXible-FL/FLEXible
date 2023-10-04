@@ -86,6 +86,24 @@ class TestFlexDataObject(unittest.TestCase):
         )
         fcd.validate()
 
+    def test_validate_from_huggingface_dataset_lazy_with_str_no_subset(self):
+        data = "ag_news;train"
+        X_columns = ["text"]
+        label_columns = ["label"]
+        fcd = Dataset.from_huggingface_dataset(
+            data, X_columns=X_columns, label_columns=label_columns
+        )
+        fcd.validate()
+
+    def test_validate_from_huggingface_dataset_lazy_with_str_and_subset(self):
+        data = "tweet_eval;emoji;train"
+        X_columns = ["text"]
+        label_columns = ["label"]
+        fcd = Dataset.from_huggingface_dataset(
+            data, X_columns=X_columns, label_columns=label_columns
+        )
+        fcd.validate()
+
     def test_to_torchvision_dataset_w_flex_datasets(self):
         import torch
         from torchvision import transforms
