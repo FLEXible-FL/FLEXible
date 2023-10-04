@@ -228,7 +228,12 @@ class Dataset:
         to a FlexDataObject.
 
         Args:
-            hf_dataset (datasets.arrow_dataset.Dataset): a dataset from the dataset library
+            hf_dataset (Union[datasets.arrow_dataset.Dataset, str]): a dataset from the dataset library.
+                If a string is recieved, it will load the dataset from the HuggingFace repository. When a
+                string is given, the split has to be specified in the str variable as follows:
+                'dataset;split'. Also, if the string contains a subset, for those datasets that have
+                multiple subsets for differents tasks, it may be given as follow: 'dataset;subset;split',
+                so we can download the dataset and the
             X_columns (list): List containing the features names for training the model
             label_columns (list): List containing the name or names of the label column
 
@@ -238,14 +243,39 @@ class Dataset:
         from flex.data.pluggable_datasets import PluggableHuggingFace
 
         try:
-            if hf_dataset.info.builder_name not in PluggableHuggingFace:
+            name_checker = ""
+            if isinstance(hf_dataset, str):
+                from datasets import load_dataset
+
+                hf_dataset = hf_dataset.split(";")
+                if len(hf_dataset) == 2:
+                    name, split = hf_dataset
+                    subset = None
+                elif len(hf_dataset) == 3:
+                    name, subset, split = hf_dataset
+                try:
+                    hf_dataset = (
+                        load_dataset(name, split=split) 
+                        if subset is None 
+                        else load_dataset(name, subset, split)
+                    )
+                except Exception as err:
+                    print(f"Couldn't download the dataset from the HuggingFace datasets: {err}")
+                
+                name_checker = (
+                    f"{name.upper()}_{subset.upper()}_HF" if subset is not None else f"{name.upper()}_HF"
+                )
+            else:
+                name_checker = hf_dataset.info.builder_name
+            if name_checker not in PluggableHuggingFace.__members__.keys():
                 warnings.warn(
                     "The input dataset and arguments are not explicitly supported, therefore they might not work as expected.",
                     RuntimeWarning,
                 )
+
         except Exception:
             warnings.warn(
-                "The input dataset doesn't have the property dataset.info.builder_name, so we can't check if is supported or not. Therefore, it might not work as expected.",
+                "The input dataset doesn't have the property dataset.info.builder_name or the str format is not correct, so we can't check if is supported or not. Therefore, it might not work as expected.",
                 RuntimeWarning,
             )
 

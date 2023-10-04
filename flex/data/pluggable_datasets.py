@@ -110,7 +110,7 @@ class PluggableHuggingFace(Enum, metaclass=PluggableDatasetString):
     TWEET_EVAL_EMOJI_HF = ("tweet_eval", "text", "label")  # We support all subsets
     ROTTEN_TOMATOES_HF = ("rotten_tomatoes", "text", "label")
     GLUE_COLA_HF = ("glue", "sentence", "label")
-    FINANCIAL_PHRASEBANK = (
+    FINANCIAL_PHRASEBANK_HF = (
         "financial_phrasebank",
         "sentence",
         "label",
