@@ -13,7 +13,7 @@ from flex.pool.primitives_tf import (  # collect_weights_pt,; set_aggregated_wei
     set_aggregated_weights_tf,
     train_tf,
 )
-
+import tensorly as tl
 
 class TestFlexPoolPrimitives(unittest.TestCase):
     @pytest.fixture(autouse=True)
