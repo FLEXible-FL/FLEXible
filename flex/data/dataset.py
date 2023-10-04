@@ -270,15 +270,19 @@ class Dataset:
                     name, subset, split = hf_dataset
                 try:
                     hf_dataset = (
-                        load_dataset(name, split=split) 
-                        if subset is None 
+                        load_dataset(name, split=split)
+                        if subset is None
                         else load_dataset(name, subset, split)
                     )
                 except Exception as err:
-                    print(f"Couldn't download the dataset from the HuggingFace datasets: {err}")
-                
+                    print(
+                        f"Couldn't download the dataset from the HuggingFace datasets: {err}"
+                    )
+
                 name_checker = (
-                    f"{name.upper()}_{subset.upper()}_HF" if subset is not None else f"{name.upper()}_HF"
+                    f"{name.upper()}_{subset.upper()}_HF"
+                    if subset is not None
+                    else f"{name.upper()}_HF"
                 )
             else:
                 name_checker = hf_dataset.info.builder_name
@@ -293,7 +297,6 @@ class Dataset:
                 "The input dataset doesn't have the property dataset.info.builder_name or the str format is not correct, so we can't check if is supported or not. Therefore, it might not work as expected.",
                 RuntimeWarning,
             )
-
         length = count(hf_dataset)
 
         if X_columns is None:
