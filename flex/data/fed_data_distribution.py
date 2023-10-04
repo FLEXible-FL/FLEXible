@@ -91,7 +91,7 @@ class FedDataDistribution(object):
         and then it will federate it.
 
         Args:
-            data (Dataset): The hugginface dataset
+            data (Union[datasets.arrow_dataset.Dataset, str]): The hugginface dataset to federate.
             config (FedDatasetConfig): FlexDatasetConfig with the configuration to federate the centralized dataset.
             X_coluns (List[str]): List with the names of the columns to load.
             label_columns (list): List with the names of the label columns.
