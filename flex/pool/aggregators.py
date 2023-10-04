@@ -26,7 +26,6 @@ def set_tensorly_backend(
     for modulename in supported_modules:
         try:
             tmp_import = __import__(modulename)
-            print("Module name tested", modulename)
             if all(
                 tmp_import.is_tensor(t) for t in flatten(aggregated_weights_as_list)
             ):
@@ -41,7 +40,7 @@ def set_tensorly_backend(
             ...
     # Default backend
     if not backend_set:
-        tl.set_backend('numpy')
+        tl.set_backend("numpy")
 
 
 @aggregate_weights
@@ -71,7 +70,6 @@ def fed_avg(aggregated_weights_as_list: list, *args, **kwargs):
         flex_pool.aggregators.map(flex_pool.servers, fed_avg)
     """
     set_tensorly_backend(aggregated_weights_as_list)
-    print("Found backend", tl.get_backend())
     agg_weights = []
     for layer_index in range(len(aggregated_weights_as_list[0])):
         weights_per_layer = [
