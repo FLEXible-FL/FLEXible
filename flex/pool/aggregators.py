@@ -42,6 +42,16 @@ def set_tensorly_backend(
     if not backend_set:
         tl.set_backend("numpy")
 
+def fed_avg_f(aggregated_weights_as_list: list):
+    agg_weights = []
+    for layer_index in range(len(aggregated_weights_as_list[0])):
+        weights_per_layer = [
+            weights[layer_index] for weights in aggregated_weights_as_list
+        ]
+        weights_per_layer = tl.stack(weights_per_layer)
+        agg_layer = tl.mean(weights_per_layer, axis=0)
+        agg_weights.append(agg_layer)
+    return agg_weights
 
 @aggregate_weights
 def fed_avg(aggregated_weights_as_list: list, *args, **kwargs):
@@ -70,12 +80,4 @@ def fed_avg(aggregated_weights_as_list: list, *args, **kwargs):
         flex_pool.aggregators.map(flex_pool.servers, fed_avg)
     """
     set_tensorly_backend(aggregated_weights_as_list)
-    agg_weights = []
-    for layer_index in range(len(aggregated_weights_as_list[0])):
-        weights_per_layer = [
-            weights[layer_index] for weights in aggregated_weights_as_list
-        ]
-        weights_per_layer = tl.stack(weights_per_layer)
-        agg_layer = tl.mean(weights_per_layer, axis=0)
-        agg_weights.append(agg_layer)
-    return agg_weights
+    return fed_avg_f(aggregated_weights_as_list)
