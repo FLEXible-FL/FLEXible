@@ -18,6 +18,7 @@ from flex.pool.primitives_pt import set_aggregated_diff_weights_pt
 from flex.pool.primitives_pt import collect_client_diff_weights_pt
 
 from flex.pool.aggregators import fed_avg
+from flex.pool.aggregators import fed_avg_f
 from flex.pool.aggregators import set_tensorly_backend
 
 from flex.pool.decorators import init_server_model
