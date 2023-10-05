@@ -51,7 +51,11 @@ class LazyIndexable:
         return LazyIndexable(
             self._iterable,
             iterable_indexes=self._iterable_indexes[s],
+<<<<<<< Updated upstream
             length=len(self._iterable_indexes[s]),
+=======
+            length=self._len if self._len is None else len(self._iterable_indexes[s]),
+>>>>>>> Stashed changes
             storage=self._storage,
             last_access=self._last_access,
         )

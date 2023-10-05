@@ -250,7 +250,11 @@ class FedDataDistribution(object):
         for client_id in y_data:
             yield client_id, Dataset(
                 X_data=centralized_data.X_data[x_data_indexes[client_id]],
+<<<<<<< Updated upstream
                 y_data=LazyIndexable(y_data[client_id], len(y_data[client_id])),
+=======
+                y_data=np.asarray(y_data[client_id]),
+>>>>>>> Stashed changes
             )
 
     @classmethod
