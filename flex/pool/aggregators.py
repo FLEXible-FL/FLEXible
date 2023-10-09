@@ -44,11 +44,21 @@ def set_tensorly_backend(
 
 
 def fed_avg_f(aggregated_weights_as_list: list):
+    n_clients = len(aggregated_weights_as_list)
+    ponderation = [1.]*n_clients
+    return weighted_fed_avg_f(aggregated_weights_as_list, ponderation)
+
+
+def weighted_fed_avg_f(aggregated_weights_as_list: list, ponderation: list):
+    n_layers = len(aggregated_weights_as_list[0])
     agg_weights = []
-    for layer_index in range(len(aggregated_weights_as_list[0])):
-        weights_per_layer = [
-            weights[layer_index] for weights in aggregated_weights_as_list
-        ]
+    for layer_index in range(n_layers):
+        weights_per_layer = []
+        for client_weights, p in zip(aggregated_weights_as_list, ponderation):
+            w = tl.tensor(client_weights[layer_index])
+            context = tl.context(w)
+            w = w * tl.tensor(p, **context)
+            weights_per_layer.append(w)
         weights_per_layer = tl.stack(weights_per_layer)
         agg_layer = tl.mean(weights_per_layer, axis=0)
         agg_weights.append(agg_layer)
@@ -83,3 +93,34 @@ def fed_avg(aggregated_weights_as_list: list):
     """
     set_tensorly_backend(aggregated_weights_as_list)
     return fed_avg_f(aggregated_weights_as_list)
+
+
+@aggregate_weights
+def weighted_fed_avg(aggregated_weights_as_list: list, ponderation: list):
+    """Function that implements de FedAvg aggregation method
+
+    Args:
+        aggregated_weights_as_list (list): List which contains
+        all the weights to aggregate
+
+    Returns:
+        np.array: An array with the aggregated weights
+
+    Example of use assuming you are using a client-server architechture:
+
+        from flex.pool.primitive_functions import fed_avg
+
+        aggregator = flex_pool.aggregators
+        server = flex_pool.servers
+        aggregator.map(server, fed_avg)
+
+    Example of use using the FlexPool without separating server
+    and aggregator, and following a client-server architechture.
+
+        from flex.pool.primitive_functions import fed_avg
+
+        flex_pool.aggregators.map(flex_pool.servers, fed_avg)
+    """
+    set_tensorly_backend(aggregated_weights_as_list)
+    return weighted_fed_avg_f(aggregated_weights_as_list, ponderation)
+
