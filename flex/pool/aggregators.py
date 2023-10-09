@@ -45,7 +45,7 @@ def set_tensorly_backend(
 
 def fed_avg_f(aggregated_weights_as_list: list):
     n_clients = len(aggregated_weights_as_list)
-    ponderation = [1/n_clients] * n_clients
+    ponderation = [1 / n_clients] * n_clients
     return weighted_fed_avg_f(aggregated_weights_as_list, ponderation)
 
 
