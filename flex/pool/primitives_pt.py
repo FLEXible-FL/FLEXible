@@ -85,22 +85,22 @@ def collect_client_diff_weights_pt(client_flex_model, *args, **kwargs):
         flex_pool.clients.map(collect_client_diff_weights_pt, flex_pool.aggregators)
     """
     import torch
-
     ignore_weights = kwargs.get("ignore_weights", None)
-    weight_dict = client_flex_model["model"].state_dict()
-    try:
-        previous_weight_dict = client_flex_model["previous_model"].state_dict()
-    except KeyError as e:
-        raise Exception(
-            'A copy of the model before training must be stored in client FlexModel using key: "previous_model"'
-        ) from e
-    parameters = []
-    for name in weight_dict:
-        if check_ignored_weights_pt(name, ignore_weights=ignore_weights):
-            parameters.append(torch.tensor([]))
-            continue
-        weight_diff = weight_dict[name] - previous_weight_dict[name]
-        parameters.append(weight_diff)
+    with torch.no_grad():
+        weight_dict = client_flex_model["model"].state_dict()
+        try:
+            previous_weight_dict = client_flex_model["previous_model"].state_dict()
+        except KeyError as e:
+            raise Exception(
+                'A copy of the model before training must be stored in client FlexModel using key: "previous_model"'
+            ) from e
+        parameters = []
+        for name in weight_dict:
+            if check_ignored_weights_pt(name, ignore_weights=ignore_weights):
+                parameters.append(torch.tensor([]))
+                continue
+            weight_diff = weight_dict[name] - previous_weight_dict[name]
+            parameters.append(weight_diff)
     return parameters
 
 
@@ -138,16 +138,16 @@ def collect_clients_weights_pt(client_flex_model, *args, **kwargs):
         flex_pool.clients.map(collect_weights_pt, flex_pool.aggregators)
     """
     import torch
-
     ignore_weights = kwargs.get("ignore_weights", None)
-    parameters = []
-    weight_dict = client_flex_model["model"].state_dict()
-    for name in weight_dict:
-        w = weight_dict[name]
-        if check_ignored_weights_pt(name, ignore_weights=ignore_weights):
-            w = torch.tensor([])
-            continue
-        parameters.append(w)
+    with torch.no_grad():
+        parameters = []
+        weight_dict = client_flex_model["model"].state_dict()
+        for name in weight_dict:
+            w = weight_dict[name]
+            if check_ignored_weights_pt(name, ignore_weights=ignore_weights):
+                w = torch.tensor([])
+                continue
+            parameters.append(w)
     return parameters
 
 
@@ -216,7 +216,6 @@ def set_aggregated_diff_weights_pt(
     import torch
 
     with torch.no_grad():
-        server_flex_model["model"] = server_flex_model["model"]
         weight_dict = server_flex_model["model"].state_dict()
         for layer_key, new in zip(weight_dict, aggregated_diff_weights):
             try:
