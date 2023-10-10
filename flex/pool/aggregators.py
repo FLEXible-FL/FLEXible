@@ -70,8 +70,8 @@ def weighted_fed_avg_f(aggregated_weights_as_list: list, ponderation: list):
     for layer_index in range(n_layers):
         weights_per_layer = []
         for client_weights, p in zip(aggregated_weights_as_list, ponderation):
-            w = tl.tensor(client_weights[layer_index])
-            context = tl.context(w)
+            context = tl.context(client_weights[layer_index])
+            w = tl.tensor(client_weights[layer_index], **context)
             w = w * tl.tensor(p, **context)
             weights_per_layer.append(w)
         weights_per_layer = tl.stack(weights_per_layer)
