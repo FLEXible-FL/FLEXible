@@ -100,6 +100,7 @@ def collect_client_diff_weights_pt(client_flex_model, *args, **kwargs):
         flex_pool.clients.map(collect_client_diff_weights_pt, flex_pool.aggregators)
     """
     import torch
+
     ignore_weights = kwargs.get("ignore_weights", None)
     with torch.no_grad():
         weight_dict = client_flex_model["model"].state_dict()
@@ -153,6 +154,7 @@ def collect_clients_weights_pt(client_flex_model, *args, **kwargs):
         flex_pool.clients.map(collect_weights_pt, flex_pool.aggregators)
     """
     import torch
+
     ignore_weights = kwargs.get("ignore_weights", None)
     with torch.no_grad():
         parameters = []
