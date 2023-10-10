@@ -45,7 +45,7 @@ def set_tensorly_backend(
 
 def fed_avg_f(aggregated_weights_as_list: list):
     n_clients = len(aggregated_weights_as_list)
-    ponderation = [1.0] * n_clients
+    ponderation = [1 / n_clients] * n_clients
     return weighted_fed_avg_f(aggregated_weights_as_list, ponderation)
 
 
@@ -55,12 +55,12 @@ def weighted_fed_avg_f(aggregated_weights_as_list: list, ponderation: list):
     for layer_index in range(n_layers):
         weights_per_layer = []
         for client_weights, p in zip(aggregated_weights_as_list, ponderation):
-            w = tl.tensor(client_weights[layer_index])
-            context = tl.context(w)
+            context = tl.context(client_weights[layer_index])
+            w = tl.tensor(client_weights[layer_index], **context)
             w = w * tl.tensor(p, **context)
             weights_per_layer.append(w)
         weights_per_layer = tl.stack(weights_per_layer)
-        agg_layer = tl.mean(weights_per_layer, axis=0)
+        agg_layer = tl.sum(weights_per_layer, axis=0)
         agg_weights.append(agg_layer)
     return agg_weights
 
