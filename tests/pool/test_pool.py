@@ -69,6 +69,16 @@ class TestFlexPool(unittest.TestCase):
         assert len(p.select(lambda *args: True)) == len(p)
         assert len(p.actor_ids) == len(p)
 
+    def test_get_property(self):
+        p = FlexPool.client_server_architecture(self._iris, lambda *args: None)
+        assert p[0].actor_ids[0] in p.actor_ids
+
+    def test_get_property_error(self):
+        p = FlexPool.client_server_architecture(self._iris, lambda *args: None)
+        n_actors = len(p)
+        with pytest.raises(IndexError):
+            p[n_actors]
+
     def test_check_compatibility(self):
         p = FlexPool.client_server_architecture(self._fld, lambda *args: None)
         server_pool = p.servers
