@@ -308,5 +308,6 @@ class FlexPool:
             {actor_id: FlexRole.server_aggregator_client for actor_id in actors_ids}
         )
 
-    def __iter__(self):
-        yield from self._actors
+    def __getitem__(self, item):
+        actor_id = list(self._actors.keys())[item]
+        return self.select(lambda a, b: a == actor_id)
