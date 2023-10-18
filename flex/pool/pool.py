@@ -307,3 +307,6 @@ class FlexPool:
         return FlexActors(
             {actor_id: FlexRole.server_aggregator_client for actor_id in actors_ids}
         )
+
+    def __iter__(self):
+        yield from self._actors

@@ -69,6 +69,14 @@ class TestFlexPool(unittest.TestCase):
         assert len(p.select(lambda *args: True)) == len(p)
         assert len(p.actor_ids) == len(p)
 
+    def test_iter_property(self):
+        p = FlexPool.client_server_architecture(self._iris, lambda *args: None)
+        # Do it twice to ensure that the iterator is resetted properly
+        assert all(a == b for a, b in zip(p._actors, p))
+        assert len(p) == len(list(p))
+        assert all(a == b for a, b in zip(p._actors, p))
+        assert len(p) == len(list(p))
+
     def test_check_compatibility(self):
         p = FlexPool.client_server_architecture(self._fld, lambda *args: None)
         server_pool = p.servers
