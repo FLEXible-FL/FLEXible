@@ -16,17 +16,18 @@ class FedDatasetConfig:
     """Class used to represent a configuration to federate a centralized dataset.
     The following table shows the compatiblity of each option:
 
-    | Options compatibility   | **n_clients** | **client_names** | **weights** | **weights_per_class** | **replacement** | **classes_per_client** | **features_per_client** | **indexes_per_client** | **group_by_label_index** |
-    |-------------------------|---------------|------------------|-------------|-----------------------|-----------------|------------------------|-------------------------|------------------------|----------------------|
-    | **n_clients**           | -             | Y                | Y           | Y                     | Y               | Y                      | Y                       | N                      | N                    |
-    | **client_names**        | -             | -                | Y           | Y                     | Y               | Y                      | Y                       | Y                      | N                    |
-    | **weights**             | -             | -                | -           | N                     | Y               | Y                      | Y                       | N                      | N                    |
-    | **weights_per_class**   | -             | -                | -           | -                     | Y               | N                      | N                       | N                      | N                    |
-    | **replacement**         | -             | -                | -           | -                     | -               | Y                      | N                       | N                      | N                    |
-    | **classes_per_client**  | -             | -                | -           | -                     | -               | -                      | N                       | N                      | N                    |
-    | **features_per_client** | -             | -                | -           | -                     | -               | -                      | -                       | N                      | N                    |
-    | **indexes_per_client**  | -             | -                | -           | -                     | -               | -                      | -                       | -                      | N                    |
-    | **group_by_label_index**    | -             | -                | -           | -                     | -               | -                      | -                       | -                      | -                    |
+    | Options compatibility   | **n_clients** | **client_names** | **weights** | **weights_per_class** | **replacement** | **classes_per_client** | **features_per_client** | **indexes_per_client** | **group_by_label_index** | **keep_labels** |
+    |-------------------------|---------------|------------------|-------------|-----------------------|-----------------|------------------------|-------------------------|------------------------|----------------------|----------------------|
+    | **n_clients**           | -             | Y                | Y           | Y                     | Y               | Y                      | Y                       | N                      | N                    | Y                    |
+    | **client_names**        | -             | -                | Y           | Y                     | Y               | Y                      | Y                       | Y                      | N                    | Y                    |
+    | **weights**             | -             | -                | -           | N                     | Y               | Y                      | Y                       | N                      | N                    | Y                    |
+    | **weights_per_class**   | -             | -                | -           | -                     | Y               | N                      | N                       | N                      | N                    | Y                    |
+    | **replacement**         | -             | -                | -           | -                     | -               | Y                      | N                       | N                      | N                    | Y                    |
+    | **classes_per_client**  | -             | -                | -           | -                     | -               | -                      | N                       | N                      | N                    | Y                    |
+    | **features_per_client** | -             | -                | -           | -                     | -               | -                      | -                       | N                      | N                    | Y                    |
+    | **indexes_per_client**  | -             | -                | -           | -                     | -               | -                      | -                       | -                      | N                    | Y                    |
+    | **group_by_label_index**| -             | -                | -           | -                     | -               | -                      | -                       | -                      | -                    | N                    |
+    | **keep_labels**         | -             | -                | -           | -                     | -               | -                      | -                       | -                      | -                    | -                    |
 
     Attributes
     ----------
@@ -56,6 +57,8 @@ class FedDatasetConfig:
         Data indexes to assign to each client. Default None.
     group_by_label_index: Optional[int]
         Index which indicates which feature unique values will be used to generate federated clients. Default None.
+    keep_labels: Optional[list[bool]]
+        Whether each node keeps or not the labels or y_data
     """
 
     seed: Optional[int] = None
@@ -68,6 +71,7 @@ class FedDatasetConfig:
     features_per_client: Optional[Union[int, npt.NDArray, Tuple[int]]] = None
     indexes_per_client: Optional[npt.NDArray] = None
     group_by_label_index: Optional[int] = None
+    keep_labels: Optional[list[bool]] = None
 
     def _check_incomp(self, dict, option1, option2):
         """This function checks if two options are compatible, if not it raises and exception"""
@@ -106,11 +110,19 @@ class FedDatasetConfig:
             self.__validate_classes_per_client()
         elif self.features_per_client is not None:
             self.__validate_features_per_client()
+        if self.keep_labels is not None:
+            self.__validate_keep_labels()
 
     def __validate_indexes_per_client(self):
         if len(self.indexes_per_client) != self.n_clients:
             raise InvalidConfig(
                 "The number of provided clients should equal the length of indexes per client."
+            )
+
+    def __validate_keep_labels(self):
+        if len(self.keep_labels) != self.n_clients:
+            raise InvalidConfig(
+                "keep_labels list should have the same length as n_clients."
             )
 
     def __validate_clients_and_weights(self):
@@ -138,7 +150,6 @@ class FedDatasetConfig:
                     "weights_per_class must be a two dimensional array where the first dimension is the number of clients and the second is the number of classes of the dataset to federate."
                 )
             )
-
         if self.weights_per_class is not None and self.n_clients != len(
             self.weights_per_class
         ):
