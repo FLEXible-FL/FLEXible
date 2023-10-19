@@ -129,18 +129,18 @@ class FedDataDistribution(object):
         return cls.from_config(centralized_data, config)
 
     @classmethod
-    def iid_distribution(cls, centralized_data: Dataset, n_nodes: int = 2):
+    def iid_distribution(cls, centralized_data: Dataset, n_clients: int = 2):
         """Function to create a FedDataset for an IID experiment. We consider the simplest situation
         in which the data is distributed by giving the same amount of data to each node.
 
         Args:
             centralized_data (Dataset): Centralized dataset represented as a FlexDataObject.
-            n_nodes (int): Number of nodes in the Federated Learning experiment. Default 2.
+            n_clients (int): Number of nodes in the Federated Learning experiment. Default 2.
 
         Returns:
             federated_dataset (FedDataset): The federated dataset.
         """
-        config = FedDatasetConfig(n_nodes=n_nodes)
+        config = FedDatasetConfig(n_clients=n_clients)
         return FedDataDistribution.from_config(centralized_data, config)
 
     @classmethod
