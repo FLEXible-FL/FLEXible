@@ -367,6 +367,16 @@ class TestFlexDataDistribution(unittest.TestCase):
             for i in range(len(flex_dataset))
         )
 
+    def test_keep_labels(self):
+        config = FedDatasetConfig(
+            n_clients=2,
+            client_names=["client_0", "client_1"],
+            keep_labels=[True, False],
+        )
+        flex_dataset = FedDataDistribution.from_config(self._iris, config)
+        assert flex_dataset["client_0"].y_data is not None
+        assert flex_dataset["client_1"].y_data is None
+
     def test_from_torchtext_dataset(self):
         from torchtext.datasets import AG_NEWS
 
@@ -507,7 +517,7 @@ class TestFlexDataDistribution(unittest.TestCase):
 
     @pytest.mark.skipif(
         condition=os.getenv("GITHUB_ACTIONS") == "true",
-        reason="Sentiment140 is very huge and exceed the RAM limit on GitHub.",
+        reason="Food101 is very huge and exceeds the RAM limit on GitHub.",
     )
     def test_from_torchvision_dataset_lazyly(self):
         from torchvision.datasets import Food101
@@ -649,7 +659,7 @@ class TestFlexDataDistribution(unittest.TestCase):
 
     @pytest.mark.skipif(
         condition=os.getenv("GITHUB_ACTIONS") == "true",
-        reason="Sentiment140 is very huge and exceed the RAM limit on GitHub.",
+        reason="Sentiment140 is very huge and exceeds the RAM limit on GitHub.",
     )
     def test_loading_fedsentiment_using_from_config(self):
         fed_data, test_data = load("federated_sentiment140", return_test=True)

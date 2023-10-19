@@ -179,7 +179,12 @@ class FedDataDistribution(object):
         if config.client_names is None:
             config_.client_names = list(range(config_.n_clients))
 
-        labels = centralized_data.y_data.to_numpy()
+        if config.keep_labels is None:
+            config_.keep_labels = [True] * config_.n_clients
+
+        labels = None
+        if centralized_data.y_data is not None:
+            labels = centralized_data.y_data.to_numpy()
 
         # Normalize weights when no replacement
         if (
@@ -237,7 +242,7 @@ class FedDataDistribution(object):
                 fed_dataset[config_.client_names[i]] = Dataset(
                     X_data=X_data,
                     y_data=centralized_data.y_data[sub_data_indices]
-                    if centralized_data.y_data is not None
+                    if centralized_data.y_data is not None and config_.keep_labels[i]
                     else None,
                 )
 
@@ -282,10 +287,12 @@ class FedDataDistribution(object):
             the dataset associated to such client.
 
         """
-        for idx, name in zip(config.indexes_per_client, config.client_names):
+        for idx, name, keep in zip(
+            config.indexes_per_client, config.client_names, config.keep_labels
+        ):
             yield name, Dataset(
                 X_data=data.X_data[idx],
-                y_data=data.y_data[idx] if data.y_data is not None else None,
+                y_data=data.y_data[idx] if data.y_data is not None and keep else None,
             )
 
     @classmethod

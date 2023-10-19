@@ -78,6 +78,7 @@ class TestFlexDatasetConfig(unittest.TestCase):
         b = FedDatasetConfig(
             n_clients=3, classes_per_client=3, indexes_per_client=[[2]]
         )
+        FedDatasetConfig(n_clients=3, keep_labels=[True] * 3, indexes_per_client=[[2]])
         with pytest.raises(InvalidConfig):
             a.validate()
         with pytest.raises(InvalidConfig):
@@ -110,5 +111,10 @@ class TestFlexDatasetConfig(unittest.TestCase):
 
     def test_weights_per_class_size(self):
         a = FedDatasetConfig(n_clients=3, weights_per_class=np.ones((1, 2)))
+        with pytest.raises(InvalidConfig):
+            a.validate()
+
+    def test_keep_labels(self):
+        a = FedDatasetConfig(n_clients=3, keep_labels=[True])
         with pytest.raises(InvalidConfig):
             a.validate()
