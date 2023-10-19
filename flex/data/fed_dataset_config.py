@@ -86,7 +86,7 @@ class FedDatasetConfig:
     features_per_client: Optional[Union[int, npt.NDArray, Tuple[int]]] = None
     indexes_per_client: Optional[npt.NDArray] = None
     group_by_label_index: Optional[int] = None
-    keep_labels: Optional[list[bool]] = None
+    keep_labels: Optional[List[bool]] = None
 
     def _check_incomp(self, dict, option1, option2):
         """This function checks if two options are compatible, if not it raises and exception"""
