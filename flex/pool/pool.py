@@ -27,7 +27,7 @@ from flex.model.model import FlexModel
 class FlexPool:
     """
     Class that orchest the training phase of a federated learning experiment.
-    The FlexPool class is responsible for orchestating the clients to train a
+    The FlexPool class is responsible for orchestating the nodes to train a
     federated model.
     This class represents a pool of actors and is in charge of checking the
     communications between them during the process of training a federated model.
@@ -148,14 +148,14 @@ class FlexPool:
         If criteria is an integer, a subset of the available nodes of size criteria is
         randomly sampled. If criteria is a function, then we select those nodes where
         the function returns True values. Note that, the function must have at least
-        two arguments, a client id and the roles associated to such client id.
+        two arguments, a node id and the roles associated to such node id.
         The actor_id is a string, and the actor_role is a FlexRole object.
 
         Note: This function doesn't send a copy of the original pool, it sends a reference.
             Changes made on the returned pool affect the original pool.
         Args:
             criteria (int, Callable): if a function is provided, then it must return
-            True/False values for each pair of client_id, client_roles. Additional arguments
+            True/False values for each pair of node_id, node_roles. Additional arguments
             required for the function are passed in criteria_args and criteria_kwargs.
             Otherwise, criteria is interpreted as number of nodes to randomly sample from the pool.
             criteria_args: additional args required for the criteria function. Otherwise ignored.
