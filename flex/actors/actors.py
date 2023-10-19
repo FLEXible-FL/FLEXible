@@ -13,7 +13,7 @@ class FlexActors(OrderedDict):
     Attributes
     ----------
     data (collections.OrderedDict): The structure is a dictionary
-        with the clients ids as keys and Roles as a value.
+        with the node ids as keys and Roles as a value.
     """
 
     def check_compatibility(self, key1: Hashable, key2: Hashable) -> bool:
