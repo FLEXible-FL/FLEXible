@@ -152,9 +152,7 @@ class FedDatasetConfig:
             )
 
         if self.weights is not None and self.n_nodes != len(self.weights):
-            raise InvalidConfig(
-                "The number of weights must equal the number of nodes."
-            )
+            raise InvalidConfig("The number of weights must equal the number of nodes.")
 
         if (
             self.weights_per_label is not None
