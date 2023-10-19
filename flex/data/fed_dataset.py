@@ -27,13 +27,13 @@ from flex.data.preprocessing_utils import normalize, one_hot_encoding
 
 class FedDataset(UserDict):
     """Class that represents a federated dataset for the Flex library.
-    The dataset contains the ids of the clients and the dataset associated
-    with each client.
+    The dataset contains the ids of the nodes and the dataset associated
+    with each node.
 
     Attributes
     ----------
     data (collections.UserDict): The structure is a dictionary
-        with the clients ids as keys and the dataset as value.
+        with the node ids as keys and the dataset as value.
     """
 
     def __setitem__(self, key: Hashable, item: Dataset) -> None:
@@ -48,17 +48,17 @@ class FedDataset(UserDict):
     def apply(
         self,
         func: Callable,
-        clients_ids: List[Hashable] = None,
+        node_ids: List[Hashable] = None,
         num_proc: int = 1,
         **kwargs,
     ):
         """This function lets apply a custom function to the FlexDataset in parallel.
 
-        The **kwargs provided to this function are all the kwargs of the custom function provided by the client.
+        The **kwargs provided to this function are all the kwargs of the custom function provided by the node.
 
         Args:
             func (Callable, optional): Function to apply to preprocess the data.
-            clients_ids (List[Hashtable], optional): List containig the the clients id where func will
+            node_ids (List[Hashtable], optional): List containig the the node ids where func will
             be applied. Each element of the list must be hashable and part of the FlexDataset. Defaults to None.
             num_proc (int, optional): Number of processes to parallelize, negative values are ignored. Default to 1
 
@@ -66,51 +66,51 @@ class FedDataset(UserDict):
             FedDataset: The modified FlexDataset.
 
         Raises:
-            ValueError: All client ids given must be in the FlexDataset.
+            ValueError: All node ids given must be in the FlexDataset.
 
         """
 
-        if clients_ids is None:
-            clients_ids = list(self.keys())
-        elif isinstance(clients_ids, str):
-            if clients_ids not in self.keys():
-                raise ValueError("All client ids given must be in the FedDataset.")
-        elif any(client not in self.keys() for client in clients_ids):
-            raise ValueError("All client ids given must be in the FedDataset.")
+        if node_ids is None:
+            node_ids = list(self.keys())
+        elif isinstance(node_ids, str):
+            if node_ids not in self.keys():
+                raise ValueError("All node ids given must be in the FedDataset.")
+        elif any(node not in self.keys() for node in node_ids):
+            raise ValueError("All nodes ids given must be in the FedDataset.")
 
         error_msg = f"The provided function: {func.__name__} is expected to have at least 1 argument/s."
         assert check_min_arguments(func, min_args=1), error_msg
 
-        # if any(self[i].X_data._is_generator for i in clients_ids):
+        # if any(self[i].X_data._is_generator for i in node_ids):
         #     raise NotImplementedError("LazyIndexable with generators will be supported soon")
 
         if num_proc < 2:
-            updates = self._map_single(func, clients_ids, **kwargs)
+            updates = self._map_single(func, node_ids, **kwargs)
         else:
             f = partial(self._map_single, func)
-            updates = self._map_parallel(f, clients_ids, num_proc=num_proc, **kwargs)
+            updates = self._map_parallel(f, node_ids, num_proc=num_proc, **kwargs)
 
         new_fld = deepcopy(
             self
-        )  # seguramente solo haga falta copiar los que no están en clients_ids
+        )  # seguramente solo haga falta copiar los que no están en node_ids
         new_fld.update(updates)
         return new_fld
 
     def _map_parallel(
         self,
         func: Callable,
-        clients_ids: List[Hashable],
+        node_ids: List[Hashable],
         num_proc: int = 2,
         **kwargs,
     ):
         """This function lets apply a custom function to the FlexDataset in parallel.
 
-        The  **kwargs provided to this function are the kwargs of the custom function provided by the client.
+        The  **kwargs provided to this function are the kwargs of the custom function provided by the node.
 
         Args:
-            fld (FedDataset): FlexDataset containing all the data from the clients.
+            fld (FedDataset): FlexDataset containing all the data from the nodes.
             func (Callable): Function to apply to preprocess the data.
-            clients_ids (List[Hashtable]): List containig the the clients id where func will
+            node_ids (List[Hashtable]): List containig the the nodes id where func will
             be applied. Each element of the list must be hashable and part of the FlexDataset
             num_proc (int): Number of processes to parallelize, negative values are ignored. Default to 2
 
@@ -123,7 +123,7 @@ class FedDataset(UserDict):
         f = partial(func, **kwargs)  # bind **kwargs arguments to each call
 
         with Pool(processes=num_proc) as p:
-            for i in p.imap(f, clients_ids):
+            for i in p.imap(f, node_ids):
                 updates.update(i)
 
         return updates
@@ -131,7 +131,7 @@ class FedDataset(UserDict):
     def _map_single(
         self,
         func: Callable,
-        clients_ids: List[Hashable],
+        node_ids: List[Hashable],
         **kwargs,
     ):
         """This function lets apply a custom function to the FlexDataset secuentially.
@@ -141,57 +141,57 @@ class FedDataset(UserDict):
         to try to use the _map_parallel
 
         The *args and the **kwargs provided to this function are all the args and kwargs
-        of the custom function provided by the client.
+        of the custom function provided by the node.
 
         Args:
             func (Callable): Function to apply to preprocess the data.
-            clients_ids (List[Hashtable]): List containig the the clients id where func will
+            node_ids (List[Hashtable]): List containig the the node ids where func will
             be applied. Each element of the list must be hashable and part of the FlexDataset.
 
         Returns:
             FedDataset: The modified FlexDataset.
         """
-        if not isinstance(clients_ids, list):
-            clients_ids = [clients_ids]
+        if not isinstance(node_ids, list):
+            node_ids = [node_ids]
 
-        return {client_id: func(self[client_id], **kwargs) for client_id in clients_ids}
+        return {node_id: func(self[node_id], **kwargs) for node_id in node_ids}
 
     def normalize(
         self,
-        clients_ids: List[Hashable] = None,
+        node_ids: List[Hashable] = None,
         num_proc: int = 0,
         *args,
         **kwargs,
     ):
-        """Function that normalize the data over the clients.
+        """Function that normalize the data over the nodes.
 
         Args:
-            fld (FedDataset): FlexDataset containing all the data from the clients.
-            clients_ids (List[Hashtable], optional): List containig the clients id whether
+            fld (FedDataset): FlexDataset containing all the data from the nodes.
+            node_ids (List[Hashtable], optional): List containig the nodes id whether
             to normalize the data or not. Each element of the list must be hashable. Defaults to None.
             num_proc (int, optional): Number of processes to paralelize. Default to None (Use all).
 
         Returns:
             FedDataset: The FlexDataset normalized.
         """
-        return self.apply(normalize, clients_ids, num_proc, *args, **kwargs)
+        return self.apply(normalize, node_ids, num_proc, *args, **kwargs)
 
     def one_hot_encoding(
         self,
-        clients_ids: List[Hashable] = None,
+        node_ids: List[Hashable] = None,
         num_proc: int = 0,
         *args,
         **kwargs,
     ):
-        """Function that apply one hot encoding to the client classes.
+        """Function that apply one hot encoding to the node labels.
 
         Args:
-            fld (FedDataset): FlexDataset containing all the data from the clients.
-            clients_ids (List[Hashtable], optional): List containing the clients id whether
+            fld (FedDataset): FlexDataset containing all the data from the nodes.
+            node_ids (List[Hashtable], optional): List containing the nodes id whether
             to normalize the data or not. Each element of the list must be hashable. Defaults to None.
             num_proc (int, optional): Number of processes to paralelize. Default to None (Use all).
 
         Returns:
             FedDataset: The FlexDataset normalized.
         """
-        return self.apply(one_hot_encoding, clients_ids, num_proc, *args, **kwargs)
+        return self.apply(one_hot_encoding, node_ids, num_proc, *args, **kwargs)

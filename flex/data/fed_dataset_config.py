@@ -57,14 +57,14 @@ class FedDatasetConfig:
         A numpy.array which provides the proportion of data to give to each node. Default None.
     weights_per_label: Optional[npt.NDArray]
         A numpy.array which provides the proportion of data to give to each node and class of the dataset to federate. \
-        We expect a bidimensional array of shape (n, m) where "n" is the number of nodes and "m" is the number of classes of \
+        We expect a bidimensional array of shape (n, m) where "n" is the number of nodes and "m" is the number of labels of \
         the dataset to federate. Default None.
     replacement: bool
         Whether the samping procedure used to split a centralized dataset is with replacement or not. Default False
     labels_per_node: Optional[Union[int, npt.NDArray, Tuple[int]]]
-        Classes to assign to each node, if provided as an int, it is the number classes per node, if provided as a \
-        tuple of ints, it establishes a mininum and a maximum of number of classes per node, a random number sampled \
-        in such interval decides the number of classes of each node. If provided as a list of lists, it establishes the classes \
+        Classes to assign to each node, if provided as an int, it is the number labels per node, if provided as a \
+        tuple of ints, it establishes a mininum and a maximum of number of labels per node, a random number sampled \
+        in such interval decides the number of labels of each node. If provided as a list of lists, it establishes the labels \
         assigned to each node. Default None.
     features_per_node: Optional[Union[int, npt.NDArray, Tuple[int]]]
         Features to assign to each node, it share the same interface as labels_per_node. Default None.
@@ -160,7 +160,7 @@ class FedDatasetConfig:
         ):
             raise InvalidConfig(
                 (
-                    "weights_per_label must be a two dimensional array where the first dimension is the number of nodes and the second is the number of classes of the dataset to federate."
+                    "weights_per_label must be a two dimensional array where the first dimension is the number of nodes and the second is the number of labels of the dataset to federate."
                 )
             )
         if self.weights_per_label is not None and self.n_nodes != len(
@@ -183,7 +183,7 @@ class FedDatasetConfig:
         if isinstance(self.labels_per_node, tuple):
             if len(self.labels_per_node) != 2:
                 raise InvalidConfig(
-                    f"labels_per_node if provided as a tuple, it must have two elements, mininum number of classes per node and maximum number of classes per node, but labels_per_node={self.labels_per_node}."
+                    f"labels_per_node if provided as a tuple, it must have two elements, mininum number of labels per node and maximum number of labels per node, but labels_per_node={self.labels_per_node}."
                 )
         elif not isinstance(self.labels_per_node, int) and self.n_nodes != len(
             self.labels_per_node
