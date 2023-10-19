@@ -52,9 +52,7 @@ class TestFlexDatasetConfig(unittest.TestCase):
             a.validate()
 
     def test_features_per_client_arr(self):
-        a = FedDatasetConfig(
-            features_per_node=[[0, 1], [2, 3], [4]], replacement=True
-        )
+        a = FedDatasetConfig(features_per_node=[[0, 1], [2, 3], [4]], replacement=True)
         with pytest.raises(InvalidConfig):
             a.validate()
 
@@ -72,12 +70,8 @@ class TestFlexDatasetConfig(unittest.TestCase):
             a.validate()
 
     def test_incompatible_options_w_indexes_per_client(self):
-        a = FedDatasetConfig(
-            n_nodes=3, features_per_node=3, indexes_per_node=[[2]]
-        )
-        b = FedDatasetConfig(
-            n_nodes=3, labels_per_node=3, indexes_per_node=[[2]]
-        )
+        a = FedDatasetConfig(n_nodes=3, features_per_node=3, indexes_per_node=[[2]])
+        b = FedDatasetConfig(n_nodes=3, labels_per_node=3, indexes_per_node=[[2]])
         FedDatasetConfig(n_nodes=3, keep_labels=[True] * 3, indexes_per_node=[[2]])
         with pytest.raises(InvalidConfig):
             a.validate()
