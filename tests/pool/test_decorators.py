@@ -25,7 +25,7 @@ class TestFlexPool(unittest.TestCase):
     def _fixture_iris_dataset(self):
         iris = load_iris()
         c_iris = Dataset.from_numpy(iris.data, iris.target)
-        self.f_iris = FedDataDistribution.iid_distribution(c_iris, n_nodes=2)
+        self.f_iris = FedDataDistribution.iid_distribution(c_iris, n_clients=2)
 
     def test_decorators_guard(self):
         with pytest.raises(AssertionError):
