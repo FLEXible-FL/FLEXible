@@ -130,7 +130,7 @@ class TestFlexDataObject(unittest.TestCase):
         assert torch.is_tensor(train_features)
         assert len(train_labels) == batch_size
         assert torch.is_tensor(train_labels)
-        assert len(train_labels[0]) == 10  # number of classes
+        assert len(train_labels[0]) == 10  # number of labels
 
     def test_to_tf_dataset_w_flex_datasets(self):
         import tensorflow as tf
