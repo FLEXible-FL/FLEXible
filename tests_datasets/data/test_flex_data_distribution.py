@@ -9,9 +9,9 @@ from flex.data import FedDataDistribution, FedDatasetConfig
 def fixture_simple_fex_data_object():
     return FedDatasetConfig(
         seed=0,
-        n_clients=2,
+        n_nodes=2,
         replacement=False,
-        client_names=["client_0", "client_1"],
+        node_ids=["client_0", "client_1"],
     )
 
 
@@ -27,7 +27,7 @@ class TestFlexDataDistribution(unittest.TestCase):
         flex_dataset = FedDataDistribution.from_config_with_torchtext_dataset(
             data, self._config
         )
-        assert len(flex_dataset) == self._config.n_clients
+        assert len(flex_dataset) == self._config.n_nodes
         assert len(flex_dataset["client_0"]) == len(flex_dataset["client_1"])
 
     def test_from_huggingface_text_dataset(self):
@@ -39,7 +39,7 @@ class TestFlexDataDistribution(unittest.TestCase):
         flex_dataset = FedDataDistribution.from_config_with_huggingface_dataset(
             data, self._config, X_columns, label_column, lazy=False
         )
-        assert len(flex_dataset) == self._config.n_clients
+        assert len(flex_dataset) == self._config.n_nodes
         assert len(flex_dataset["client_0"]) == len(flex_dataset["client_1"])
         assert (
             len(flex_dataset["client_0"]) + len(flex_dataset["client_1"])

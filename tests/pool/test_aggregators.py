@@ -7,14 +7,14 @@ import tensorly as tl
 from flex.pool.aggregators import fed_avg
 
 
-def simulate_clients_weights_for_module(n_clients, modulename):
+def simulate_clients_weights_for_module(n_nodes, modulename):
     framework = __import__(modulename)
-    n_clients = 5
+    n_nodes = 5
     simulated_client_weights = []
     num_layers = 5
     num_dim = [1, 2, 3, 4, 5]
     layer_ndims = random.sample(num_dim, k=num_layers)
-    for _ in range(n_clients):
+    for _ in range(n_nodes):
         random.seed(0)
         simulated_weights = []
         for ndims in layer_ndims:
@@ -30,13 +30,13 @@ class TestFlexAggregators(unittest.TestCase):
     @pytest.fixture(autouse=True)
     def _fixture_weights(self):
         self._torch_weights = simulate_clients_weights_for_module(
-            n_clients=5, modulename="torch"
+            n_nodes=5, modulename="torch"
         )
         self._tf_weights = simulate_clients_weights_for_module(
-            n_clients=5, modulename="tensorflow"
+            n_nodes=5, modulename="tensorflow"
         )
         self._np_weights = simulate_clients_weights_for_module(
-            n_clients=5, modulename="numpy"
+            n_nodes=5, modulename="numpy"
         )
 
     def test_fed_avg_with_torch(self):
