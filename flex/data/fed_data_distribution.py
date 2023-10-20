@@ -129,18 +129,18 @@ class FedDataDistribution(object):
         return cls.from_config(centralized_data, config)
 
     @classmethod
-    def iid_distribution(cls, centralized_data: Dataset, n_clients: int = 2):
+    def iid_distribution(cls, centralized_data: Dataset, n_nodes: int = 2):
         """Function to create a FedDataset for an IID experiment. We consider the simplest situation
         in which the data is distributed by giving the same amount of data to each node.
 
         Args:
             centralized_data (Dataset): Centralized dataset represented as a FlexDataObject.
-            n_clients (int): Number of nodes in the Federated Learning experiment. Default 2.
+            n_nodes (int): Number of nodes in the Federated Learning experiment. Default 2.
 
         Returns:
             federated_dataset (FedDataset): The federated dataset.
         """
-        config = FedDatasetConfig(n_clients=n_clients)
+        config = FedDatasetConfig(n_nodes=n_nodes)
         return FedDataDistribution.from_config(centralized_data, config)
 
     @classmethod
@@ -359,9 +359,9 @@ class FedDataDistribution(object):
             sub_data_indices = rng.choice(data_indices, data_proportion, replace=False)
         else:  # apply weights_per_label
             sub_data_indices = np.array([], dtype="uint32")
-            sorted_classes = np.sort(np.unique(labels))
+            sorted_labels = np.sort(np.unique(labels))
             all_indices = np.arange(len(labels))
-            for j, c in enumerate(sorted_classes):
+            for j, c in enumerate(sorted_labels):
                 available_class_indices = all_indices[labels == c]
                 proportion_per_class = floor(
                     len(available_class_indices) * config.weights_per_label[node_i][j]
@@ -383,39 +383,39 @@ class FedDataDistribution(object):
     def __configure_weights_per_class(
         cls, rng: np.random.Generator, config: FedDatasetConfig, labels: npt.ArrayLike
     ):
-        sorted_classes = np.sort(np.unique(labels))
-        assigned_classes = []
+        sorted_labels = np.sort(np.unique(labels))
+        assigned_labels = []
         if isinstance(config.labels_per_node, int):
-            histogram = np.zeros_like(sorted_classes)
+            histogram = np.zeros_like(sorted_labels)
             for _ in range(config.n_nodes):
-                individual_assigned_classes = []
+                individual_assigned_labels = []
                 for _ in range(config.labels_per_node):
                     most_frequent = np.max(histogram)
-                    available_classes_indexes = np.arange(len(sorted_classes))
+                    available_labels_indexes = np.arange(len(sorted_labels))
                     tmp_available_indexes = histogram < most_frequent
                     if sum(tmp_available_indexes) != 0:
-                        available_classes_indexes = available_classes_indexes[
+                        available_labels_indexes = available_labels_indexes[
                             tmp_available_indexes
                         ]
-                    indx = rng.choice(available_classes_indexes, size=1, replace=False)
+                    indx = rng.choice(available_labels_indexes, size=1, replace=False)
                     histogram[indx] = histogram[indx] + 1
-                    individual_assigned_classes.append(sorted_classes[indx])
-                assigned_classes.append(individual_assigned_classes)
-            config.labels_per_node = assigned_classes
+                    individual_assigned_labels.append(sorted_labels[indx])
+                assigned_labels.append(individual_assigned_labels)
+            config.labels_per_node = assigned_labels
         elif isinstance(config.labels_per_node, tuple):
-            num_classes_per_node = rng.integers(
+            num_labels_per_node = rng.integers(
                 low=config.labels_per_node[0],
                 high=config.labels_per_node[1] + 1,
                 size=config.n_nodes,
             )
-            for c in num_classes_per_node:
-                n = rng.choice(sorted_classes, size=c, replace=False)
-                assigned_classes.append(n)
-            config.labels_per_node = assigned_classes
+            for c in num_labels_per_node:
+                n = rng.choice(sorted_labels, size=c, replace=False)
+                assigned_labels.append(n)
+            config.labels_per_node = assigned_labels
 
-        config.weights_per_label = np.zeros((config.n_nodes, len(sorted_classes)))
+        config.weights_per_label = np.zeros((config.n_nodes, len(sorted_labels)))
         for node_i, clasess_at_node_i in enumerate(config.labels_per_node):
-            for class_j, label in enumerate(sorted_classes):
+            for class_j, label in enumerate(sorted_labels):
                 if label in clasess_at_node_i:
                     if config.weights is None:
                         config.weights_per_label[node_i, class_j] = 1

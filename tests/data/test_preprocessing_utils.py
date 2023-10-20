@@ -37,7 +37,7 @@ def test_normalize_func_norm_zero(fcd_zeros):
 
 
 def test_one_hot_encoding(fcd_ones):
-    new_fcd = one_hot_encoding(fcd_ones, n_classes=2)
+    new_fcd = one_hot_encoding(fcd_ones, n_labels=2)
     assert new_fcd.y_data.to_numpy().shape[1] == 2
     assert len(new_fcd.y_data) == len(fcd_ones.y_data)
 
