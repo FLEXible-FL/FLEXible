@@ -58,7 +58,7 @@ class TestFlexDataset(unittest.TestCase):
         )
 
     def test_one_hot_encoding(self):
-        new_fld = self._fld.one_hot_encoding(n_classes=2)
+        new_fld = self._fld.one_hot_encoding(n_labels=2)
         assert all(
             client.y_data.to_numpy().shape[1] == 2 for _, client in new_fld.items()
         )

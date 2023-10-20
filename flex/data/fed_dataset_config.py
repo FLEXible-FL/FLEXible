@@ -62,7 +62,7 @@ class FedDatasetConfig:
     replacement: bool
         Whether the samping procedure used to split a centralized dataset is with replacement or not. Default False
     labels_per_node: Optional[Union[int, npt.NDArray, Tuple[int]]]
-        Classes to assign to each node, if provided as an int, it is the number labels per node, if provided as a \
+        labels to assign to each node, if provided as an int, it is the number labels per node, if provided as a \
         tuple of ints, it establishes a mininum and a maximum of number of labels per node, a random number sampled \
         in such interval decides the number of labels of each node. If provided as a list of lists, it establishes the labels \
         assigned to each node. Default None.
@@ -122,7 +122,7 @@ class FedDatasetConfig:
         if self.indexes_per_node is not None:
             self.__validate_indexes_per_node()
         elif self.labels_per_node is not None:
-            self.__validate_classes_per_node()
+            self.__validate_labels_per_node()
         elif self.features_per_node is not None:
             self.__validate_features_per_node()
         if self.keep_labels is not None:
@@ -179,7 +179,7 @@ class FedDatasetConfig:
                 "Provided weights contains negative numbers, we do not allow that."
             )
 
-    def __validate_classes_per_node(self):
+    def __validate_labels_per_node(self):
         if isinstance(self.labels_per_node, tuple):
             if len(self.labels_per_node) != 2:
                 raise InvalidConfig(

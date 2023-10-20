@@ -38,7 +38,7 @@ class TestFlexDatasetConfig(unittest.TestCase):
         with pytest.raises(InvalidConfig):
             a.validate()
 
-    def test_classes_per_client_tuple(self):
+    def test_labels_per_client_tuple(self):
         a = FedDatasetConfig(labels_per_node=(1, 2, 3))
         with pytest.raises(InvalidConfig):
             a.validate()
@@ -46,7 +46,7 @@ class TestFlexDatasetConfig(unittest.TestCase):
         with pytest.raises(InvalidConfig):
             a.validate()
 
-    def test_classes_per_client_arr(self):
+    def test_labels_per_client_arr(self):
         a = FedDatasetConfig(labels_per_node=[0, [0, 2], 1])
         with pytest.raises(InvalidConfig):
             a.validate()
