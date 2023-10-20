@@ -57,7 +57,7 @@ class TestFlexPool(unittest.TestCase):
     def _fixture_iris_dataset(self):
         iris = load_iris()
         tmp = Dataset.from_numpy(iris.data, iris.target)
-        self._iris = FedDataDistribution.iid_distribution(tmp, n_clients=2)
+        self._iris = FedDataDistribution.iid_distribution(tmp, n_nodes=2)
 
     @pytest.fixture(autouse=True)
     def _fixture_flex_dataset(self, fld):
@@ -191,9 +191,7 @@ class TestFlexPool(unittest.TestCase):
     def test_select_int_criteria(self):
         iris = load_iris()
         tmp = Dataset.from_numpy(iris.data, iris.target)
-        self._iris_many_clients = FedDataDistribution.iid_distribution(
-            tmp, n_clients=100
-        )
+        self._iris_many_clients = FedDataDistribution.iid_distribution(tmp, n_nodes=100)
         p = FlexPool.client_server_architecture(self._iris, lambda *args: None)
         pool_size = len(p)
         assert all(len(p.select(i)) == i for i in range(pool_size))

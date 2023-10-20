@@ -22,9 +22,9 @@ class TestFlexPoolPrimitives(unittest.TestCase):
 
         config = FedDatasetConfig(
             seed=0,
-            n_clients=2,
+            n_nodes=2,
             replacement=False,
-            client_names=["client_0", "client_1"],
+            node_ids=["client_0", "client_1"],
         )
         self.config = config
         train_data, test_data = load_dataset("imdb", split=["train", "test"])

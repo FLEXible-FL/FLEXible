@@ -11,12 +11,12 @@ from flex.data.lazy_indexable import LazyIndexable
 
 @dataclass(frozen=True)
 class Dataset:
-    """Class used to represent the dataset from a client in a Federated Learning enviroment.
+    """Class used to represent the dataset from a node in a Federated Learning enviroment.
 
     Attributes
     ----------
     X_data: LazyIndexable
-        A numpy.array containing the data for the client.
+        A numpy.array containing the data for the node.
     y_data: LazyIndexable
         A numpy.array containing the labels for the training data. Can be None if working
         on an unsupervised learning task. Default None.

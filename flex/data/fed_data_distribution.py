@@ -103,44 +103,44 @@ class FedDataDistribution(object):
 
     @classmethod
     def from_clustering_func(cls, centralized_data: Dataset, clustering_func: Callable):
-        """This function federates data into clients by means of a clustering function, that outputs
-        to which client (cluster) a data point belongs.
+        """This function federates data into nodes by means of a clustering function, that outputs
+        to which node (cluster) a data point belongs.
 
         Args:
             centralized_data (Dataset): Centralized dataset represented as a FlexDataObject.
             clustering_func (Callable): function that receives as arguments a pair of x and y elements from centralized_data
-            and returns the name of the client (cluster) that should own it, the returned type must be Hashable.
-            Note that we only support one client (cluster) per data point.
+            and returns the name of the node (cluster) that should own it, the returned type must be Hashable.
+            Note that we only support one node (cluster) per data point.
 
         Returns:
             federated_dataset (FedDataset): The federated dataset.
         """
         d = defaultdict(list)
         for idx, (x, y) in enumerate(centralized_data):
-            client_name = clustering_func(x, y)
-            d[client_name].append(idx)
+            node_name = clustering_func(x, y)
+            d[node_name].append(idx)
 
         config = FedDatasetConfig(
-            n_clients=len(d),
-            client_names=list(d.keys()),
-            indexes_per_client=list(d.values()),
+            n_nodes=len(d),
+            node_ids=list(d.keys()),
+            indexes_per_node=list(d.values()),
             replacement=False,
         )
         return cls.from_config(centralized_data, config)
 
     @classmethod
-    def iid_distribution(cls, centralized_data: Dataset, n_clients: int = 2):
+    def iid_distribution(cls, centralized_data: Dataset, n_nodes: int = 2):
         """Function to create a FedDataset for an IID experiment. We consider the simplest situation
-        in which the data is distributed by giving the same amount of data to each client.
+        in which the data is distributed by giving the same amount of data to each node.
 
         Args:
             centralized_data (Dataset): Centralized dataset represented as a FlexDataObject.
-            n_clients (int): Number of clients in the Federated Learning experiment. Default 2.
+            n_nodes (int): Number of nodes in the Federated Learning experiment. Default 2.
 
         Returns:
             federated_dataset (FedDataset): The federated dataset.
         """
-        config = FedDatasetConfig(n_clients=n_clients)
+        config = FedDatasetConfig(n_nodes=n_nodes)
         return FedDataDistribution.from_config(centralized_data, config)
 
     @classmethod
@@ -161,11 +161,11 @@ class FedDataDistribution(object):
 
         config_ = copy.deepcopy(config)  # copy, because we might modify some components
 
-        if config.client_names is None:
-            config_.client_names = list(range(config_.n_clients))
+        if config.node_ids is None:
+            config_.node_ids = list(range(config_.n_nodes))
 
         if config.keep_labels is None:
-            config_.keep_labels = [True] * config_.n_clients
+            config_.keep_labels = [True] * config_.n_nodes
 
         labels = None
         if centralized_data.y_data is not None:
@@ -180,37 +180,37 @@ class FedDataDistribution(object):
             config_.weights = np.array(
                 [w / sum(config.weights) for w in config.weights]
             )
-        # Ensure that classes_per_client is translated to weights_per_class
-        if config_.classes_per_client is not None:
+        # Ensure that labels_per_node is translated to weights_per_label
+        if config_.labels_per_node is not None:
             cls.__configure_weights_per_class(rng, config_, labels)
-        # Normalize weights_per_class when no replacement
+        # Normalize weights_per_label when no replacement
         if (
             not config_.replacement
-            and config_.weights_per_class is not None
-            and any(np.sum(config_.weights_per_class, axis=0) > 1)
+            and config_.weights_per_label is not None
+            and any(np.sum(config_.weights_per_label, axis=0) > 1)
         ):
             with np.errstate(divide="ignore", invalid="ignore"):  # raise no warnings
-                config_.weights_per_class = config_.weights_per_class / np.sum(
-                    config_.weights_per_class, axis=0
+                config_.weights_per_label = config_.weights_per_label / np.sum(
+                    config_.weights_per_label, axis=0
                 )
             # Note that weights equal to 0 produce NaNs, so we replace them with 0 again
-            config_.weights_per_class = np.nan_to_num(config_.weights_per_class)
+            config_.weights_per_label = np.nan_to_num(config_.weights_per_label)
 
         # Now we can start generating our federated dataset
         fed_dataset = FedDataset()
-        if config_.indexes_per_client is not None:
-            for client_name, data in cls.__sample_dataset_with_indexes(
+        if config_.indexes_per_node is not None:
+            for node_name, data in cls.__sample_dataset_with_indexes(
                 centralized_data, config_
             ):
-                fed_dataset[client_name] = data
+                fed_dataset[node_name] = data
         elif config_.group_by_label_index is not None:
-            for client_name, data in cls.__group_by_label_index(
+            for node_name, data in cls.__group_by_label_index(
                 centralized_data, config_
             ):
-                fed_dataset[client_name] = data
+                fed_dataset[node_name] = data
         else:  # sample using weights or features
             remaining_data_indices = np.arange(len(labels))
-            for i in range(config_.n_clients):
+            for i in range(config_.n_nodes):
                 (
                     sub_data_indices,
                     sub_features_indices,
@@ -221,10 +221,10 @@ class FedDataDistribution(object):
                 X_data = centralized_data.X_data[
                     sub_data_indices
                 ]  # los indices se muestrean bien
-                if config.features_per_client is not None:
+                if config.features_per_node is not None:
                     X_data = np.asarray(X_data)
                     X_data = X_data[:, sub_features_indices]
-                fed_dataset[config_.client_names[i]] = Dataset(
+                fed_dataset[config_.node_ids[i]] = Dataset(
                     X_data=X_data,
                     y_data=centralized_data.y_data[sub_data_indices]
                     if centralized_data.y_data is not None and config_.keep_labels[i]
@@ -238,42 +238,42 @@ class FedDataDistribution(object):
         cls, centralized_data: Dataset, config: FedDatasetConfig
     ):
         label_index = config.group_by_label_index
-        label_to_client_id = {}
+        label_to_node_id = {}
         y_data = defaultdict(list)
         x_data_indexes = defaultdict(list)
         for i, y in enumerate(centralized_data.y_data):
             y = list(y)  # TODO: enforce that y is only a list or a tuple
             str_label = str(y.pop(label_index))  # Use str to make every label hashable
-            if str_label not in label_to_client_id:
-                label_to_client_id[
+            if str_label not in label_to_node_id:
+                label_to_node_id[
                     str_label
-                ] = i  # Name each client using the first index where the label appears
-            x_data_indexes[label_to_client_id[str_label]].append(i)
+                ] = i  # Name each node using the first index where the label appears
+            x_data_indexes[label_to_node_id[str_label]].append(i)
             if len(y) == 1:
                 y = y[0]
-            y_data[label_to_client_id[str_label]].append(y)
-        for client_id in y_data:
-            yield client_id, Dataset(
-                X_data=centralized_data.X_data[x_data_indexes[client_id]],
-                y_data=LazyIndexable(y_data[client_id], len(y_data[client_id])),
+            y_data[label_to_node_id[str_label]].append(y)
+        for node_id in y_data:
+            yield node_id, Dataset(
+                X_data=centralized_data.X_data[x_data_indexes[node_id]],
+                y_data=LazyIndexable(y_data[node_id], len(y_data[node_id])),
             )
 
     @classmethod
     def __sample_dataset_with_indexes(cls, data: Dataset, config: FedDatasetConfig):
-        """Iterable function that associates a client with its data, when a list of indexes is given for
-        each client.
+        """Iterable function that associates a node with its data, when a list of indexes is given for
+        each node.
 
         Args:
             data (Dataset): Centralizaed dataset represented as a FlexDataObject.
             config (FedDatasetConfig): Configuration used to federate a FlexDataObject.
 
         Yields:
-            tuple (Tuple): a tuple whose first item is the client name and the second one is the indexes of
-            the dataset associated to such client.
+            tuple (Tuple): a tuple whose first item is the node name and the second one is the indexes of
+            the dataset associated to such node.
 
         """
         for idx, name, keep in zip(
-            config.indexes_per_client, config.client_names, config.keep_labels
+            config.indexes_per_node, config.node_ids, config.keep_labels
         ):
             yield name, Dataset(
                 X_data=data.X_data[idx],
@@ -288,7 +288,7 @@ class FedDataDistribution(object):
         data: Dataset,
         labels: npt.ArrayLike,
         config: FedDatasetConfig,
-        client_i: int,
+        node_i: int,
     ) -> Tuple[npt.NDArray[np.int_], npt.NDArray[np.int_], npt.NDArray[np.int_]]:
         """Function to sample indices from a FlexDataObject as especified by a FlexDatasetConfig.
 
@@ -297,7 +297,7 @@ class FedDataDistribution(object):
             data_indices (npt.NDArray[np.int_]): Array of available data indices to sample from.
             data (Dataset): Centralizaed dataset represented as a FlexDataObject.
             config (FedDatasetConfig): Configuration used to federate a FlexDataObject.
-            client_i (int): Position of client which will be identified with the generated sample.
+            node_i (int): Position of node which will be identified with the generated sample.
 
         Returns:
             sample_indices (Tuple[npt.NDArray[np.int_], npt.NDArray[np.int_], npt.NDArray[np.int_]]): it returns
@@ -305,13 +305,13 @@ class FedDataDistribution(object):
             the sampled data indices. Note that, the latter are only used for the config.replacement option, otherwise
             it contains all the provided data_indices.
         """
-        if config.features_per_client is None:
+        if config.features_per_node is None:
             sub_data_indices, sub_features_indices = cls.__sample_with_weights(
-                rng, data_indices, labels, config, client_i
+                rng, data_indices, labels, config, node_i
             )
         else:
             sub_data_indices, sub_features_indices = cls.__sample_with_features(
-                rng, data_indices, data, labels, config, client_i
+                rng, data_indices, data, labels, config, node_i
             )
 
         # Update remaning data indices
@@ -330,41 +330,41 @@ class FedDataDistribution(object):
         data_indices: npt.NDArray[np.int_],
         labels: npt.ArrayLike,
         config: FedDatasetConfig,
-        client_i: int,
+        node_i: int,
     ):
         """Especialized function to sample indices from a FlexDataObject as especified by a FlexDatasetConfig.
-            It takes into consideration the config.weights and config.weights_per_class option and applies it.
-            If no config.weights and no config.weights_per_class are provided, then we consider that the weights \
-            are the same for all the clients.
+            It takes into consideration the config.weights and config.weights_per_label option and applies it.
+            If no config.weights and no config.weights_per_label are provided, then we consider that the weights \
+            are the same for all the nodes.
 
         Args:
             rng (np.random.Generator): Random number generator used to sample.
             data_indices (npt.NDArray[np.int_]): Array of available data indices to sample from.
             data (Dataset): Centralizaed dataset represented as a FlexDataObject.
             config (FedDatasetConfig): Configuration used to federate a FlexDataObject.
-            client_i (int): Position of client which will be identified with the generated sample.
+            node_i (int): Position of node which will be identified with the generated sample.
 
         Returns:
             sample_indices (Tuple[npt.NDArray[np.int_], npt.NDArray[np.int_]]): it returns
             the sampled data indices and all the feature indices.
         """
-        if config.weights_per_class is not None:
+        if config.weights_per_label is not None:
             data_proportion = None
         elif config.weights is not None:
-            data_proportion = floor(len(labels) * config.weights[client_i])
+            data_proportion = floor(len(labels) * config.weights[node_i])
         else:  # No weights provided
-            data_proportion = floor(len(labels) / config.n_clients)
+            data_proportion = floor(len(labels) / config.n_nodes)
 
         if data_proportion is not None:
             sub_data_indices = rng.choice(data_indices, data_proportion, replace=False)
-        else:  # apply weights_per_class
+        else:  # apply weights_per_label
             sub_data_indices = np.array([], dtype="uint32")
-            sorted_classes = np.sort(np.unique(labels))
+            sorted_labels = np.sort(np.unique(labels))
             all_indices = np.arange(len(labels))
-            for j, c in enumerate(sorted_classes):
+            for j, c in enumerate(sorted_labels):
                 available_class_indices = all_indices[labels == c]
                 proportion_per_class = floor(
-                    len(available_class_indices) * config.weights_per_class[client_i][j]
+                    len(available_class_indices) * config.weights_per_label[node_i][j]
                 )
                 selected_class_indices = rng.choice(
                     available_class_indices, proportion_per_class, replace=False
@@ -383,46 +383,46 @@ class FedDataDistribution(object):
     def __configure_weights_per_class(
         cls, rng: np.random.Generator, config: FedDatasetConfig, labels: npt.ArrayLike
     ):
-        sorted_classes = np.sort(np.unique(labels))
-        assigned_classes = []
-        if isinstance(config.classes_per_client, int):
-            histogram = np.zeros_like(sorted_classes)
-            for _ in range(config.n_clients):
-                individual_assigned_classes = []
-                for _ in range(config.classes_per_client):
+        sorted_labels = np.sort(np.unique(labels))
+        assigned_labels = []
+        if isinstance(config.labels_per_node, int):
+            histogram = np.zeros_like(sorted_labels)
+            for _ in range(config.n_nodes):
+                individual_assigned_labels = []
+                for _ in range(config.labels_per_node):
                     most_frequent = np.max(histogram)
-                    available_classes_indexes = np.arange(len(sorted_classes))
+                    available_labels_indexes = np.arange(len(sorted_labels))
                     tmp_available_indexes = histogram < most_frequent
                     if sum(tmp_available_indexes) != 0:
-                        available_classes_indexes = available_classes_indexes[
+                        available_labels_indexes = available_labels_indexes[
                             tmp_available_indexes
                         ]
-                    indx = rng.choice(available_classes_indexes, size=1, replace=False)
+                    indx = rng.choice(available_labels_indexes, size=1, replace=False)
                     histogram[indx] = histogram[indx] + 1
-                    individual_assigned_classes.append(sorted_classes[indx])
-                assigned_classes.append(individual_assigned_classes)
-            config.classes_per_client = assigned_classes
-        elif isinstance(config.classes_per_client, tuple):
-            num_classes_per_client = rng.integers(
-                low=config.classes_per_client[0],
-                high=config.classes_per_client[1] + 1,
-                size=config.n_clients,
+                    individual_assigned_labels.append(sorted_labels[indx])
+                assigned_labels.append(individual_assigned_labels)
+            config.labels_per_node = assigned_labels
+        elif isinstance(config.labels_per_node, tuple):
+            num_labels_per_node = rng.integers(
+                low=config.labels_per_node[0],
+                high=config.labels_per_node[1] + 1,
+                size=config.n_nodes,
             )
-            for c in num_classes_per_client:
-                n = rng.choice(sorted_classes, size=c, replace=False)
-                assigned_classes.append(n)
-            config.classes_per_client = assigned_classes
+            for c in num_labels_per_node:
+                n = rng.choice(sorted_labels, size=c, replace=False)
+                assigned_labels.append(n)
+            config.labels_per_node = assigned_labels
 
-        config.weights_per_class = np.zeros((config.n_clients, len(sorted_classes)))
-        for client_i, clasess_at_client_i in enumerate(config.classes_per_client):
-            for class_j, label in enumerate(sorted_classes):
-                if label in clasess_at_client_i:
+        config.weights_per_label = np.zeros((config.n_nodes, len(sorted_labels)))
+        for node_i, clasess_at_node_i in enumerate(config.labels_per_node):
+            for class_j, label in enumerate(sorted_labels):
+                if label in clasess_at_node_i:
                     if config.weights is None:
-                        config.weights_per_class[client_i, class_j] = 1
+                        config.weights_per_label[node_i, class_j] = 1
                     else:
-                        config.weights_per_class[client_i, class_j] = config.weights[
-                            client_i
-                        ] / len(clasess_at_client_i)
+                        config.weights_per_label[node_i, class_j] = config.weights[
+                            node_i
+                        ] / len(clasess_at_node_i)
 
     @classmethod
     def __sample_with_features(
@@ -432,10 +432,10 @@ class FedDataDistribution(object):
         data: Dataset,
         labels: npt.ArrayLike,
         config: FedDatasetConfig,
-        client_i: int,
+        node_i: int,
     ):
         """Especialized function to sample indices from a FlexDataObject as especified by a FlexDatasetConfig.
-            It takes into consideration the config.features_per_client option and applies it. Weights are applied
+            It takes into consideration the config.features_per_node option and applies it. Weights are applied
             the same as in __sample_with_weights.
 
         Args:
@@ -443,7 +443,7 @@ class FedDataDistribution(object):
             data_indices (npt.NDArray[np.int_]): Array of available data indices to sample from.
             data (Dataset): Centralized dataset represented as a FlexDataObject.
             config (FedDatasetConfig): Configuration used to federate a FlexDataObject.
-            client_i (int): Position of client which will be identified with the generated sample.
+            node_i (int): Position of node which will be identified with the generated sample.
 
         Returns:
             sample_indices (Tuple[npt.NDArray[np.int_], npt.NDArray[np.int_]): it returns the sampled data indices
@@ -451,28 +451,28 @@ class FedDataDistribution(object):
         """
         # Sample data indices
         sub_data_indices, _ = cls.__sample_with_weights(
-            rng, data_indices, labels, config, client_i
+            rng, data_indices, labels, config, node_i
         )
 
         # Sample feature indices
         feature_indices = np.arange(len(data.X_data[0]))
-        if isinstance(  # We have a fixed number of features per client
-            config.features_per_client, int
+        if isinstance(  # We have a fixed number of features per node
+            config.features_per_node, int
         ):
             sub_features_indices = rng.choice(
-                feature_indices, config.features_per_client, replace=False
+                feature_indices, config.features_per_node, replace=False
             )
-        elif isinstance(  # We have a maximum and a minimum of features per client
-            config.features_per_client, tuple
+        elif isinstance(  # We have a maximum and a minimum of features per node
+            config.features_per_node, tuple
         ):
             sub_features_indices = rng.choice(
                 feature_indices,
                 rng.integers(
-                    config.features_per_client[0], config.features_per_client[1] + 1
+                    config.features_per_node[0], config.features_per_node[1] + 1
                 ),
                 replace=False,
             )
-        else:  # We have an array of features per client, that is, each client has an set of classes
-            sub_features_indices = config.features_per_client[client_i]
+        else:  # We have an array of features per node, that is, each node has an set of labels
+            sub_features_indices = config.features_per_node[node_i]
 
         return sub_data_indices, sub_features_indices
