@@ -56,7 +56,7 @@ class TestFlexPoolPrimitives(unittest.TestCase):
             )
             return model
 
-        p = FlexPool.client_server_architecture(
+        p = FlexPool.client_server_pool(
             self.f_imdb, init_func=init_server_model_tf, model=define_model()
         )
         reference_model = define_model()

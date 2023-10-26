@@ -20,6 +20,7 @@ import random
 from typing import Callable, Hashable, Union
 
 from flex.actors.actors import FlexActors, FlexRole, FlexRoleManager
+from flex.actors.architectures import client_server_architecture, p2p_architecture
 from flex.data import FedDataset
 from flex.model.model import FlexModel
 
@@ -250,8 +251,8 @@ class FlexPool:
             raise ValueError("Each node with data or model must have a role asigned")
 
     @classmethod
-    def client_server_architecture(
-        cls, fed_dataset: FedDataset, init_func: Callable, **kwargs
+    def client_server_pool(
+        cls, fed_dataset: FedDataset, init_func: Callable, server_id: str = "server", **kwargs
     ):
         """Method to create a client-server architeture for a FlexDataset given.
         This functions is used when you have a FlexDataset and you want to start
@@ -267,15 +268,8 @@ class FlexPool:
         Returns:
             FlexPool: A FlexPool with the assigned roles for a client-server architecture.
         """
-        if "server" in fed_dataset.keys():
-            raise ValueError(
-                "The name 'server' is reserved only for the server in a client-server architecture."
-            )
+        actors = client_server_architecture(fed_dataset.keys(), server_id)
 
-        actors = FlexActors(
-            {actor_id: FlexRole.client for actor_id in fed_dataset.keys()}
-        )
-        actors["server"] = FlexRole.server_aggregator
         new_arch = cls(
             flex_data=fed_dataset,
             flex_actors=actors,
@@ -285,7 +279,7 @@ class FlexPool:
         return new_arch
 
     @classmethod
-    def p2p_architecture(cls, fed_dataset: FedDataset, init_func: Callable, **kwargs):
+    def p2p_pool(cls, fed_dataset: FedDataset, init_func: Callable, **kwargs):
         """Method to create a peer-to-peer (p2p) architecture for a FlexDataset given.
         This method is used when you have a FlexDataset and you want to start the
         learning phase following a p2p architecture.
@@ -302,7 +296,7 @@ class FlexPool:
         """
         new_arch = cls(
             flex_data=fed_dataset,
-            flex_actors=cls.__create_actors_all_privileges(fed_dataset),
+            flex_actors=p2p_architecture(fed_dataset),
             flex_models=None,
         )
         new_arch.servers.map(init_func, **kwargs)
