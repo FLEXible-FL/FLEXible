@@ -68,9 +68,7 @@ class TestFlexPool(unittest.TestCase):
             preds = server_flex_model["model"].predict(x)
             return preds, accuracy_score(preds, y)
 
-        p = FlexPool.client_server_architecture(
-            self.f_iris, init_func=build_server_model
-        )
+        p = FlexPool.client_server_pool(self.f_iris, init_func=build_server_model)
         reference_model_params = KNeighborsClassifier(n_neighbors=3).get_params()
         reference_value = reference_model_params["leaf_size"] * len(p.clients)
 
