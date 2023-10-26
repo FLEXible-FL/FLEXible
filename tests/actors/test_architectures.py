@@ -2,20 +2,19 @@ import unittest
 
 import pytest
 
-from flex.actors.actors import FlexActors
-from flex.actors.role import FlexRole
-from flex.actors.role_manager import FlexRoleManager
 from flex.actors.architectures import client_server_architecture, p2p_architecture
+from flex.actors.role_manager import FlexRoleManager
 
 
 @pytest.fixture(name="nodes_ids")
 def fixture_nodes_ids():
     """Function that returns a Iterable provided as example to test functions.
 
-    Returns:
+    Returns
+    -------
         List: A list with the node ids.
     """
-    return ['client_1', 'client_2', 'client_3']
+    return ["client_1", "client_2", "client_3"]
 
 
 class TestArchitectures(unittest.TestCase):

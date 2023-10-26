@@ -252,7 +252,11 @@ class FlexPool:
 
     @classmethod
     def client_server_pool(
-        cls, fed_dataset: FedDataset, init_func: Callable, server_id: str = "server", **kwargs
+        cls,
+        fed_dataset: FedDataset,
+        init_func: Callable,
+        server_id: str = "server",
+        **kwargs,
     ):
         """Method to create a client-server architeture for a FlexDataset given.
         This functions is used when you have a FlexDataset and you want to start
