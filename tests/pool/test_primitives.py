@@ -90,7 +90,5 @@ class TestFlexPoolPrimitives(unittest.TestCase):
             np.all(np.equal(p._models[k]["model"].get_weights()[0], reference_value[0]))
             for k in p.actor_ids
         )
-        result = p.servers.map(
-            evaluate_model_tf
-        )
+        result = p.servers.map(evaluate_model_tf)
         print(result)
