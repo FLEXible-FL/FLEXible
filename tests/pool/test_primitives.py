@@ -91,8 +91,6 @@ class TestFlexPoolPrimitives(unittest.TestCase):
             for k in p.actor_ids
         )
         result = p.servers.map(
-            evaluate_model_tf,
-            test_data=self.test_data["text"],
-            test_labels=self.test_data["label"],
+            evaluate_model_tf
         )
         print(result)
