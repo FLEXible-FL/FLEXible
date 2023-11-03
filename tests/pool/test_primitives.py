@@ -2,7 +2,7 @@ import unittest
 
 import pytest
 
-from flex.data import FedDataDistribution, FedDatasetConfig
+from flex.data import Dataset, FedDataDistribution, FedDatasetConfig
 from flex.pool.aggregators import fed_avg
 from flex.pool.pool import FlexPool
 from flex.pool.primitives_tf import (
@@ -33,6 +33,9 @@ class TestFlexPoolPrimitives(unittest.TestCase):
         label_columns = ["label"]
         self.f_imdb = FedDataDistribution.from_config_with_huggingface_dataset(
             train_data, self.config, X_columns, label_columns
+        )
+        self.f_imdb["server"] = Dataset.from_huggingface_dataset(
+            self.test_data, X_columns, label_columns
         )
 
     def test_primitives_tf(self):
