@@ -19,7 +19,7 @@ import functools
 import random
 from typing import Callable, Hashable, Union
 
-from flex.actors.actors import FlexActors, FlexRole, FlexRoleManager
+from flex.actors.actors import FlexActors, FlexRoleManager
 from flex.actors.architectures import client_server_architecture, p2p_architecture
 from flex.data import FedDataset
 from flex.model.model import FlexModel
@@ -305,21 +305,6 @@ class FlexPool:
         )
         new_arch.servers.map(init_func, **kwargs)
         return new_arch
-
-    @classmethod
-    def __create_actors_all_privileges(cls, actors_ids):
-        """Method that initialize the actors for the pool with all the privileges
-        available. This method must be used only when creating a p2p-architecture.
-
-        Args:
-            actors_ids (str): The IDs that identify every actor in the pool.
-
-        Returns:
-            FlexActors: All the actors for the pool with all the privileges.
-        """
-        return FlexActors(
-            {actor_id: FlexRole.server_aggregator_client for actor_id in actors_ids}
-        )
 
     def __iter__(self):
         yield from self._actors

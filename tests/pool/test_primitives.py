@@ -5,10 +5,10 @@ import pytest
 from flex.data import FedDataDistribution, FedDatasetConfig
 from flex.pool.aggregators import fed_avg
 from flex.pool.pool import FlexPool
-from flex.pool.primitives_tf import (  # collect_weights_pt,; set_aggregated_weights_pt,
+from flex.pool.primitives_tf import (
     collect_clients_weights_tf,
     deploy_server_model_tf,
-    evaluate_server_model_tf,
+    evaluate_model_tf,
     init_server_model_tf,
     set_aggregated_weights_tf,
     train_tf,
@@ -91,7 +91,7 @@ class TestFlexPoolPrimitives(unittest.TestCase):
             for k in p.actor_ids
         )
         result = p.servers.map(
-            evaluate_server_model_tf,
+            evaluate_model_tf,
             test_data=self.test_data["text"],
             test_labels=self.test_data["label"],
         )
