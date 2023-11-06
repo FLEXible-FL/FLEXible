@@ -13,7 +13,6 @@ from copy import deepcopy
 from flex.pool.decorators import (
     collect_clients_weights,
     deploy_server_model,
-    evaluate_server_model,
     init_server_model,
     set_aggregated_weights,
 )
@@ -184,18 +183,17 @@ def set_aggregated_weights_tf(server_flex_model, aggregated_weights, *args, **kw
     server_flex_model["model"].set_weights(aggregated_weights)
 
 
-@evaluate_server_model
-def evaluate_server_model_tf(server_flex_model, test_data, test_labels):
+def evaluate_model_tf(flex_model, test_data):
     """Function that evaluate the global model on the test data.
 
     Args:
     ----
-        server_flex_model (FlexModel): server's FlexModel
-        test_data (np.array): Test inputs.
-        test_labels (np.array): Test labels.
+        flex_model (FlexModel): server's FlexModel
+        test_data (Dataset): Test inputs.
 
     Returns:
     -------
         Evaluations by the model on the test data.
     """
-    return server_flex_model["model"].evaluate(test_data, test_labels, verbose=False)
+    X, y = test_data.to_numpy()
+    return flex_model["model"].evaluate(X, y, verbose=False)
