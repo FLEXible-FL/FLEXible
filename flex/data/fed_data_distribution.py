@@ -226,6 +226,11 @@ class FedDataDistribution(object):
         else:  # sample using weights or features
             remaining_data_indices = np.arange(len(labels))
             for i in range(config_.n_nodes):
+                if config_.shuffle:
+                    rng.shuffle(remaining_data_indices)
+                keep_y_data = (
+                    centralized_data.y_data is not None and config_.keep_labels[i]
+                )
                 (
                     sub_data_indices,
                     sub_features_indices,
@@ -233,18 +238,15 @@ class FedDataDistribution(object):
                 ) = cls.__sample(
                     rng, remaining_data_indices, centralized_data, labels, config_, i
                 )
-                X_data = centralized_data.X_data[
-                    sub_data_indices
-                ]  # los indices se muestrean bien
+                X_data = centralized_data.X_data[sub_data_indices]
                 if config.features_per_node is not None:
-                    X_data = np.asarray(X_data)
-                    X_data = X_data[:, sub_features_indices]
-                fed_dataset[config_.node_ids[i]] = Dataset(
-                    X_data=X_data,
-                    y_data=centralized_data.y_data[sub_data_indices]
-                    if centralized_data.y_data is not None and config_.keep_labels[i]
-                    else None,
-                )
+                    X_data = X_data.to_numpy()
+                    X_data = LazyIndexable(X_data[:, sub_features_indices], len(X_data))
+                if keep_y_data:
+                    y_data = centralized_data.y_data[sub_data_indices]
+                else:
+                    y_data = None
+                fed_dataset[config_.node_ids[i]] = Dataset(X_data=X_data, y_data=y_data)
 
         return fed_dataset
 
@@ -320,16 +322,13 @@ class FedDataDistribution(object):
             the sampled data indices. Note that, the latter are only used for the config.replacement option, otherwise
             it contains all the provided data_indices.
         """
-        if config.features_per_node is None:
-            sub_data_indices, sub_features_indices = cls.__sample_with_weights(
-                rng, data_indices, labels, config, node_i
-            )
-        else:
-            sub_data_indices, sub_features_indices = cls.__sample_with_features(
-                rng, data_indices, data, labels, config, node_i
-            )
-
-        # Update remaning data indices
+        # Sample feature indices
+        sub_features_indices = cls.__sample_features(rng, data, config, node_i)
+        # Sample data indices
+        sub_data_indices = cls.__sample_with_weights(
+            rng, data_indices, labels, config, node_i
+        )
+        # Update remaining data indices
         remaining_data_indices = (
             data_indices
             if config.replacement
@@ -371,28 +370,34 @@ class FedDataDistribution(object):
             data_proportion = floor(len(labels) / config.n_nodes)
 
         if data_proportion is not None:
-            sub_data_indices = rng.choice(data_indices, data_proportion, replace=False)
+            sub_data_indices = data_indices[:data_proportion]
         else:  # apply weights_per_label
             sub_data_indices = np.array([], dtype="uint32")
             sorted_labels = np.sort(np.unique(labels))
-            all_indices = np.arange(len(labels))
-            for j, c in enumerate(sorted_labels):
-                available_class_indices = all_indices[labels == c]
-                proportion_per_class = floor(
-                    len(available_class_indices) * config.weights_per_label[node_i][j]
+            available_indices = copy.deepcopy(data_indices)
+            if config.shuffle:
+                rng.shuffle(available_indices)
+            proportion_per_label = {}
+            for j, label in enumerate(sorted_labels):
+                available_class_indices = sum(labels == label)
+                proportion_per_label[label] = floor(
+                    available_class_indices * config.weights_per_label[node_i][j]
                 )
-                selected_class_indices = rng.choice(
-                    available_class_indices, proportion_per_class, replace=False
-                )
+            for label in proportion_per_label:
+                available_class_indices = available_indices[
+                    labels[available_indices] == label
+                ]
+                selected_class_indices = available_class_indices[
+                    : proportion_per_label[label]
+                ]
                 sub_data_indices = np.concatenate(
                     (sub_data_indices, selected_class_indices)
                 )
+                available_indices = np.array(
+                    list(set(available_indices) - set(selected_class_indices))
+                )
 
-        # Sample feature indices
-        sub_features_indices = slice(
-            None
-        )  # Default slice for features, it includes all the features
-        return sub_data_indices, sub_features_indices
+        return sub_data_indices
 
     @classmethod
     def __configure_weights_per_class(
@@ -440,22 +445,18 @@ class FedDataDistribution(object):
                         ] / len(clasess_at_node_i)
 
     @classmethod
-    def __sample_with_features(
+    def __sample_features(
         cls,
-        rng,
-        data_indices: npt.NDArray[np.int_],
+        rng: np.random.Generator,
         data: Dataset,
-        labels: npt.ArrayLike,
         config: FedDatasetConfig,
         node_i: int,
     ):
         """Especialized function to sample indices from a FlexDataObject as especified by a FlexDatasetConfig.
-            It takes into consideration the config.features_per_node option and applies it. Weights are applied
-            the same as in __sample_with_weights.
+            It takes into consideration the config.features_per_node option and applies it.
 
         Args:
             rng (np.random.Generator): Random number generator used to sample.
-            data_indices (npt.NDArray[np.int_]): Array of available data indices to sample from.
             data (Dataset): Centralized dataset represented as a FlexDataObject.
             config (FedDatasetConfig): Configuration used to federate a FlexDataObject.
             node_i (int): Position of node which will be identified with the generated sample.
@@ -464,30 +465,28 @@ class FedDataDistribution(object):
             sample_indices (Tuple[npt.NDArray[np.int_], npt.NDArray[np.int_]): it returns the sampled data indices
             and the sampled feature indices.
         """
-        # Sample data indices
-        sub_data_indices, _ = cls.__sample_with_weights(
-            rng, data_indices, labels, config, node_i
-        )
 
-        # Sample feature indices
-        feature_indices = np.arange(len(data.X_data[0]))
-        if isinstance(  # We have a fixed number of features per node
-            config.features_per_node, int
-        ):
-            sub_features_indices = rng.choice(
-                feature_indices, config.features_per_node, replace=False
-            )
-        elif isinstance(  # We have a maximum and a minimum of features per node
-            config.features_per_node, tuple
-        ):
-            sub_features_indices = rng.choice(
-                feature_indices,
-                rng.integers(
-                    config.features_per_node[0], config.features_per_node[1] + 1
-                ),
-                replace=False,
-            )
-        else:  # We have an array of features per node, that is, each node has an set of labels
-            sub_features_indices = config.features_per_node[node_i]
+        if config.features_per_node is None:
+            sub_features_indices = slice(None)
+        else:
+            feature_indices = np.arange(len(data.X_data[0]))
+            if isinstance(  # We have a fixed number of features per node
+                config.features_per_node, int
+            ):
+                sub_features_indices = rng.choice(
+                    feature_indices, config.features_per_node, replace=False
+                )
+            elif isinstance(  # We have a maximum and a minimum of features per node
+                config.features_per_node, tuple
+            ):
+                sub_features_indices = rng.choice(
+                    feature_indices,
+                    rng.integers(
+                        config.features_per_node[0], config.features_per_node[1] + 1
+                    ),
+                    replace=False,
+                )
+            else:  # We have an array of features per node, that is, each node has an set of labels
+                sub_features_indices = config.features_per_node[node_i]
 
-        return sub_data_indices, sub_features_indices
+        return sub_features_indices
