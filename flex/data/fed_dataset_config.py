@@ -40,7 +40,7 @@ class FedDatasetConfig:
     | **replacement**         | -           | -            | -           | -                     | -               | Y                   | N                     | N                    | N                        | Y               | Y           |
     | **labels_per_node**     | -           | -            | -           | -                     | -               | -                   | N                     | N                    | N                        | Y               | Y           |
     | **features_per_node**   | -           | -            | -           | -                     | -               | -                   | -                     | N                    | N                        | Y               | Y           |
-    | **indexes_per_node**    | -           | -            | -           | -                     | -               | -                   | -                     | -                    | N                        | Y               | N           |
+    | **indexes_per_node**    | -           | -            | -           | -                     | -               | -                   | -                     | -                    | N                        | Y               | Y           |
     | **group_by_label_index**| -           | -            | -           | -                     | -               | -                   | -                     | -                    | -                        | N               | Y           |
     | **keep_labels**         | -           | -            | -           | -                     | -               | -                   | -                     | -                    | -                        | -               | Y           |
     | **shuffle**             | -           | -            | -           | -                     | -               | -                   | -                     | -                    | -                        | -               | -           |
@@ -105,7 +105,6 @@ class FedDatasetConfig:
         """This function checks whether the configuration to federate a dataset is correct."""
         self_dict = asdict(self)
         # By default every option is compatible, therefore we only specify incompatibilities
-        self._check_incomp(self_dict, "shuffle", "indexes_per_node")
         self._check_incomp(self_dict, "weights", "group_by_label_index")
         self._check_incomp(self_dict, "weights", "weights_per_label")
         self._check_incomp(self_dict, "weights", "indexes_per_node")
