@@ -48,8 +48,8 @@ def emnist(out_dir: str = ".", split="digits", include_authors=False):
             [(label, test_writers[i][0]) for i, label in enumerate(test_labels)],
             dtype=np.int64,
         )
-    train_data_object = Dataset.from_numpy(train_data, train_labels)
-    test_data_object = Dataset.from_numpy(test_data, test_labels)
+    train_data_object = Dataset.from_array(train_data, train_labels)
+    test_data_object = Dataset.from_array(test_data, test_labels)
     return train_data_object, test_data_object
 
 
@@ -95,4 +95,4 @@ def shakespeare(out_dir: str = ".", include_actors=False):
                 test_y += node_ds["y"]
             test_x += node_ds["x"]
 
-    return Dataset.from_list(train_x, train_y), Dataset.from_list(test_x, test_y)
+    return Dataset.from_array(train_x, train_y), Dataset.from_array(test_x, test_y)

@@ -15,14 +15,14 @@ from flex.datasets import load
 def fixture_simple_fex_data_object():
     X_data = np.random.rand(100).reshape([20, 5])
     y_data = np.random.choice(2, 20)
-    return Dataset.from_numpy(X_data, y_data)
+    return Dataset.from_array(X_data, y_data)
 
 
 @pytest.fixture(name="fcd_ones_zeros")
 def fixture_simple_fex_data_object_ones_zeros():
     X_data = np.random.rand(100).reshape([20, 5])
     y_data = np.concatenate((np.zeros(10), np.ones(10)))
-    return Dataset.from_numpy(X_data, y_data)
+    return Dataset.from_array(X_data, y_data)
 
 
 @pytest.fixture(name="fcd_multiple_classes")
@@ -38,14 +38,14 @@ def fixture_simple_fex_data_object_multiple_classes():
             5 * np.ones(5),
         )
     )
-    return Dataset.from_numpy(X_data, y_data)
+    return Dataset.from_array(X_data, y_data)
 
 
 class TestFlexDataDistribution(unittest.TestCase):
     @pytest.fixture(autouse=True)
     def _fixture_iris_dataset(self):
         iris = load_iris()
-        self._iris = Dataset.from_list(iris.data, iris.target)
+        self._iris = Dataset.from_array(iris.data, iris.target)
 
     @pytest.fixture(autouse=True)
     def _fixture_simple_flex_data_object(self, fcd):
@@ -364,7 +364,7 @@ class TestFlexDataDistribution(unittest.TestCase):
     def test_single_feature_data(self):
         new_X_data = self._iris.X_data.to_numpy()
         new_X_data = new_X_data[:, 0]
-        single_feature_dataset = Dataset.from_list(list(new_X_data), self._iris.y_data)
+        single_feature_dataset = Dataset.from_array(list(new_X_data), self._iris.y_data)
         federated_iris = FedDataDistribution.iid_distribution(
             centralized_data=single_feature_dataset
         )

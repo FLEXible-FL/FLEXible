@@ -19,7 +19,7 @@ def normalize(node_dataset, *args, **kwargs):
     norms = np.linalg.norm(X_data, axis=0)
     norms = np.where(norms == 0, np.finfo(X_data.dtype).eps, norms)
     new_X_data = X_data / norms
-    return Dataset.from_numpy(new_X_data, node_dataset.y_data.to_numpy())
+    return Dataset.from_array(new_X_data, node_dataset.y_data.to_numpy())
 
 
 def one_hot_encoding(node_dataset, *args, **kwargs):
