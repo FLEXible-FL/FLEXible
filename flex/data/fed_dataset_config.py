@@ -16,18 +16,19 @@ class FedDatasetConfig:
     """Class used to represent a configuration to federate a centralized dataset.
     The following table shows the compatiblity of each option:
 
-    | Options compatibility   | **n_nodes** | **node_ids** | **weights** | **weights_per_label** | **replacement** | **labels_per_node** | **features_per_node** | **indexes_per_node** | **group_by_label_index** | **keep_labels** |
-    |-------------------------|---------------|------------------|-------------|-----------------------|-----------------|------------------------|-------------------------|------------------------|----------------------|----------------------|
-    | **n_nodes**             | -             | Y                | Y           | Y                     | Y               | Y                      | Y                       | N                      | N                    | Y                    |
-    | **node_ids**            | -             | -                | Y           | Y                     | Y               | Y                      | Y                       | Y                      | N                    | Y                    |
-    | **weights**             | -             | -                | -           | N                     | Y               | Y                      | Y                       | N                      | N                    | Y                    |
-    | **weights_per_label**   | -             | -                | -           | -                     | Y               | N                      | N                       | N                      | N                    | Y                    |
-    | **replacement**         | -             | -                | -           | -                     | -               | Y                      | N                       | N                      | N                    | Y                    |
-    | **labels_per_node**     | -             | -                | -           | -                     | -               | -                      | N                       | N                      | N                    | Y                    |
-    | **features_per_node**   | -             | -                | -           | -                     | -               | -                      | -                       | N                      | N                    | Y                    |
-    | **indexes_per_node**    | -             | -                | -           | -                     | -               | -                      | -                       | -                      | N                    | Y                    |
-    | **group_by_label_index**| -             | -                | -           | -                     | -               | -                      | -                       | -                      | -                    | N                    |
-    | **keep_labels**         | -             | -                | -           | -                     | -               | -                      | -                       | -                      | -                    | -                    |
+    | Options compatibility   | **n_nodes** | **node_ids** | **weights** | **weights_per_label** | **replacement** | **labels_per_node** | **features_per_node** | **indexes_per_node** | **group_by_label_index** | **keep_labels** | **shuffle** |
+    |-------------------------|-------------|--------------|-------------|-----------------------|-----------------|---------------------|-----------------------|----------------------|--------------------------|-----------------|-------------|
+    | **n_nodes**             | -           | Y            | Y           | Y                     | Y               | Y                   | Y                     | N                    | N                        | Y               | Y           |
+    | **node_ids**            | -           | -            | Y           | Y                     | Y               | Y                   | Y                     | Y                    | N                        | Y               | Y           |
+    | **weights**             | -           | -            | -           | N                     | Y               | Y                   | Y                     | N                    | N                        | Y               | Y           |
+    | **weights_per_label**   | -           | -            | -           | -                     | Y               | N                   | N                     | N                    | N                        | Y               | Y           |
+    | **replacement**         | -           | -            | -           | -                     | -               | Y                   | N                     | N                    | N                        | Y               | Y           |
+    | **labels_per_node**     | -           | -            | -           | -                     | -               | -                   | N                     | N                    | N                        | Y               | Y           |
+    | **features_per_node**   | -           | -            | -           | -                     | -               | -                   | -                     | N                    | N                        | Y               | Y           |
+    | **indexes_per_node**    | -           | -            | -           | -                     | -               | -                   | -                     | -                    | N                        | Y               | Y           |
+    | **group_by_label_index**| -           | -            | -           | -                     | -               | -                   | -                     | -                    | -                        | N               | Y           |
+    | **keep_labels**         | -           | -            | -           | -                     | -               | -                   | -                     | -                    | -                        | -               | Y           |
+    | **shuffle**             | -           | -            | -           | -                     | -               | -                   | -                     | -                    | -                        | -               | -           |
 
     Attributes
     ----------
@@ -35,6 +36,8 @@ class FedDatasetConfig:
         Seed used to make the federated dataset generated reproducible with this configuration. Default None.
     n_nodes: int
         Number of nodes among which to split a centralized dataset. Default 2.
+    shuffle: bool
+        If True data is shuffled before being sampled. Default False.
     node_ids: Optional[List[Hashable]]
         Ids to identifty each node, if not provided, nodes will be indexed using integers. If n_nodes is also \
         given, we consider up to n_nodes elements. Default None.
@@ -63,6 +66,7 @@ class FedDatasetConfig:
 
     seed: Optional[int] = None
     n_nodes: int = 2
+    shuffle: bool = False
     node_ids: Optional[List[Hashable]] = None
     weights: Optional[npt.NDArray] = None
     weights_per_label: Optional[npt.NDArray] = None
