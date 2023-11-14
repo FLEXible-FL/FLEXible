@@ -68,11 +68,11 @@ def same_contects_split_in_two_slices(reference, indexable: LazyIndexable, split
 
 
 class TestLazySliceable(unittest.TestCase):
-    def test_copy_operator_from_list(self):
+    def test_copy_operator_from_array(self):
         base_list = get_list()
-        from_list = LazyIndexable(base_list, length=DEFAULT_LENGTH)
-        from_list_copy = copy.deepcopy(from_list)
-        assert same_contents_with_length(from_list, from_list_copy)
+        from_array = LazyIndexable(base_list, length=DEFAULT_LENGTH)
+        from_array_copy = copy.deepcopy(from_array)
+        assert same_contents_with_length(from_array, from_array_copy)
 
     def test_copy_operator_from_iter(self):
         base_iter = get_iterator()
@@ -86,12 +86,12 @@ class TestLazySliceable(unittest.TestCase):
         from_gen_copy = copy.deepcopy(from_gen)
         assert same_contents_with_length(from_gen, from_gen_copy)
 
-    def test_copy_operator_from_list_to_numpy(self):
+    def test_copy_operator_from_array_to_numpy(self):
         base_list = get_list()
-        from_list = LazyIndexable(base_list, length=DEFAULT_LENGTH)
-        from_list_copy = copy.deepcopy(from_list)
+        from_array = LazyIndexable(base_list, length=DEFAULT_LENGTH)
+        from_array_copy = copy.deepcopy(from_array)
         assert same_contents_with_length(
-            from_list.to_numpy(), from_list_copy.to_numpy()
+            from_array.to_numpy(), from_array_copy.to_numpy()
         )
 
     def test_copy_operator_from_iter_to_numpy(self):
@@ -108,10 +108,10 @@ class TestLazySliceable(unittest.TestCase):
         from_gen_copy = copy.deepcopy(from_gen)
         assert same_contents_with_length(from_gen.to_numpy(), from_gen_copy.to_numpy())
 
-    def test_from_list(self):
+    def test_from_array(self):
         base_list = get_list()
-        from_list = LazyIndexable(base_list, length=DEFAULT_LENGTH)
-        assert same_contents(base_list, from_list)
+        from_array = LazyIndexable(base_list, length=DEFAULT_LENGTH)
+        assert same_contents(base_list, from_array)
 
     def test_from_generator(self):
         generator = get_generator()
@@ -137,15 +137,15 @@ class TestLazySliceable(unittest.TestCase):
         from_iter = LazyIndexable(get_iterator(), DEFAULT_LENGTH)
         assert same_contects_negative_indexing(iterator, from_iter)
 
-    def test_from_list_to_numpy(self):
+    def test_from_array_to_numpy(self):
         base_list = get_list()
-        from_list = LazyIndexable(base_list, length=DEFAULT_LENGTH)
-        from_list = from_list.to_numpy()
-        assert same_contents(base_list, from_list)
+        from_array = LazyIndexable(base_list, length=DEFAULT_LENGTH)
+        from_array = from_array.to_numpy()
+        assert same_contents(base_list, from_array)
         base_list = get_list()
-        from_list = LazyIndexable(base_list, length=DEFAULT_LENGTH)
-        from_list = from_list.to_numpy()
-        assert same_contents(base_list, from_list)
+        from_array = LazyIndexable(base_list, length=DEFAULT_LENGTH)
+        from_array = from_array.to_numpy()
+        assert same_contents(base_list, from_array)
 
     def test_from_generator_to_numpy(self):
         generator = get_generator()
@@ -523,11 +523,11 @@ class TestLazySliceable(unittest.TestCase):
         with pytest.raises(IndexError):
             from_iter[DEFAULT_LENGTH * DEFAULT_LENGTH]
 
-    def test_pickle_from_list(self):
+    def test_pickle_from_array(self):
         base_list = get_list()
-        from_list = LazyIndexable(base_list, length=DEFAULT_LENGTH)
-        from_list_pickle_copy = pickle.loads(pickle.dumps(from_list))
-        assert same_contents_with_length(from_list, from_list_pickle_copy)
+        from_array = LazyIndexable(base_list, length=DEFAULT_LENGTH)
+        from_array_pickle_copy = pickle.loads(pickle.dumps(from_array))
+        assert same_contents_with_length(from_array, from_array_pickle_copy)
 
     def test_pickle_from_iter(self):
         base_iter = get_iterator()

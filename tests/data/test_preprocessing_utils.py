@@ -9,14 +9,14 @@ from flex.data.preprocessing_utils import normalize, one_hot_encoding
 def fixture_simple_fex_data_object_with_ones():
     X_data = np.ones(shape=(20, 5))
     y_data = np.random.choice(2, 20)
-    return Dataset.from_numpy(X_data, y_data)
+    return Dataset.from_array(X_data, y_data)
 
 
 @pytest.fixture(name="fcd_zeros")
 def fixture_simple_fex_data_object_with_zeros():
     X_data = np.zeros(shape=(20, 5))
     y_data = np.random.choice(2, 20)
-    return Dataset.from_numpy(X_data, y_data)
+    return Dataset.from_array(X_data, y_data)
 
 
 def test_normalize_function(fcd_ones):

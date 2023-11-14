@@ -16,7 +16,7 @@
 import contextlib
 import warnings
 from dataclasses import dataclass, field
-from typing import Optional
+from typing import Optional, Union
 
 import numpy as np
 from cardinality import count
@@ -357,71 +357,39 @@ class Dataset:
         return cls(X_data=X_data, y_data=y_data)
 
     @classmethod
-    def from_numpy(cls, X_array, y_array=None):
-        """Function that create a numpy array into a FlexDataObject.
-            It is mandatory that the list given as argument has length = 2,
-            the first element will have the X_data and the second element
-            will have the y_data.
+    def from_array(
+        cls, X_array: Union[list, np.ndarray], y_array: Union[list, np.ndarray] = None
+    ):
+        """Function that create a Dataset from array-like objects, list and numpy.
 
         Args:
         ----
-            X_array (npt.NDArray): Numpy array containing the X_data.
-            y_array (npt.NDArray): Numpy array containing the labels. Default None.
+            X_array (Union[list, np.ndarray]): Array-like containing X_data.
+            y_array (Optional[Union[list, np.ndarray]]): Array-like containing the y_data. Default None.
 
         Returns:
         -------
-            Dataset: a FlexDataObject which encapsulates the arrays.
+            Dataset: a Dataset which encasulates X_array and/or y_array.
         """
-        import numpy as np
-
-        if y_array is None:
-            if not isinstance(X_array, np.ndarray):
+        if y_array is not None:
+            if not isinstance(X_array, (list, np.ndarray)) or not isinstance(
+                y_array, (list, np.ndarray)
+            ):
                 warnings.warn(  # noqa: B028
-                    "X_array is not a Numpy Array. The method might not work as expected.",
+                    "X_array or y_array are not a list nor a numpy array. The method might not work as expected.",
                     RuntimeWarning,
                 )
-        elif not isinstance(X_array, np.ndarray) or not isinstance(y_array, np.ndarray):
-            warnings.warn(  # noqa: B028
-                "X_array or y_array are not a Numpy Array. The method might not work as expected.",
-                RuntimeWarning,
-            )
+        else:
+            if not isinstance(X_array, (list, np.ndarray)):
+                warnings.warn(  # noqa: B028
+                    "X_array is not a list nor a numpy array. The method might not work as expected.",
+                    RuntimeWarning,
+                )
+
         X_data = LazyIndexable(X_array, length=len(X_array))
         y_data = (
             None if y_array is None else LazyIndexable(y_array, length=len(y_array))
         )
-
-        return cls(X_data=X_data, y_data=y_data)
-
-    @classmethod
-    def from_list(cls, X_array, y_array=None):
-        """Function that create a list into a FlexDataObject.
-
-        Args:
-        ----
-            X_array (list): List containing X_data.
-            y_array (Optional[list]): List containing the y_data. Default None.
-
-        Returns:
-        -------
-            Dataset: a FlexDataObject which encasulates the dataset.
-        """
-        if y_array is not None:
-            if not isinstance(X_array, list) or not isinstance(y_array, list):
-                warnings.warn(  # noqa: B028
-                    "X_array or y_array are not a list. The method might not work as expected.",
-                    RuntimeWarning,
-                )
-            length = len(y_array)
-        else:
-            if not isinstance(X_array, list):
-                warnings.warn(  # noqa: B028
-                    "X_array is not a list. The method might not work as expected.",
-                    RuntimeWarning,
-                )
-            length = len(X_array)
-
-        X_data = LazyIndexable(X_array, length=length)
-        y_data = None if y_array is None else LazyIndexable(y_array, length=length)
 
         return cls(X_data=X_data, y_data=y_data)
 
