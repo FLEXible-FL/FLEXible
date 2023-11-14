@@ -83,22 +83,63 @@ class TestFlexDataDistribution(unittest.TestCase):
         assert len(flex_dataset) == config.n_nodes
         assert len(flex_dataset[0]) == len(flex_dataset[1])
         assert len(flex_dataset[0]) + len(flex_dataset[1]) == len(self._fcd)
+        assert (
+            set(flex_dataset[0].X_data._iterable_indexes)
+            & set(flex_dataset[1].X_data._iterable_indexes)
+            == set()
+        )
+
+    def test_shuffle_true(self):
+        config = FedDatasetConfig(
+            seed=0, n_nodes=2, weights=[1, 1], replacement=True, shuffle=True
+        )
+        flex_dataset = FedDataDistribution.from_config(self._iris, config)
+        assert len(flex_dataset) == config.n_nodes
+        assert len(flex_dataset[0]) == len(flex_dataset[1])
+        assert len(flex_dataset[0]) == len(self._iris)
+        assert set(flex_dataset[0].X_data._iterable_indexes) == set(
+            flex_dataset[1].X_data._iterable_indexes
+        )
+        assert any(flex_dataset[0].X_data[0] != flex_dataset[1].X_data[0])
+
+    def test_shuffle_false(self):
+        config = FedDatasetConfig(
+            seed=0, n_nodes=2, weights=[1, 1], replacement=True, shuffle=False
+        )
+        flex_dataset = FedDataDistribution.from_config(self._iris, config)
+        assert len(flex_dataset) == config.n_nodes
+        assert len(flex_dataset[0]) == len(flex_dataset[1])
+        assert len(flex_dataset[0]) + len(flex_dataset[1]) == 2 * len(self._iris)
+        assert set(flex_dataset[0].X_data._iterable_indexes) == set(
+            flex_dataset[1].X_data._iterable_indexes
+        )
+        assert all(flex_dataset[0].X_data[0] == flex_dataset[1].X_data[0])
 
     def test_weights(self):
         config = FedDatasetConfig(n_nodes=2, weights=[1, 1], replacement=False)
         flex_dataset = FedDataDistribution.from_config(self._fcd, config)
         assert len(flex_dataset) == config.n_nodes
         assert len(flex_dataset[0]) == len(flex_dataset[1])
-        assert len(np.unique(flex_dataset[0].y_data)) == 2
-        assert len(np.unique(flex_dataset[1].y_data)) == 2
+        assert len(set(flex_dataset[0].y_data)) == 2
+        assert len(set(flex_dataset[1].y_data)) == 2
+        assert (
+            set(flex_dataset[0].X_data._iterable_indexes)
+            & set(flex_dataset[1].X_data._iterable_indexes)
+            == set()
+        )
 
     def test_empty_weights(self):
         config = FedDatasetConfig(n_nodes=2, weights=None, replacement=False)
         flex_dataset = FedDataDistribution.from_config(self._fcd, config)
         assert len(flex_dataset) == config.n_nodes
         assert len(flex_dataset[1]) == len(flex_dataset[0])
-        assert len(np.unique(flex_dataset[1].y_data)) == 2
-        assert len(np.unique(flex_dataset[0].y_data)) == 2
+        assert len(set(flex_dataset[1].y_data)) == 2
+        assert len(set(flex_dataset[0].y_data)) == 2
+        assert (
+            set(flex_dataset[0].X_data._iterable_indexes)
+            & set(flex_dataset[1].X_data._iterable_indexes)
+            == set()
+        )
 
     def test_classes_per_client_int_no_weights_no_replacement(self):
         config = FedDatasetConfig(
@@ -107,16 +148,16 @@ class TestFlexDataDistribution(unittest.TestCase):
         flex_dataset = FedDataDistribution.from_config(self._fcd_ones_zeros, config)
         assert len(flex_dataset) == config.n_nodes
         assert len(flex_dataset[0]) + len(flex_dataset[1]) == len(self._fcd_ones_zeros)
-        assert len(np.unique(flex_dataset[0].y_data)) == 1
-        assert len(np.unique(flex_dataset[1].y_data)) == 1
+        assert len(set(flex_dataset[0].y_data)) == 1
+        assert len(set(flex_dataset[1].y_data)) == 1
 
     def test_classes_per_client_int_no_weights_with_replacements(self):
         config = FedDatasetConfig(n_nodes=2, labels_per_node=1, replacement=True)
         flex_dataset = FedDataDistribution.from_config(self._fcd_ones_zeros, config)
         assert len(flex_dataset) == config.n_nodes
         assert len(flex_dataset[0]) + len(flex_dataset[1]) == len(self._fcd_ones_zeros)
-        assert len(np.unique(flex_dataset[0].y_data)) == 1
-        assert len(np.unique(flex_dataset[1].y_data)) == 1
+        assert len(set(flex_dataset[0].y_data)) == 1
+        assert len(set(flex_dataset[1].y_data)) == 1
 
     def test_classes_per_client_int_with_weigths_no_replacement(self):
         config = FedDatasetConfig(
@@ -126,8 +167,8 @@ class TestFlexDataDistribution(unittest.TestCase):
         assert len(flex_dataset) == config.n_nodes
         assert len(flex_dataset[0]) == 2
         assert len(flex_dataset[1]) == 5
-        assert len(np.unique(flex_dataset[0].y_data)) == 1
-        assert len(np.unique(flex_dataset[1].y_data)) == 1
+        assert len(set(flex_dataset[0].y_data)) == 1
+        assert len(set(flex_dataset[1].y_data)) == 1
 
     def test_classes_per_client_int_with_weigths_with_replacement(self):
         config = FedDatasetConfig(
@@ -142,8 +183,8 @@ class TestFlexDataDistribution(unittest.TestCase):
         assert len(flex_dataset[0]) + len(flex_dataset[1]) == int(
             sum(np.floor(np.array(config.weights) * 10))
         )
-        assert len(np.unique(flex_dataset[0].y_data)) == 1
-        assert len(np.unique(flex_dataset[1].y_data)) == 1
+        assert len(set(flex_dataset[0].y_data)) == 1
+        assert len(set(flex_dataset[1].y_data)) == 1
 
     def test_classes_per_client_tuple_with_weights_no_replacement(self):
         config = FedDatasetConfig(
@@ -159,8 +200,8 @@ class TestFlexDataDistribution(unittest.TestCase):
         )
         assert len(flex_dataset) == config.n_nodes
         for k in flex_dataset:
-            assert len(np.unique(flex_dataset[k].y_data)) <= 2
-            assert len(np.unique(flex_dataset[k].y_data)) >= 1
+            assert len(set(flex_dataset[k].y_data)) <= 2
+            assert len(set(flex_dataset[k].y_data)) >= 1
 
     def test_classes_per_client_tuple_with_weights_with_replacement(self):
         config = FedDatasetConfig(
@@ -176,8 +217,8 @@ class TestFlexDataDistribution(unittest.TestCase):
         )
         assert len(flex_dataset) == config.n_nodes
         for k in flex_dataset:
-            assert len(np.unique(flex_dataset[k].y_data)) <= 3
-            assert len(np.unique(flex_dataset[k].y_data)) >= 2
+            assert len(set(flex_dataset[k].y_data)) <= 3
+            assert len(set(flex_dataset[k].y_data)) >= 2
 
     def test_classes_per_client_arr_no_weights_no_replacement(self):
         config = FedDatasetConfig(
@@ -189,8 +230,14 @@ class TestFlexDataDistribution(unittest.TestCase):
             replacement=False,
         )
         flex_dataset = FedDataDistribution.from_config(self._iris, config)
-        assert np.unique(flex_dataset["client_0"].y_data)[0] == 0
-        assert np.unique(flex_dataset["client_1"].y_data)[0] == 1
+        assert set(flex_dataset["client_0"].y_data) == {0}
+        assert set(flex_dataset["client_1"].y_data) == {1}
+        # Empty intersection
+        assert (
+            set(flex_dataset["client_0"].X_data._iterable_indexes)
+            & set(flex_dataset["client_1"].X_data._iterable_indexes)
+            == set()
+        )
 
     def test_classes_per_client_arr_no_weights_with_replacement(self):
         config = FedDatasetConfig(
@@ -203,8 +250,14 @@ class TestFlexDataDistribution(unittest.TestCase):
         )
         flex_dataset = FedDataDistribution.from_config(self._iris, config)
         assert len(flex_dataset) == config.n_nodes
-        assert np.unique(flex_dataset["client_0"].y_data)[0] == 0
-        assert set(np.unique(flex_dataset["client_1"].y_data)) == {0, 1}
+        assert set(flex_dataset["client_0"].y_data) == {0}
+        assert set(flex_dataset["client_1"].y_data) == {0, 1}
+        # Non-Empty intersection
+        assert (
+            set(flex_dataset["client_0"].X_data._iterable_indexes)
+            & set(flex_dataset["client_1"].X_data._iterable_indexes)
+            != set()
+        )
 
     def test_classes_per_client_arr_with_weights_with_replacement(self):
         config = FedDatasetConfig(
@@ -217,8 +270,8 @@ class TestFlexDataDistribution(unittest.TestCase):
         )
         flex_dataset = FedDataDistribution.from_config(self._iris, config)
         assert len(flex_dataset) == config.n_nodes
-        assert np.unique(flex_dataset["client_0"].y_data)[0] == 0
-        assert set(np.unique(flex_dataset["client_1"].y_data)) == {0, 1}
+        assert set(flex_dataset["client_0"].y_data) == {0}
+        assert set(flex_dataset["client_1"].y_data) == {0, 1}
 
     def test_classes_per_client_arr_with_weights_no_replacement(self):
         config = FedDatasetConfig(
@@ -231,18 +284,32 @@ class TestFlexDataDistribution(unittest.TestCase):
         )
         flex_dataset = FedDataDistribution.from_config(self._iris, config)
         assert len(flex_dataset) == config.n_nodes
-        assert np.unique(flex_dataset["client_0"].y_data)[0] == 0
-        assert np.unique(flex_dataset["client_1"].y_data)[0] == 1
+        assert set(flex_dataset["client_0"].y_data) == {0}
+        assert set(flex_dataset["client_1"].y_data) == {1}
+        # Empty intersection
+        assert (
+            set(flex_dataset["client_0"].X_data._iterable_indexes)
+            & set(flex_dataset["client_1"].X_data._iterable_indexes)
+            == set()
+        )
 
     # Feature split testing
     def test_featutes_per_client_int(self):
         config = FedDatasetConfig(
-            seed=2, n_nodes=2, features_per_node=3, replacement=True
+            seed=2, n_nodes=2, features_per_node=3, replacement=True, weights=[1.0, 1.0]
         )
         flex_dataset = FedDataDistribution.from_config(self._iris, config)
         assert len(flex_dataset) == config.n_nodes
+        assert len(flex_dataset[0]) == len(flex_dataset[1])
+        assert len(flex_dataset[0]) == len(self._iris)
         for k in flex_dataset:
-            assert flex_dataset[k].X_data.shape[1] == 3
+            assert flex_dataset[k].X_data.to_numpy().shape[1] == 3
+        # Non-Empty intersection
+        assert (
+            set(flex_dataset[0].X_data._iterable_indexes)
+            & set(flex_dataset[1].X_data._iterable_indexes)
+            != set()
+        )
 
     def test_featutes_per_client_tuple(self):
         min_features = 1
@@ -255,9 +322,11 @@ class TestFlexDataDistribution(unittest.TestCase):
         )
         flex_dataset = FedDataDistribution.from_config(self._iris, config)
         assert len(flex_dataset) == config.n_nodes
+        assert len(flex_dataset[0]) == len(flex_dataset[1])
+        assert len(flex_dataset[0]) != len(self._iris)
         for k in flex_dataset:
-            assert flex_dataset[k].X_data.shape[1] <= max_features
-            assert flex_dataset[k].X_data.shape[1] >= min_features
+            assert flex_dataset[k].X_data.to_numpy().shape[1] <= max_features
+            assert flex_dataset[k].X_data.to_numpy().shape[1] >= min_features
 
     def test_featutes_per_client_arr(self):
         config = FedDatasetConfig(
@@ -269,8 +338,16 @@ class TestFlexDataDistribution(unittest.TestCase):
         )
         flex_dataset = FedDataDistribution.from_config(self._iris, config)
         assert len(flex_dataset) == config.n_nodes
-        assert flex_dataset["client_0"].X_data.shape[1] == 2
-        assert flex_dataset["client_1"].X_data.shape[1] == 2
+        assert flex_dataset["client_0"].X_data.to_numpy().shape[1] == 2
+        assert flex_dataset["client_1"].X_data.to_numpy().shape[1] == 2
+        assert len(flex_dataset["client_0"]) == len(flex_dataset["client_1"])
+        assert len(flex_dataset["client_0"]) != len(self._iris)
+        # Non-Empty intersection
+        assert (
+            set(flex_dataset["client_0"].X_data._iterable_indexes)
+            & set(flex_dataset["client_1"].X_data._iterable_indexes)
+            != set()
+        )
 
     def test_iid_distribution(self):
         n_nodes = 2
@@ -278,6 +355,11 @@ class TestFlexDataDistribution(unittest.TestCase):
         assert len(flex_dataset) == n_nodes
         assert len(flex_dataset[0]) == len(flex_dataset[1])
         assert len(flex_dataset[0]) + len(flex_dataset[1]) == len(self._iris)
+        assert (
+            set(flex_dataset[0].X_data._iterable_indexes)
+            & set(flex_dataset[1].X_data._iterable_indexes)
+            == set()
+        )
 
     def test_single_feature_data(self):
         new_X_data = self._iris.X_data.to_numpy()
@@ -310,16 +392,12 @@ class TestFlexDataDistribution(unittest.TestCase):
         for idx, client in enumerate(kmeans.labels_):
             assert self._iris.X_data[idx] in federated_iris[client].X_data.to_numpy()
 
-        # assert all(
-        #     for idx, client in enumerate(kmeans.labels_)
-        # )
-
     def test_weight_per_classes_random_assigment(self):
         classes = np.unique(self._iris.y_data)
         config = FedDatasetConfig(
             seed=2,
-            n_nodes=len(classes),
-            weights_per_label=[[1, 2, 3, 4], [0, 0, 0, 1], [0, 1, 0, 0]],
+            n_nodes=3,
+            weights_per_label=[[1, 2, 3], [0, 0, 1], [0, 1, 0]],
             replacement=False,
         )
         flex_dataset = FedDataDistribution.from_config(self._iris, config)
@@ -329,13 +407,16 @@ class TestFlexDataDistribution(unittest.TestCase):
             != sum(flex_dataset[clients[1]].y_data == i)
             for i in classes
         )
+        assert len(set(flex_dataset[0].y_data)) == 3
+        assert len(set(flex_dataset[1].y_data)) == 1
+        assert len(set(flex_dataset[2].y_data)) == 1
 
     def test_weight_per_class_alone_w_replacement(self):
         classes = np.unique(self._iris.y_data)
         config = FedDatasetConfig(
             seed=2,
             n_nodes=2,
-            weights_per_label=np.ones((2, len(classes))),
+            weights_per_label=[[1, 1, 1], [1, 1, 1]],
             replacement=True,
         )
         flex_dataset = FedDataDistribution.from_config(self._iris, config)
@@ -345,13 +426,20 @@ class TestFlexDataDistribution(unittest.TestCase):
             == sum(flex_dataset[clients[1]].y_data == i)
             for i in classes
         )
+        assert len(set(flex_dataset[0].y_data)) == 3
+        assert len(set(flex_dataset[1].y_data)) == 3
+        assert (
+            set(flex_dataset[0].X_data._iterable_indexes)
+            & set(flex_dataset[1].X_data._iterable_indexes)
+            != set()
+        )
 
     def test_weight_per_class_alone_without_replacement(self):
         classes = np.unique(self._iris.y_data)
         config = FedDatasetConfig(
             seed=2,
             n_nodes=2,
-            weights_per_label=np.ones((2, len(classes))),
+            weights_per_label=[[1, 1, 1], [1, 1, 1]],
             replacement=False,
         )
         flex_dataset = FedDataDistribution.from_config(self._iris, config)
@@ -361,10 +449,12 @@ class TestFlexDataDistribution(unittest.TestCase):
             == sum(flex_dataset[clients[1]].y_data == i)
             for i in classes
         )
-        assert all(
-            np.sum(flex_dataset[clients[0]].X_data[i])
-            != np.sum(flex_dataset[clients[1]].X_data[i])
-            for i in range(len(flex_dataset))
+        assert len(set(flex_dataset[0].y_data)) == 3
+        assert len(set(flex_dataset[1].y_data)) == 3
+        assert (
+            set(flex_dataset[0].X_data._iterable_indexes)
+            & set(flex_dataset[1].X_data._iterable_indexes)
+            == set()
         )
 
     def test_keep_labels(self):
@@ -534,8 +624,13 @@ class TestFlexDataDistribution(unittest.TestCase):
             data, config
         )
         assert len(flex_dataset) == config.n_nodes
-        assert not np.array_equal(
-            flex_dataset["client_0"].X_data[1], flex_dataset["client_1"].X_data[1]
+        assert set(flex_dataset["client_0"].y_data) == {2, 3}
+        assert set(flex_dataset["client_1"].y_data) == {2}
+        # Non-Empty intersection
+        assert (
+            set(flex_dataset["client_1"].X_data._iterable_indexes)
+            & set(flex_dataset["client_0"].X_data._iterable_indexes)
+            == set()
         )
 
     def test_from_huggingface_text_dataset(self):
@@ -558,6 +653,12 @@ class TestFlexDataDistribution(unittest.TestCase):
             len(flex_dataset["client_0"]) + len(flex_dataset["client_1"])
             == data.num_rows
         )
+        # Empty intersection
+        assert (
+            set(flex_dataset["client_1"].X_data._iterable_indexes)
+            & set(flex_dataset["client_0"].X_data._iterable_indexes)
+            == set()
+        )
 
     def test_from_huggingface_text_dataset_lazy(self):
         from datasets import load_dataset
@@ -579,6 +680,12 @@ class TestFlexDataDistribution(unittest.TestCase):
             len(flex_dataset["client_0"]) + len(flex_dataset["client_1"])
             == data.num_rows
         )
+        # Empty intersection
+        assert (
+            set(flex_dataset["client_1"].X_data._iterable_indexes)
+            & set(flex_dataset["client_0"].X_data._iterable_indexes)
+            == set()
+        )
 
     def test_from_huggingface_text_dataset_lazy_str_no_subset(self):
         data = "ag_news;train"
@@ -594,6 +701,12 @@ class TestFlexDataDistribution(unittest.TestCase):
         )
         assert len(flex_dataset) == config.n_nodes
         assert len(flex_dataset["client_0"]) == len(flex_dataset["client_1"])
+        # Empty intersection
+        assert (
+            set(flex_dataset["client_1"].X_data._iterable_indexes)
+            & set(flex_dataset["client_0"].X_data._iterable_indexes)
+            == set()
+        )
 
     def test_from_huggingface_text_dataset_lazy_str_and_subset(self):
         data = "tweet_eval;emoji;train"
@@ -609,6 +722,12 @@ class TestFlexDataDistribution(unittest.TestCase):
         )
         assert len(flex_dataset) == config.n_nodes
         assert len(flex_dataset["client_0"]) == len(flex_dataset["client_1"])
+        # Empty intersection
+        assert (
+            set(flex_dataset["client_1"].X_data._iterable_indexes)
+            & set(flex_dataset["client_0"].X_data._iterable_indexes)
+            == set()
+        )
 
     def test_loading_fedmnist_digits_using_from_config(self):
         fed_data, test_data = load("federated_emnist", return_test=True, split="digits")
