@@ -10,7 +10,7 @@ from flex.data.dataset import Dataset
 def fixture_simple_fex_data_object():
     X_data = np.random.rand(100).reshape([20, 5])
     y_data = np.random.choice(2, 20)
-    return Dataset.from_numpy(X_data, y_data)
+    return Dataset.from_array(X_data, y_data)
 
 
 class TestFlexDataObject(unittest.TestCase):
@@ -35,14 +35,14 @@ class TestFlexDataObject(unittest.TestCase):
     def test_getitem_property(self):
         X_data = np.random.rand(100).reshape([20, 5])
         y_data = np.random.choice(2, 20)
-        fcd = Dataset.from_numpy(X_data, y_data)
+        fcd = Dataset.from_array(X_data, y_data)
         for x, y, (x_bis, y_bis) in zip(X_data, y_data, fcd):
             assert np.array_equal(x, x_bis)
             assert y == y_bis
 
     def test_getitem_property_y_data_none(self):
         X_data = np.random.rand(100).reshape([20, 5])
-        fcd = Dataset.from_numpy(X_data)
+        fcd = Dataset.from_array(X_data)
         for x, (x_bis, y_bis) in zip(X_data, fcd):
             assert np.array_equal(x, x_bis)
             assert y_bis is None
@@ -53,7 +53,7 @@ class TestFlexDataObject(unittest.TestCase):
     def test_len_X_data_differs_len_y_data(self):
         X_data = np.random.rand(100).reshape([20, 5])
         y_data = np.random.choice(2, 19)
-        fcd = Dataset.from_numpy(X_data, y_data)
+        fcd = Dataset.from_array(X_data, y_data)
         with pytest.raises(ValueError):
             fcd.validate()
 
@@ -162,28 +162,28 @@ class TestFlexDataObject(unittest.TestCase):
         assert MNIST.__name__ in PluggableTorchvision
         assert "random_string" not in PluggableTorchvision
 
-    def test_from_numpy_arrays(self):
+    def test_from_array_arrays(self):
         X_data = np.random.rand(100).reshape([20, 5])
         y_data = np.random.choice(2, 20)
-        fcd = Dataset.from_numpy(X_data, y_data)
+        fcd = Dataset.from_array(X_data, y_data)
         assert len(fcd.X_data) == len(self._fcd.X_data)
         assert len(fcd.y_data) == len(self._fcd.y_data)
 
-    def test_from_numpy_arrays_y_none(self):
+    def test_from_array_arrays_y_none(self):
         X_data = np.random.rand(100).reshape([20, 5])
-        fcd = Dataset.from_numpy(X_data)
+        fcd = Dataset.from_array(X_data)
         assert len(fcd.X_data) == len(self._fcd.X_data)
 
-    def test_from_lists(self):
+    def test_from_arrays(self):
         X_data = list(np.random.rand(100).reshape([20, 5]))
         y_data = list(np.random.choice(2, 20))
-        fcd = Dataset.from_list(X_data, y_data)
+        fcd = Dataset.from_array(X_data, y_data)
         assert len(fcd.X_data) == len(self._fcd.X_data)
         assert len(fcd.y_data) == len(self._fcd.y_data)
 
-    def test_from_list_y_none(self):
+    def test_from_array_y_none(self):
         X_data = list(np.random.rand(100).reshape([20, 5]))
-        fcd = Dataset.from_numpy(X_data)
+        fcd = Dataset.from_array(X_data)
         assert len(fcd.X_data) == len(self._fcd.X_data)
 
     def test_to_list(self):
@@ -195,7 +195,7 @@ class TestFlexDataObject(unittest.TestCase):
 
     def test_to_list_y_none(self):
         X_data = np.random.rand(100).reshape([20, 5])
-        fcd = Dataset.from_numpy(X_data)
+        fcd = Dataset.from_array(X_data)
         X_data = fcd.to_list()
         assert isinstance(X_data, list)
         assert len(X_data) == len(self._fcd.X_data)
@@ -216,7 +216,7 @@ class TestFlexDataObject(unittest.TestCase):
 
     def test_to_numpy_y_none(self):
         X_data = np.random.rand(100).reshape([20, 5])
-        fcd = Dataset.from_numpy(X_data)
+        fcd = Dataset.from_array(X_data)
         X_data = fcd.to_numpy(x_dtype=np.int16)
         assert isinstance(X_data, np.ndarray)
         assert len(X_data) == len(self._fcd.X_data)
