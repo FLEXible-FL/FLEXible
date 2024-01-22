@@ -99,7 +99,7 @@ class FedDataDistribution(object):
         data,
         config: FedDatasetConfig,
         X_columns: list,
-        label_columns: list,
+        label_columns: list = None,
     ):
         """This function federates a centralized hugginface dataset given a FlexDatasetConfig.
         This function will transform a dataset from the HuggingFace Hub datasets into a Dataset
