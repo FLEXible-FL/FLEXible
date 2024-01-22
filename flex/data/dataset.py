@@ -272,7 +272,9 @@ class Dataset:
                     hf_dataset = (
                         load_dataset(name, split=split)
                         if subset is None
-                        else load_dataset(name, subset, split=split, ignore_verifications=True)
+                        else load_dataset(
+                            name, subset, split=split, ignore_verifications=True
+                        )
                     )
                 except Exception as err:
                     print(
