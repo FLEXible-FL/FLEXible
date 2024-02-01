@@ -5,7 +5,7 @@ from enum import Enum, unique
 class FlexRole(Enum):
     """Enum which contains all possible roles:
         - Basic roles: client, server or aggregator
-        - Composite roles: aggregator_client, server_client, server_aggregator, server_aggregator_client
+        - Composite roles: aggregator_client, server_client, server_aggregator, server_aggregator_client.
 
     Note that composite roles are designed to represented a combination of Basic roles.
     """

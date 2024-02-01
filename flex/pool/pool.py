@@ -79,7 +79,7 @@ class FlexPool:
         )
 
     def map(self, func: Callable, dst_pool: FlexPool = None, **kwargs):
-        """Method used to send messages from one pool to another. The pool using
+        r"""Method used to send messages from one pool to another. The pool using
         this method is the source pool, and it will send a message, apply a function,
         to the destination pool. If no destination pool is provided, then the function is applied
         to the source pool. The pool sends a message in order to complete a round

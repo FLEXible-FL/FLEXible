@@ -37,7 +37,7 @@ class FedDataset(UserDict):
         num_proc: int = 1,
         **kwargs,
     ):
-        """This function lets apply a custom function to the FlexDataset in parallel.
+        r"""This function lets apply a custom function to the FlexDataset in parallel.
 
         The \**kwargs provided to this function are all the kwargs of the custom function provided by the node.
 
