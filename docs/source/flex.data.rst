@@ -8,6 +8,7 @@ flex.data.dataset module
 ------------------------
 
 .. automodule:: flex.data.dataset
+   :no-index:
    :members:
    :undoc-members:
    :show-inheritance:
@@ -32,6 +33,7 @@ flex.data.fed\_dataset\_config module
 -------------------------------------
 
 .. automodule:: flex.data.fed_dataset_config
+   :no-index:
    :members:
    :undoc-members:
    :show-inheritance:
