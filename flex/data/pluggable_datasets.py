@@ -17,6 +17,7 @@ class PluggableTorchtext(Enum, metaclass=PluggableDataset):
     Any other dataset from the TorchText library will need further preprocessing.
 
     Args:
+    -----
         Enum (enum): torchtext class for each dataset than can be accepted on our platform.
     """
 
@@ -39,6 +40,7 @@ class PluggableTorchvision(Enum, metaclass=PluggableDataset):
     Any other dataset from the Torchvision library will need further preprocessing.
 
     Args:
+    -----
         Enum (enum): torchvision class for each dataset than can be accepted on our platform.
     """
 
@@ -101,6 +103,7 @@ class PluggableHuggingFace(Enum, metaclass=PluggableDatasetString):
     need to select the X_train-y_train as np.arrays.
 
     Args:
+    -----
         Enum (enum): Tuple containing name, X_columns and y_columns to use in the
         load_dataset function.
     """

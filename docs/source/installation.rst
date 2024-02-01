@@ -28,7 +28,7 @@ You can either clone the public repository:
 
     $ git clone git@github.com:FLEXible-FL/FLEX-framework.git
 
-Or download the `tarball`_:
+Or download the `source`:
 
 .. code-block:: console
 
@@ -41,7 +41,9 @@ Once you have a copy of the source, you can install it with:
     $ python setup.py install
 
 If you want to contribute, download from sources and install as follows:
+
 .. code-block:: console
+
     $ pip install -e ".[develop]"
 
 .. _Github repo: https://github.com/FLEXible-FL/FLEX-framework

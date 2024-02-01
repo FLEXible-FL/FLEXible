@@ -16,7 +16,7 @@ sys.path.insert(0, os.path.abspath("../../"))
 
 project = "FLEXible"
 copyright = "2022, FLEXible Team"
-author = "FLEXible Team"
+author = "Jimenez-Lopez Daniel and Argente-Garrido Alberto"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

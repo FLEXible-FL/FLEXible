@@ -28,20 +28,20 @@ def init_server_model_tf(
     the model at the server side in a client-server architecture.
 
     Args:
-    ----
+    -----
         model (tf.keras.Model): A tf.keras.model initialized.
         optimizer (tf.keras.optimizers, optional): Optimizer for the model. Defaults to None.
         loss (tf.keras.losses, optional): _description_. Defaults to None.
         metrics (tf.keras.metrics, optional): _description_. Defaults to None.
 
     Raises:
-    ------
+    -------
         ValueError: If the model is not compiled and any of the optimizer, loss or metrics
         is not provided, then it will raise an error because we can't initialize
         the model.
 
     Returns:
-    -------
+    --------
         FlexModel: A FlexModel that will be assigned to the server.
     """
     from flex.model.model import FlexModel
@@ -85,11 +85,11 @@ def deploy_server_model_tf(server_flex_model, *args, **kwargs):
     the steps for 1 client.
 
     Args:
-    ----
+    -----
         server_flex_model (FlexModel): Server FlexModel
 
     Returns:
-    -------
+    --------
         FlexModel: The client's FlexModel
     """
     import tensorflow as tf
@@ -114,7 +114,7 @@ def train_tf(client_flex_model, client_data, *args, **kwargs):
     using FLEXible.
 
     Args:
-    ----
+    -----
         client_flex_model (FlexModel): client's FlexModel
         client_data (FedDataset): client's FedDataset
 
@@ -144,11 +144,11 @@ def collect_clients_weights_tf(client_flex_model, *args, **kwargs):
     This function returns all the weights of the model.
 
     Args:
-    ----
+    -----
         client_flex_model (FlexModel): A client's FlexModel
 
     Returns:
-    -------
+    --------
         np.array: An array with all the weights of the client's model
 
     Example of use assuming you are using a client-server architecture:
@@ -175,7 +175,7 @@ def set_aggregated_weights_tf(server_flex_model, aggregated_weights, *args, **kw
     """Function that replaces the weights of the server with the aggregated weights of the aggregator.
 
     Args:
-    ----
+    -----
         server_flex_model (FlexModel): The server's FlexModel
         aggregated_weights (np.array): An array with the aggregated
         weights of the models.
@@ -187,12 +187,12 @@ def evaluate_model_tf(flex_model, test_data):
     """Function that evaluate the global model on the test data.
 
     Args:
-    ----
+    -----
         flex_model (FlexModel): server's FlexModel
         test_data (Dataset): Test inputs.
 
     Returns:
-    -------
+    --------
         Evaluations by the model on the test data.
     """
     X, y = test_data.to_numpy()
