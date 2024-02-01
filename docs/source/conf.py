@@ -46,8 +46,7 @@ html_theme = "sphinx_rtd_theme"
 
 # Would be nice to add the text color option to the theme, so the table in FedDatasetConfig
 # can be properly displayed.
-html_theme_options = {
-}
+html_theme_options = {}
 
 html_static_path = ["_static"]
 # html_static_path = []
