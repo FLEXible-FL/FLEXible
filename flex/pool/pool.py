@@ -46,7 +46,6 @@ class FlexPool:
         using the map function following the communication constraints.
 
 
-    --------------------------------------------------------------------------
     We offer two class methods to create two architectures, client-server architecture
     and p2p architecture. In the client-server architecture, every id from the
     FedDataset is assigned to be a client, and we create a third-party actor,
@@ -110,9 +109,10 @@ class FlexPool:
         clients can initialize it. This is a particular case from the deploy_model case.
 
         Args:
+        -----
             func (Callable): If dst_pool is None, then message is sent to the source (self). In this situation
             the function func is called for each actor in the pool, providing actor's data and actor's model
-            as arguments in addition to *args and **kwargs. If dst_pool is not None, the message is sent from
+            as arguments in addition to \*args and \**kwargs. If dst_pool is not None, the message is sent from
             the source pool (self) to the destination pool (dst_pool). The function func is called for each actor
             in the pool, providing the model of the current actor in the source pool and all the models of the
             actors in the destination pool.
@@ -120,9 +120,11 @@ class FlexPool:
             dst_pool (FlexPool): Pool that will recieve the message from the source pool (self), it can be None.
 
         Raises:
+        -------
             ValueError: This method raises and error if the pools aren't allowed to comunicate
 
         Returns:
+        --------
             List[Any]: A list of the result of applying the function (func) from the source pool (self) to the
             destination pool (dst_pool). If dst_pool is None, then the results come from the source pool. The
             length of the returned values equals the number of actors in the source pool.
@@ -154,7 +156,9 @@ class FlexPool:
 
         Note: This function doesn't send a copy of the original pool, it sends a reference.
             Changes made on the returned pool affect the original pool.
+
         Args:
+        -----
             criteria (int, Callable): if a function is provided, then it must return
             True/False values for each pair of node_id, node_roles. Additional arguments
             required for the function are passed in criteria_args and criteria_kwargs.
@@ -163,6 +167,7 @@ class FlexPool:
             criteria_kwargs: additional keyword args required for the criteria function. Otherwise ignored.
 
         Returns:
+        --------
             FlexPool: a pool that contains the nodes that meet the criteria.
         """
         new_actors = FlexActors()
@@ -203,6 +208,7 @@ class FlexPool:
         """Property to get all the clients available in a pool.
 
         Returns:
+        --------
             FlexPool: Pool containing all the clients from a pool
         """
         return self.select(lambda a, b: FlexRoleManager.is_client(b))
@@ -212,6 +218,7 @@ class FlexPool:
         """Property to get all the aggregator available in a pool.
 
         Returns:
+        --------
             FlexPool: Pool containing all the aggregators from a pool
         """
         return self.select(lambda a, b: FlexRoleManager.is_aggregator(b))
@@ -221,6 +228,7 @@ class FlexPool:
         """Property to get all the servers available in a pool.
 
         Returns:
+        --------
             FlexPool: Pool containing all the servers from a pool
         """
         return self.select(lambda a, b: FlexRoleManager.is_server(b))
@@ -267,9 +275,11 @@ class FlexPool:
         orchestrate the learning phase.
 
         Args:
+        -----
             fed_dataset (FedDataset): Federated dataset used to train a model.
 
         Returns:
+        --------
             FlexPool: A FlexPool with the assigned roles for a client-server architecture.
         """
         actors = client_server_architecture(fed_dataset.keys(), server_id)
@@ -293,9 +303,11 @@ class FlexPool:
         aggregator and server.
 
         Args:
+        -----
             fed_dataset (FedDataset): Federated dataset used to train a model.
 
         Returns:
+        --------
             FlexPool: A FlexPool with the assigned roles for a p2p architecture.
         """
         new_arch = cls(

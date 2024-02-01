@@ -23,4 +23,4 @@ from flex import model
 from flex import pool
 from flex import datasets
 
-__version__ = "0.5.0"
+__version__ = "0.6.0"

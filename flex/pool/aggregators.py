@@ -84,10 +84,12 @@ def fed_avg(aggregated_weights_as_list: list):
     """Function that implements the FedAvg aggregation method
 
     Args:
+    -----
         aggregated_weights_as_list (list): List which contains
         all the weights to aggregate
 
     Returns:
+    --------
         tensor array: An array with the aggregated weights
 
     Example of use assuming you are using a client-server architecture:
@@ -114,13 +116,13 @@ def weighted_fed_avg(aggregated_weights_as_list: list, ponderation: list):
     """Function that implements the weighted FedAvg aggregation method.
 
     Args:
-    ----
+    -----
         aggregated_weights_as_list (list): List which contains
         all the weights to aggregate
         ponderation (list): weights assigned to each client
 
     Returns:
-    -------
+    --------
         tensor array: An array with the aggregated weights
 
     Example of use assuming you are using a client-server architecture:

@@ -52,14 +52,6 @@ flex.data.preprocessing\_utils module
    :undoc-members:
    :show-inheritance:
 
-flex.data.utils module
-----------------------
-
-.. automodule:: flex.data.utils
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 Module contents
 ---------------
 

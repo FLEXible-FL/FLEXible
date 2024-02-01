@@ -25,9 +25,11 @@ def normalize(node_dataset, *args, **kwargs):
     """Function that normalizes federated data.
 
     Args:
+    -----
         node_dataset (Dataset): node_dataset  to normalize the data.
 
     Returns:
+    --------
         Dataset: Returns the node_dataset with the X_data property normalized.
     """
     X_data = node_dataset.X_data.to_numpy()
@@ -41,12 +43,15 @@ def one_hot_encoding(node_dataset, *args, **kwargs):
     """Function that apply one hot encoding to the labels of a node_dataset.
 
     Args:
+    -----
         node_dataset (Dataset): node_dataset to which apply one hot encode to her labels.
 
     Raises:
+    -------
         ValueError: Raises value error if n_labels is not given in the kwargs argument.
 
     Returns:
+    --------
         Dataset: Returns the node_dataset with the y_data property updated.
     """
     if "n_labels" not in kwargs:

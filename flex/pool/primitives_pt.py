@@ -37,7 +37,7 @@ def deploy_server_model_pt(server_flex_model, *args, **kwargs):
     """Creates a copy of the server_flex_model and it is set to client nodes using the decorator @deploy_server_model.
 
     Args:
-    ----
+    -----
         server_flex_model (FlexModel): object storing information needed to run a Pytorch model
 
     """
@@ -48,12 +48,12 @@ def check_ignored_weights_pt(name, ignore_weights=None):
     """Checks wether name contains any of the words in ignore_weights.
 
     Args:
-    ----
+    -----
         name (str): name to check
         ignore_weights (list, optional): A list of str. Defaults to None.
 
     Returns:
-    -------
+    --------
         bool: True if any og the elements of list ignore_weights is present in name, otherwise False.
     """
     if ignore_weights is None:
@@ -73,14 +73,14 @@ def collect_client_diff_weights_pt(client_flex_model, *args, **kwargs):
     This function returns the weights of the model.
 
     Args:
-    ----
+    -----
         client_flex_model (FlexModel): A client's FlexModel
         ignore_weights (list): the name of the weights not to collect, by default,
         those containind the words `num_batches_tracked` are not collected, as they
         only make sense in the local model
 
     Returns:
-    -------
+    --------
         List: List with the weights of the client's model
 
     Example of use assuming you are using a client-server architecture:
@@ -127,14 +127,14 @@ def collect_clients_weights_pt(client_flex_model, *args, **kwargs):
     This function returns all the weights of the model.
 
     Args:
-    ----
+    -----
         client_flex_model (FlexModel): A client's FlexModel
         ignore_weights (list): the name of the weights not to collect, by default,
-        those containind the words `num_batches_tracked`are not collected, as they
+        those containind the words `num_batches_tracked` are not collected, as they
         only make sense in the local model
 
     Returns:
-    -------
+    --------
         List: List with all the weights of the client's model
 
     Example of use assuming you are using a client-server architecture:
@@ -173,7 +173,7 @@ def set_aggregated_weights_pt(server_flex_model, aggregated_weights, *args, **kw
     """Function that replaces the weights of the server with the aggregated weights of the aggregator.
 
     Args:
-    ----
+    -----
         server_flex_model (FlexModel): The server's FlexModel
         aggregated_weights (np.array): Aggregated weights
 
@@ -211,7 +211,7 @@ def set_aggregated_diff_weights_pt(
     """Function to add the aggregated weights to the server.
 
     Args:
-    ----
+    -----
         server_flex_model (FlexModel): The server's FlexModel
         aggregated_diff_weights (np.array): Aggregated weights
 
