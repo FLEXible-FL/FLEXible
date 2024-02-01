@@ -43,5 +43,12 @@ source_suffix = ".rst"
 
 # html_theme = "alabaster"
 html_theme = "sphinx_rtd_theme"
-# html_static_path = ["_static"]
-html_static_path = []
+
+# Would be nice to add the text color option to the theme, so the table in FedDatasetConfig
+# can be properly displayed.
+html_theme_options = {
+}
+
+html_static_path = ["_static"]
+# html_static_path = []
+html_logo = "_static/FLEXibleLogo.png"
