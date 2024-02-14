@@ -1,4 +1,5 @@
 from torchvision.datasets import VisionDataset
+from torch.utils.data import Dataset
 
 
 class DefaultVision(VisionDataset):
@@ -21,3 +22,25 @@ class DefaultVision(VisionDataset):
 
     def __len__(self):
         return len(self.data)
+
+
+class FeatureDataset(Dataset):
+    def __init__(self, dataset: Dataset):
+        self._dataset = dataset
+
+    def __len__(self):
+        return len(self._dataset)
+
+    def __getitem__(self, idx):
+        return self._dataset[idx][0]
+
+
+class LabelDataset(Dataset):
+    def __init__(self, dataset: Dataset):
+        self._dataset = dataset
+
+    def __len__(self):
+        return len(self._dataset)
+
+    def __getitem__(self, idx):
+        return self._dataset[idx][1]
