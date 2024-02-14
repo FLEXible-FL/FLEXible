@@ -13,6 +13,22 @@ def fixture_simple_fex_data_object():
     return Dataset.from_array(X_data, y_data)
 
 
+def create_simple_torch_dataset():
+    from torch.utils.data import Dataset as TorchDataset
+
+    class SimpleTorchDataset(TorchDataset):
+        def __init__(self):
+            self.a = np.arange(10)
+
+        def __len__(self):
+            return len(self.a)
+
+        def __getitem__(self, idx):
+            return self.a[idx], self.a[idx] + 1
+
+    return SimpleTorchDataset()
+
+
 class TestFlexDataObject(unittest.TestCase):
     @pytest.fixture(autouse=True)
     def _fixture_simple_flex_data_object(self, fcd):
@@ -220,3 +236,22 @@ class TestFlexDataObject(unittest.TestCase):
         X_data = fcd.to_numpy(x_dtype=np.int16)
         assert isinstance(X_data, np.ndarray)
         assert len(X_data) == len(self._fcd.X_data)
+
+    def test_from_torchvision_back_to_torchvision(self):
+        original_torch_dataset = create_simple_torch_dataset()
+        fcd = Dataset.from_torchvision_dataset(original_torch_dataset)
+        new_torch_dataset = fcd.to_torchvision_dataset()
+        for (x, y), (x_bis, y_bis) in zip(original_torch_dataset, new_torch_dataset):
+            assert np.array_equal(x, x_bis)
+            assert np.array_equal(y, y_bis)
+
+    def test_from_torchvision_back_to_torchvision_does_not_use_storage(self):
+        original_torch_dataset = create_simple_torch_dataset()
+        fcd = Dataset.from_torchvision_dataset(original_torch_dataset)
+        new_torch_dataset = fcd.to_torchvision_dataset()
+        # Consume the datasets
+        for (x, y), (x_bis, y_bis) in zip(original_torch_dataset, new_torch_dataset):
+            assert np.array_equal(x, x_bis)
+            assert np.array_equal(y, y_bis)
+        assert fcd.X_data._storage == {}
+        assert fcd.y_data._storage == {}
