@@ -104,8 +104,8 @@ class Dataset:
             Dataset: a FlexDataObject which encapsulates the dataset.
         """
 
-        from flex.data.pluggable_datasets import PluggableTorchvision
         from flex.data.dataset_pt_utils import FeatureDataset, LabelDataset
+        from flex.data.pluggable_datasets import PluggableTorchvision
 
         if pytorch_dataset.__class__.__name__ not in PluggableTorchvision:
             warnings.warn(

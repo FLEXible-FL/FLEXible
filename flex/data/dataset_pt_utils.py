@@ -1,5 +1,5 @@
-from torchvision.datasets import VisionDataset
 from torch.utils.data import Dataset
+from torchvision.datasets import VisionDataset
 
 
 class DefaultVision(VisionDataset):
