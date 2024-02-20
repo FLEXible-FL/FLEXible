@@ -54,6 +54,7 @@ class Dataset:
         """This function transforms a Dataset into a Torchvision dataset object
 
         Returns:
+        --------
             torvhcision.datasets.VisionDataset: a torchvision dataset with the contents of datasets. \
                 Note that transforms should be pased as arguments.
         """
@@ -65,6 +66,7 @@ class Dataset:
         """This function is an utility to transform a Dataset object to a tensorflow.data.Dataset object
 
         Returns:
+        --------
             tensorflow.data.Dataset: tf dataset object instanciated using the contents of a Dataset
         """
         from tensorflow import type_spec_from_value
@@ -98,9 +100,11 @@ class Dataset:
         """Function to convert an object from torchvision.datasets.* to a FlexDataObject.
 
         Args:
+        -----
             pytorch_dataset (torchvision.datasets.*): a torchvision dataset.
 
         Returns:
+        --------
             Dataset: a FlexDataObject which encapsulates the dataset.
         """
 
@@ -124,11 +128,11 @@ class Dataset:
         """Function to convert a dataset from tensorflow_datasets to a FlexDataObject.
 
         Args:
-        ----
+        -----
             tdfs_dataset (tf.data.Datasets): a tf dataset
 
         Returns:
-        -------
+        --------
             Dataset: a FlexDataObject which encapsulates the dataset.
         """
 
@@ -159,11 +163,13 @@ class Dataset:
         """Function to convert a dataset from tensorflow_datasets to a FlexDataObject.
 
         Args:
+        -----
             tdfs_dataset (tf.data.Datasets): a tf dataset loaded.
             X_columns (list): List containing the features (input) of the model.
             label_columns (list): List containing the targets of the model.
 
         Returns:
+        --------
             Dataset: a FlexDataObject which encapsulates the dataset.
         """
         from tensorflow.python.data.ops.dataset_ops import PrefetchDataset
@@ -228,16 +234,18 @@ class Dataset:
         to a FlexDataObject.
 
         Args:
+        -----
             hf_dataset (Union[datasets.arrow_dataset.Dataset, str]): a dataset from the dataset library.
-                If a string is recieved, it will load the dataset from the HuggingFace repository. When a
-                string is given, the split has to be specified in the str variable as follows:
-                'dataset;split'. Also, if the string contains a subset, for those datasets that have
-                multiple subsets for differents tasks, it may be given as follow: 'dataset;subset;split',
-                so we can download the dataset and the
+            If a string is recieved, it will load the dataset from the HuggingFace repository. When a
+            string is given, the split has to be specified in the str variable as follows:
+            'dataset;split'. Also, if the string contains a subset, for those datasets that have
+            multiple subsets for differents tasks, it may be given as follow: 'dataset;subset;split',
+            so we can download the dataset and the desired subset and split.
             X_columns (list): List containing the features names for training the model
             label_columns (list): List containing the name or names of the label column
 
         Returns:
+        --------
             Dataset: a FlexDataObject which encapsulates the dataset.
         """
         from flex.data.pluggable_datasets import PluggableHuggingFace
@@ -318,9 +326,11 @@ class Dataset:
             torchtext.transforms.ToTensor()
 
         Args:
+        -----
             pytorch_text_dataset (torchtext.datasets.*): a torchtext dataset
 
         Returns:
+        --------
             Dataset: a FlexDataObject which encapsulates the dataset.
         """
 
@@ -350,12 +360,12 @@ class Dataset:
         """Function that create a Dataset from array-like objects, list and numpy.
 
         Args:
-        ----
+        -----
             X_array (Union[list, np.ndarray]): Array-like containing X_data.
             y_array (Optional[Union[list, np.ndarray]]): Array-like containing the y_data. Default None.
 
         Returns:
-        -------
+        --------
             Dataset: a Dataset which encasulates X_array and/or y_array.
         """
         if y_array is not None:

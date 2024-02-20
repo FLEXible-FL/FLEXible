@@ -16,7 +16,7 @@ sys.path.insert(0, os.path.abspath("../../"))
 
 project = "FLEXible"
 copyright = "2022, FLEXible Team"
-author = "FLEXible Team"
+author = "Jimenez-Lopez Daniel and Argente-Garrido Alberto"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -43,4 +43,11 @@ source_suffix = ".rst"
 
 # html_theme = "alabaster"
 html_theme = "sphinx_rtd_theme"
+
+# Would be nice to add the text color option to the theme, so the table in FedDatasetConfig
+# can be properly displayed.
+html_theme_options = {}
+
 html_static_path = ["_static"]
+# html_static_path = []
+html_logo = "_static/FLEXibleLogo.png"
