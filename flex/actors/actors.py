@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Copyright 2023 Instituto Andaluz Interuniversitario en Ciencia de Datos e Inteligencia Computacional (DaSCI)
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,12 +15,15 @@
 
 
 from collections import UserDict
+=======
+from collections import OrderedDict
+>>>>>>> 603436d (replace UserDict with OrderedDict)
 from typing import Hashable
 
 from flex.actors import FlexRole, FlexRoleManager
 
 
-class FlexActors(UserDict):
+class FlexActors(OrderedDict):
     """Class that represents roles assigned to each node in a Federated Experiment.
     Roles are designed to restrict communications between nodes. It is important
     to note that Roles are not mutually exclusive, that is, a node can have multiple
@@ -27,7 +31,7 @@ class FlexActors(UserDict):
 
     Attributes
     ----------
-    data (collections.UserDict): The structure is a dictionary
+    data (collections.OrderedDict): The structure is a dictionary
         with the clients ids as keys and Roles as a value.
     """
 
@@ -49,4 +53,4 @@ class FlexActors(UserDict):
         return FlexRoleManager.check_compatibility(self[key1], self[key2])
 
     def __setitem__(self, key: Hashable, item: FlexRole) -> None:
-        self.data[key] = item
+        super().__setitem__(key, item)
