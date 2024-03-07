@@ -1,5 +1,5 @@
 """
-Copyright (C) 2024  Instituto Andaluz Interuniversitario en Ciencia de Datos e Inteligencia Computacional (DaSCI)
+Copyright (C) 2024  Instituto Andaluz Interuniversitario en Ciencia de Datos e Inteligencia Computacional (DaSCI).
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published
@@ -25,9 +25,9 @@ of the training steps in a federated learning environment.
 Note that each function is using the decorators we've created to facilitate the use of the library. For a better
 understanding on how the platform works, please go to the flex_decorators file.
 """
-from copy import deepcopy
+from copy import deepcopy  # noqa: E402
 
-from flex.pool.decorators import (
+from flex.pool.decorators import (  # noqa: E402
     collect_clients_weights,
     deploy_server_model,
     set_aggregated_weights,

@@ -1,5 +1,5 @@
 """
-Copyright (C) 2024  Instituto Andaluz Interuniversitario en Ciencia de Datos e Inteligencia Computacional (DaSCI)
+Copyright (C) 2024  Instituto Andaluz Interuniversitario en Ciencia de Datos e Inteligencia Computacional (DaSCI).
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published
@@ -16,10 +16,9 @@ Copyright (C) 2024  Instituto Andaluz Interuniversitario en Ciencia de Datos e I
 """
 """File that contains some utils functions to test help us testing the datasets that works with FLEXible.
 """
+import gc  # noqa: E402
 
-import gc
-
-from flex.data import Dataset, FedDataDistribution, FedDatasetConfig
+from flex.data import Dataset, FedDataDistribution, FedDatasetConfig  # noqa: E402
 
 config = FedDatasetConfig(
     seed=0,

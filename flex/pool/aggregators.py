@@ -1,5 +1,5 @@
 """
-Copyright (C) 2024  Instituto Andaluz Interuniversitario en Ciencia de Datos e Inteligencia Computacional (DaSCI)
+Copyright (C) 2024  Instituto Andaluz Interuniversitario en Ciencia de Datos e Inteligencia Computacional (DaSCI).
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published
@@ -20,9 +20,9 @@ development of a federated model in FLEXible.
 This aggregators also can work as examples for creating a custom aggregator.
 """
 
-import tensorly as tl
+import tensorly as tl  # noqa: E402
 
-from flex.pool.decorators import aggregate_weights
+from flex.pool.decorators import aggregate_weights  # noqa: E402
 
 
 def flatten(xs):
