@@ -14,6 +14,7 @@ Copyright (C) 2024  Instituto Andaluz Interuniversitario en Ciencia de Datos e I
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+
 """File that contains the primitive functions to build an easy training loop of the federated learning model.
 
 In this file we specify some functions for each framework, i.e., TensorFlow (tf), PyTorch (pt), among others, but

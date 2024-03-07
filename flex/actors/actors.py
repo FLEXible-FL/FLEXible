@@ -15,7 +15,6 @@ Copyright (C) 2024  Instituto Andaluz Interuniversitario en Ciencia de Datos e I
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 from collections import OrderedDict
->>>>>>> 603436d (replace UserDict with OrderedDict)
 from typing import Hashable
 
 from flex.actors import FlexRole, FlexRoleManager
