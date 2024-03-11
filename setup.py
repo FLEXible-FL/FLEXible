@@ -30,9 +30,10 @@ PT_requires = ["torch",
 HF_requires = ["datasets"]
 
 setup(
-        name="flex",
+        name="flexible",
         version="0.6.0",
-        author="Jimenez-Lopez Daniel and Argente-Garrido Alberto",
+        author="Jimenez-Lopez Daniel, Argente-Garrido Alberto",
+        author_email="albertoargentedcgarrido@gmail.com",
         long_description=open("README.md", "r", encoding="utf-8").read(),
         long_description_content_type="text/markdown",
         keywords="FL federated-learning flexible",
