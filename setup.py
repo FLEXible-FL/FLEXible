@@ -66,7 +66,7 @@ setup(
         python_requires=">=3.8.10",
         classifiers=[
                 "Development Status :: 4 - Beta",
-                "Intended Audience :: Researchers",
+                "Intended Audience :: Science/Research",
                 "Topic :: Software Development :: Build Tools",
                 # Pick your license as you wish
                 "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
