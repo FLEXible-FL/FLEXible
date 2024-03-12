@@ -24,7 +24,7 @@ We recommend Anaconda/Miniconda as the package manager. To install the package, 
 ### Using pip
 
 ```bash
-pip install flexible
+pip install flexible-fl
 ```
 
 ### Download the repository and install it locally
@@ -90,7 +90,7 @@ make clean html # Generate the documentation in HTML format.
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Citation
+## Citation
 
 If you use this package, please cite the following paper:
 
