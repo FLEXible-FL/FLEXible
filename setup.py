@@ -31,7 +31,7 @@ HF_requires = ["datasets"]
 
 setup(
         name="flexible-fl",
-        version="0.6.0",
+        version="0.6.1",
         author="Jimenez-Lopez Daniel, Argente-Garrido Alberto",
         author_email="xehartnort@gmail.com, albertoargentedcgarrido@gmail.com",
         long_description=open("README.md", "r", encoding="utf-8").read(),
@@ -74,6 +74,7 @@ setup(
                 # that you indicate you support Python 3. These classifiers are *not*
                 # checked by 'pip install'. See instead 'python_requires' below.
                 "Programming Language :: Python :: 3",
+                "Programming Language :: Python :: 3.8",
                 "Programming Language :: Python :: 3.9",
                 "Programming Language :: Python :: 3.10",
                 "Programming Language :: Python :: 3.11",
