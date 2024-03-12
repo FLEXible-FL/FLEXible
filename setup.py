@@ -30,7 +30,7 @@ PT_requires = ["torch",
 HF_requires = ["datasets"]
 
 setup(
-        name="flexible",
+        name="flexible-fl",
         version="0.6.0",
         author="Jimenez-Lopez Daniel, Argente-Garrido Alberto",
         author_email="xehartnort@gmail.com, albertoargentedcgarrido@gmail.com",
