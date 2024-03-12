@@ -64,4 +64,19 @@ setup(
                         ],
         },
         python_requires=">=3.8.10",
+        classifiers=[
+                "Development Status :: 4 - Beta",
+                "Intended Audience :: Researchers",
+                "Topic :: Software Development :: Build Tools",
+                # Pick your license as you wish
+                "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
+                # Specify the Python versions you support here. In particular, ensure
+                # that you indicate you support Python 3. These classifiers are *not*
+                # checked by 'pip install'. See instead 'python_requires' below.
+                "Programming Language :: Python :: 3",
+                "Programming Language :: Python :: 3.9",
+                "Programming Language :: Python :: 3.10",
+                "Programming Language :: Python :: 3.11",
+                "Programming Language :: Python :: 3 :: Only",
+        ],
 )
