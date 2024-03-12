@@ -16,8 +16,8 @@ permissions:
   contents: read
 
 jobs:
-  deploy:
-
+  pypi-publish:
+    name: Publish to PyPI
     runs-on: ubuntu-latest
 
     steps:
