@@ -12,7 +12,7 @@ To install flexible, run this command in your terminal:
 
 .. code-block:: console
 
-    $ pip install flexible
+    $ pip install flexible-fl
 
 This is the preferred method to install flexible with most stable release.
 
