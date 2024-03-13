@@ -73,6 +73,8 @@ To get started with **FLEXible**, you can check the [notebooks](https://github.c
 
 ## Documentation
 
+The documentation is available at the [ReadTheDocs repositoy](https://flexible.readthedocs.io/en/latest/index.html).
+
 To build the documentation you will need to `sphinx` and `sphinx-rtd-theme`. You can install them using pip:
 
 ```bash
