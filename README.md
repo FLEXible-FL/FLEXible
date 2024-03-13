@@ -1,4 +1,4 @@
-![](https://twemoji.maxcdn.com/v/latest/72x72/1f938.png)
+<img src="FLEXible_Logo.png" width="100">
 
 # FLEXible
 

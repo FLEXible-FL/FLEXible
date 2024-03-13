@@ -12,7 +12,7 @@ To install flexible, run this command in your terminal:
 
 .. code-block:: console
 
-    $ pip install flexible
+    $ pip install flexible-fl
 
 This is the preferred method to install flexible with most stable release.
 
@@ -20,7 +20,7 @@ This is the preferred method to install flexible with most stable release.
 From sources
 ------------
 
-The sources for torchfl can be downloaded from the `Github repo`_.
+The sources for flexible-fl can be downloaded from the `Github repo`_.
 
 You can either clone the public repository:
 
