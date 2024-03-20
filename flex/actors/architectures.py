@@ -1,3 +1,19 @@
+"""
+Copyright (C) 2024  Instituto Andaluz Interuniversitario en Ciencia de Datos e Inteligencia Computacional (DaSCI).
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published
+    by the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+"""
 from typing import Iterable
 
 from flex.actors.actors import FlexActors, FlexRole
@@ -12,12 +28,12 @@ def client_server_architecture(clients_ids: Iterable, server_id: str = "server")
     orchestrate the learning phase.
 
     Args:
-    ----
+    -----
         clients_ids (Iterable): List with the IDs for the clients
         server_id (str, optional): ID for the server actor. Defaults to None.
 
     Returns:
-    -------
+    --------
         FlexActors: The actors with their roles assigned.
     """
     actors = FlexActors()
@@ -39,11 +55,11 @@ def p2p_architecture(nodes_ids: list):
     aggregator and server.
 
     Args:
-    ----
+    -----
         clients_ids (Iterable): Iterable with the clients ids
 
     Returns:
-    -------
+    --------
         FlexActors: Actors with their role assigned.
     """
     actors = FlexActors()

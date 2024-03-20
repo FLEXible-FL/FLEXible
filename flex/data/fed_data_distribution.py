@@ -1,3 +1,19 @@
+"""
+Copyright (C) 2024  Instituto Andaluz Interuniversitario en Ciencia de Datos e Inteligencia Computacional (DaSCI).
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published
+    by the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+"""
 import copy
 from collections import defaultdict
 from math import floor
@@ -27,6 +43,7 @@ class FedDataDistribution(object):
         federate it.
 
         Args:
+        -----
             data (Dataset): The torchtext dataset
             config (FedDatasetConfig): FlexDatasetConfig with the configuration to federate the centralized dataset.
         """
@@ -40,6 +57,7 @@ class FedDataDistribution(object):
         and then it will federate it.
 
         Args:
+        -----
             data (Dataset): The tensorflow dataset
             config (FedDatasetConfig): FlexDatasetConfig with the configuration to federate the centralized dataset.
         """
@@ -55,6 +73,7 @@ class FedDataDistribution(object):
         and then it will federate it.
 
         Args:
+        -----
             data (Dataset): The tensorflow dataset
             config (FedDatasetConfig): FlexDatasetConfig with the configuration to federate the centralized dataset.
             X_columns (List): List that contains the columns names for the input features.
@@ -72,6 +91,7 @@ class FedDataDistribution(object):
         and then it will federate it.
 
         Args:
+        -----
             data (Dataset): The torchvision dataset
             config (FedDatasetConfig): FlexDatasetConfig with the configuration to federate the centralized dataset.
         """
@@ -91,6 +111,7 @@ class FedDataDistribution(object):
         and then it will federate it.
 
         Args:
+        -----
             data (Union[datasets.arrow_dataset.Dataset, str]): The hugginface dataset to federate.
             config (FedDatasetConfig): FlexDatasetConfig with the configuration to federate the centralized dataset.
             X_coluns (List[str]): List with the names of the columns to load.
@@ -107,12 +128,14 @@ class FedDataDistribution(object):
         to which node (cluster) a data point belongs.
 
         Args:
+        -----
             centralized_data (Dataset): Centralized dataset represented as a FlexDataObject.
             clustering_func (Callable): function that receives as arguments a pair of x and y elements from centralized_data
             and returns the name of the node (cluster) that should own it, the returned type must be Hashable.
             Note that we only support one node (cluster) per data point.
 
         Returns:
+        --------
             federated_dataset (FedDataset): The federated dataset.
         """
         d = defaultdict(list)
@@ -134,10 +157,12 @@ class FedDataDistribution(object):
         in which the data is distributed by giving the same amount of data to each node.
 
         Args:
+        -----
             centralized_data (Dataset): Centralized dataset represented as a FlexDataObject.
             n_nodes (int): Number of nodes in the Federated Learning experiment. Default 2.
 
         Returns:
+        --------
             federated_dataset (FedDataset): The federated dataset.
         """
         config = FedDatasetConfig(n_nodes=n_nodes)
@@ -149,10 +174,12 @@ class FedDataDistribution(object):
         It will run different modifications to federate the data.
 
         Args:
+        -----
             centralized_data (Dataset): Centralized dataset represented as a FlexDataObject.
             config (FedDatasetConfig): FlexDatasetConfig with the configuration to federate the centralized dataset.
 
         Returns:
+        --------
             federated_dataset (FedDataset): The federated dataset.
         """
         centralized_data.validate()
@@ -266,10 +293,12 @@ class FedDataDistribution(object):
         each node.
 
         Args:
+        -----
             data (Dataset): Centralizaed dataset represented as a FlexDataObject.
             config (FedDatasetConfig): Configuration used to federate a FlexDataObject.
 
         Yields:
+        -------
             tuple (Tuple): a tuple whose first item is the node name and the second one is the indexes of
             the dataset associated to such node.
 
@@ -295,6 +324,7 @@ class FedDataDistribution(object):
         """Function to sample indices from a FlexDataObject as especified by a FlexDatasetConfig.
 
         Args:
+        -----
             rng (np.random.Generator): Random number generator used to sample.
             data_indices (npt.NDArray[np.int_]): Array of available data indices to sample from.
             data (Dataset): Centralizaed dataset represented as a FlexDataObject.
@@ -302,6 +332,7 @@ class FedDataDistribution(object):
             node_i (int): Position of node which will be identified with the generated sample.
 
         Returns:
+        --------
             sample_indices (Tuple[npt.NDArray[np.int_], npt.NDArray[np.int_], npt.NDArray[np.int_]]): it returns
             the sampled data indices, the sampled feature indices and the data indices which were not used for
             the sampled data indices. Note that, the latter are only used for the config.replacement option, otherwise
@@ -337,6 +368,7 @@ class FedDataDistribution(object):
             are the same for all the nodes.
 
         Args:
+        -----
             rng (np.random.Generator): Random number generator used to sample.
             data_indices (npt.NDArray[np.int_]): Array of available data indices to sample from.
             data (Dataset): Centralizaed dataset represented as a FlexDataObject.
@@ -344,6 +376,7 @@ class FedDataDistribution(object):
             node_i (int): Position of node which will be identified with the generated sample.
 
         Returns:
+        --------
             sample_indices (Tuple[npt.NDArray[np.int_], npt.NDArray[np.int_]]): it returns
             the sampled data indices and all the feature indices.
         """
@@ -441,12 +474,14 @@ class FedDataDistribution(object):
             It takes into consideration the config.features_per_node option and applies it.
 
         Args:
+        -----
             rng (np.random.Generator): Random number generator used to sample.
             data (Dataset): Centralized dataset represented as a FlexDataObject.
             config (FedDatasetConfig): Configuration used to federate a FlexDataObject.
             node_i (int): Position of node which will be identified with the generated sample.
 
         Returns:
+        --------
             sample_indices (Tuple[npt.NDArray[np.int_], npt.NDArray[np.int_]): it returns the sampled data indices
             and the sampled feature indices.
         """

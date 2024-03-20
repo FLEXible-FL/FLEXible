@@ -1,3 +1,19 @@
+"""
+Copyright (C) 2024  Instituto Andaluz Interuniversitario en Ciencia de Datos e Inteligencia Computacional (DaSCI).
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published
+    by the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+"""
 import os
 import sys
 
@@ -16,7 +32,7 @@ sys.path.insert(0, os.path.abspath("../../"))
 
 project = "FLEXible"
 copyright = "2022, FLEXible Team"
-author = "FLEXible Team"
+author = "Jimenez-Lopez Daniel and Argente-Garrido Alberto"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -43,4 +59,11 @@ source_suffix = ".rst"
 
 # html_theme = "alabaster"
 html_theme = "sphinx_rtd_theme"
+
+# Would be nice to add the text color option to the theme, so the table in FedDatasetConfig
+# can be properly displayed.
+html_theme_options = {}
+
 html_static_path = ["_static"]
+# html_static_path = []
+html_logo = "_static/FLEXibleLogo.png"

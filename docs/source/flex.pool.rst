@@ -28,10 +28,18 @@ flex.pool.pool module
    :undoc-members:
    :show-inheritance:
 
-flex.pool.primitives module
----------------------------
+flex.pool.primitives_pt module
+------------------------------
 
-.. automodule:: flex.pool.primitives
+.. automodule:: flex.pool.primitives_pt
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+flex.pool.primitives_tf module
+------------------------------
+
+.. automodule:: flex.pool.primitives_tf
    :members:
    :undoc-members:
    :show-inheritance:

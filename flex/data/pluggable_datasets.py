@@ -1,3 +1,19 @@
+"""
+Copyright (C) 2024  Instituto Andaluz Interuniversitario en Ciencia de Datos e Inteligencia Computacional (DaSCI).
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published
+    by the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+"""
 from enum import Enum, EnumMeta
 
 
@@ -17,6 +33,7 @@ class PluggableTorchtext(Enum, metaclass=PluggableDataset):
     Any other dataset from the TorchText library will need further preprocessing.
 
     Args:
+    -----
         Enum (enum): torchtext class for each dataset than can be accepted on our platform.
     """
 
@@ -39,6 +56,7 @@ class PluggableTorchvision(Enum, metaclass=PluggableDataset):
     Any other dataset from the Torchvision library will need further preprocessing.
 
     Args:
+    -----
         Enum (enum): torchvision class for each dataset than can be accepted on our platform.
     """
 
@@ -101,6 +119,7 @@ class PluggableHuggingFace(Enum, metaclass=PluggableDatasetString):
     need to select the X_train-y_train as np.arrays.
 
     Args:
+    -----
         Enum (enum): Tuple containing name, X_columns and y_columns to use in the
         load_dataset function.
     """

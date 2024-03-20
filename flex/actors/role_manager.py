@@ -1,3 +1,19 @@
+"""
+Copyright (C) 2024  Instituto Andaluz Interuniversitario en Ciencia de Datos e Inteligencia Computacional (DaSCI).
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published
+    by the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+"""
 from flex.actors.role import FlexRole
 
 
@@ -52,9 +68,11 @@ class FlexRoleManager:
         """Method to check whether a role is a client role.
 
         Args:
+        -----
             role (Role): role to be checked
 
         Returns:
+        --------
             bool: wheter the not role is a client role
         """
         return role in cls.client_wannabe
@@ -65,9 +83,11 @@ class FlexRoleManager:
         a client role.
 
         Args:
+        -----
             role (Role): role to be checked
 
         Returns:
+        --------
             bool: whether or not role can communicate with a client role
         """
         return role in cls.client_allowed_comm
@@ -77,9 +97,11 @@ class FlexRoleManager:
         """Method to check whether a role is an aggregator role.
 
         Args:
+        -----
             role (Role): role to be checked
 
         Returns:
+        --------
             bool: wheter the not role is an aggregator role
         """
         return role in cls.aggregator_wannabe
@@ -90,9 +112,11 @@ class FlexRoleManager:
         an aggregator role.
 
         Args:
+        -----
             role (Role): role to be checked
 
         Returns:
+        --------
             bool: whether or not role can communicate with a aggregator role
         """
         return role in cls.aggregator_allowed_comm
@@ -102,9 +126,11 @@ class FlexRoleManager:
         """Method to check whether a role is a server role.
 
         Args:
+        -----
             role (Role): role to be checked
 
         Returns:
+        --------
             bool: wheter the not role is a server role
         """
         return role in cls.server_wannabe
@@ -115,9 +141,11 @@ class FlexRoleManager:
         a server role.
 
         Args:
+        -----
             role (Role): role to be checked
 
         Returns:
+        --------
             bool: whether or not role can communicate with a server role
         """
         return role in cls.server_allowed_comm
@@ -126,10 +154,14 @@ class FlexRoleManager:
     def check_compatibility(cls, role1: FlexRole, role2: FlexRole) -> bool:
         """Method used to ensure that it is possible to communicate from role1
         to role2, note that the communication from role2 to role1 is not checked.
+
         Args:
+        -----
             role1 (Role): role which establishes communication with role2
             role2 (Role): role which receives communication from role1
+
         Returns:
+        --------
             bool: whether or not the communication from role1 to role2 is allowed.
         """
         return any(

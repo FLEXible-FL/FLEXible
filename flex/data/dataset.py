@@ -1,3 +1,19 @@
+"""
+Copyright (C) 2024  Instituto Andaluz Interuniversitario en Ciencia de Datos e Inteligencia Computacional (DaSCI).
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published
+    by the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+"""
 import contextlib
 import warnings
 from dataclasses import dataclass, field
@@ -54,6 +70,7 @@ class Dataset:
         """This function transforms a Dataset into a Torchvision dataset object
 
         Returns:
+        --------
             torvhcision.datasets.VisionDataset: a torchvision dataset with the contents of datasets. \
                 Note that transforms should be pased as arguments.
         """
@@ -65,6 +82,7 @@ class Dataset:
         """This function is an utility to transform a Dataset object to a tensorflow.data.Dataset object
 
         Returns:
+        --------
             tensorflow.data.Dataset: tf dataset object instanciated using the contents of a Dataset
         """
         from tensorflow import type_spec_from_value
@@ -98,9 +116,11 @@ class Dataset:
         """Function to convert an object from torchvision.datasets.* to a FlexDataObject.
 
         Args:
+        -----
             pytorch_dataset (torchvision.datasets.*): a torchvision dataset.
 
         Returns:
+        --------
             Dataset: a FlexDataObject which encapsulates the dataset.
         """
 
@@ -125,11 +145,11 @@ class Dataset:
         """Function to convert a dataset from tensorflow_datasets to a FlexDataObject.
 
         Args:
-        ----
+        -----
             tdfs_dataset (tf.data.Datasets): a tf dataset
 
         Returns:
-        -------
+        --------
             Dataset: a FlexDataObject which encapsulates the dataset.
         """
 
@@ -160,11 +180,13 @@ class Dataset:
         """Function to convert a dataset from tensorflow_datasets to a FlexDataObject.
 
         Args:
+        -----
             tdfs_dataset (tf.data.Datasets): a tf dataset loaded.
             X_columns (list): List containing the features (input) of the model.
             label_columns (list): List containing the targets of the model.
 
         Returns:
+        --------
             Dataset: a FlexDataObject which encapsulates the dataset.
         """
         from tensorflow.python.data.ops.dataset_ops import PrefetchDataset
@@ -229,16 +251,18 @@ class Dataset:
         to a FlexDataObject.
 
         Args:
+        -----
             hf_dataset (Union[datasets.arrow_dataset.Dataset, str]): a dataset from the dataset library.
-                If a string is recieved, it will load the dataset from the HuggingFace repository. When a
-                string is given, the split has to be specified in the str variable as follows:
-                'dataset;split'. Also, if the string contains a subset, for those datasets that have
-                multiple subsets for differents tasks, it may be given as follow: 'dataset;subset;split',
-                so we can download the dataset and the
+            If a string is recieved, it will load the dataset from the HuggingFace repository. When a
+            string is given, the split has to be specified in the str variable as follows:
+            'dataset;split'. Also, if the string contains a subset, for those datasets that have
+            multiple subsets for differents tasks, it may be given as follow: 'dataset;subset;split',
+            so we can download the dataset and the desired subset and split.
             X_columns (list): List containing the features names for training the model
             label_columns (list): List containing the name or names of the label column
 
         Returns:
+        --------
             Dataset: a FlexDataObject which encapsulates the dataset.
         """
         from flex.data.pluggable_datasets import PluggableHuggingFace
@@ -319,9 +343,11 @@ class Dataset:
             torchtext.transforms.ToTensor()
 
         Args:
+        -----
             pytorch_text_dataset (torchtext.datasets.*): a torchtext dataset
 
         Returns:
+        --------
             Dataset: a FlexDataObject which encapsulates the dataset.
         """
 
@@ -351,12 +377,12 @@ class Dataset:
         """Function that create a Dataset from array-like objects, list and numpy.
 
         Args:
-        ----
+        -----
             X_array (Union[list, np.ndarray]): Array-like containing X_data.
             y_array (Optional[Union[list, np.ndarray]]): Array-like containing the y_data. Default None.
 
         Returns:
-        -------
+        --------
             Dataset: a Dataset which encasulates X_array and/or y_array.
         """
         if y_array is not None:

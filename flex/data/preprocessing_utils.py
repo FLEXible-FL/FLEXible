@@ -1,3 +1,19 @@
+"""
+Copyright (C) 2024  Instituto Andaluz Interuniversitario en Ciencia de Datos e Inteligencia Computacional (DaSCI).
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published
+    by the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+"""
 from copy import deepcopy
 
 import numpy as np
@@ -10,9 +26,11 @@ def normalize(node_dataset, *args, **kwargs):
     """Function that normalizes federated data.
 
     Args:
+    -----
         node_dataset (Dataset): node_dataset  to normalize the data.
 
     Returns:
+    --------
         Dataset: Returns the node_dataset with the X_data property normalized.
     """
     X_data = node_dataset.X_data.to_numpy()
@@ -26,12 +44,15 @@ def one_hot_encoding(node_dataset, *args, **kwargs):
     """Function that apply one hot encoding to the labels of a node_dataset.
 
     Args:
+    -----
         node_dataset (Dataset): node_dataset to which apply one hot encode to her labels.
 
     Raises:
+    -------
         ValueError: Raises value error if n_labels is not given in the kwargs argument.
 
     Returns:
+    --------
         Dataset: Returns the node_dataset with the y_data property updated.
     """
     if "n_labels" not in kwargs:

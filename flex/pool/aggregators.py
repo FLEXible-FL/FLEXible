@@ -1,12 +1,28 @@
+"""
+Copyright (C) 2024  Instituto Andaluz Interuniversitario en Ciencia de Datos e Inteligencia Computacional (DaSCI).
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published
+    by the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+"""
 """File that contains the adapted aggregators in FLEXible for fast
 development of a federated model in FLEXible.
 
 This aggregators also can work as examples for creating a custom aggregator.
 """
 
-import tensorly as tl
+import tensorly as tl  # noqa: E402
 
-from flex.pool.decorators import aggregate_weights
+from flex.pool.decorators import aggregate_weights  # noqa: E402
 
 
 def flatten(xs):
@@ -69,10 +85,12 @@ def fed_avg(aggregated_weights_as_list: list):
     """Function that implements the FedAvg aggregation method
 
     Args:
+    -----
         aggregated_weights_as_list (list): List which contains
         all the weights to aggregate
 
     Returns:
+    --------
         tensor array: An array with the aggregated weights
 
     Example of use assuming you are using a client-server architecture:
@@ -99,13 +117,13 @@ def weighted_fed_avg(aggregated_weights_as_list: list, ponderation: list):
     """Function that implements the weighted FedAvg aggregation method.
 
     Args:
-    ----
+    -----
         aggregated_weights_as_list (list): List which contains
         all the weights to aggregate
         ponderation (list): weights assigned to each client
 
     Returns:
-    -------
+    --------
         tensor array: An array with the aggregated weights
 
     Example of use assuming you are using a client-server architecture:

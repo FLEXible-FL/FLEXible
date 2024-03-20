@@ -1,3 +1,20 @@
+"""
+Copyright (C) 2024  Instituto Andaluz Interuniversitario en Ciencia de Datos e Inteligencia Computacional (DaSCI).
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published
+    by the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+"""
+
 """File that contains the primitive functions to build an easy training loop of the federated learning model.
 
 In this file we specify some functions for each framework, i.e., TensorFlow (tf), PyTorch (pt), among others, but
@@ -8,9 +25,9 @@ of the training steps in a federated learning environment.
 Note that each function is using the decorators we've created to facilitate the use of the library. For a better
 understanding on how the platform works, please go to the flex_decorators file.
 """
-from copy import deepcopy
+from copy import deepcopy  # noqa: E402
 
-from flex.pool.decorators import (
+from flex.pool.decorators import (  # noqa: E402
     collect_clients_weights,
     deploy_server_model,
     set_aggregated_weights,
@@ -22,7 +39,7 @@ def deploy_server_model_pt(server_flex_model, *args, **kwargs):
     """Creates a copy of the server_flex_model and it is set to client nodes using the decorator @deploy_server_model.
 
     Args:
-    ----
+    -----
         server_flex_model (FlexModel): object storing information needed to run a Pytorch model
 
     """
@@ -33,12 +50,12 @@ def check_ignored_weights_pt(name, ignore_weights=None):
     """Checks wether name contains any of the words in ignore_weights.
 
     Args:
-    ----
+    -----
         name (str): name to check
         ignore_weights (list, optional): A list of str. Defaults to None.
 
     Returns:
-    -------
+    --------
         bool: True if any og the elements of list ignore_weights is present in name, otherwise False.
     """
     if ignore_weights is None:
@@ -58,14 +75,14 @@ def collect_client_diff_weights_pt(client_flex_model, *args, **kwargs):
     This function returns the weights of the model.
 
     Args:
-    ----
+    -----
         client_flex_model (FlexModel): A client's FlexModel
         ignore_weights (list): the name of the weights not to collect, by default,
         those containind the words `num_batches_tracked` are not collected, as they
         only make sense in the local model
 
     Returns:
-    -------
+    --------
         List: List with the weights of the client's model
 
     Example of use assuming you are using a client-server architecture:
@@ -112,14 +129,14 @@ def collect_clients_weights_pt(client_flex_model, *args, **kwargs):
     This function returns all the weights of the model.
 
     Args:
-    ----
+    -----
         client_flex_model (FlexModel): A client's FlexModel
         ignore_weights (list): the name of the weights not to collect, by default,
-        those containind the words `num_batches_tracked`are not collected, as they
+        those containind the words `num_batches_tracked` are not collected, as they
         only make sense in the local model
 
     Returns:
-    -------
+    --------
         List: List with all the weights of the client's model
 
     Example of use assuming you are using a client-server architecture:
@@ -158,7 +175,7 @@ def set_aggregated_weights_pt(server_flex_model, aggregated_weights, *args, **kw
     """Function that replaces the weights of the server with the aggregated weights of the aggregator.
 
     Args:
-    ----
+    -----
         server_flex_model (FlexModel): The server's FlexModel
         aggregated_weights (np.array): Aggregated weights
 
@@ -196,7 +213,7 @@ def set_aggregated_diff_weights_pt(
     """Function to add the aggregated weights to the server.
 
     Args:
-    ----
+    -----
         server_flex_model (FlexModel): The server's FlexModel
         aggregated_diff_weights (np.array): Aggregated weights
 

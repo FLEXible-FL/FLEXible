@@ -12,6 +12,14 @@ flex.actors.actors module
    :undoc-members:
    :show-inheritance:
 
+flex.actors.architectures module
+---------------------------------
+
+.. automodule:: flex.actors.architectures
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 flex.actors.role module
 -----------------------
 
