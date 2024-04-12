@@ -124,6 +124,7 @@ class Dataset:
             Dataset: a FlexDataObject which encapsulates the dataset.
         """
 
+        from flex.data.dataset_pt_utils import FeatureDataset, LabelDataset
         from flex.data.pluggable_datasets import PluggableTorchvision
 
         if pytorch_dataset.__class__.__name__ not in PluggableTorchvision:
@@ -134,8 +135,8 @@ class Dataset:
 
         length = count(pytorch_dataset)
 
-        X_data = LazyIndexable((x for x, _ in pytorch_dataset), length=length)
-        y_data = LazyIndexable((y for _, y in pytorch_dataset), length=length)
+        X_data = LazyIndexable(FeatureDataset(pytorch_dataset), length=length)
+        y_data = LazyIndexable(LabelDataset(pytorch_dataset), length=length)
 
         return cls(X_data=X_data, y_data=y_data)
 

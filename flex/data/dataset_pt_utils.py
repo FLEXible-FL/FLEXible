@@ -14,6 +14,7 @@ Copyright (C) 2024  Instituto Andaluz Interuniversitario en Ciencia de Datos e I
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+from torch.utils.data import Dataset
 from torchvision.datasets import VisionDataset
 
 
@@ -37,3 +38,25 @@ class DefaultVision(VisionDataset):
 
     def __len__(self):
         return len(self.data)
+
+
+class FeatureDataset(Dataset):
+    def __init__(self, dataset: Dataset):
+        self._dataset = dataset
+
+    def __len__(self):
+        return len(self._dataset)
+
+    def __getitem__(self, idx):
+        return self._dataset[idx][0]
+
+
+class LabelDataset(Dataset):
+    def __init__(self, dataset: Dataset):
+        self._dataset = dataset
+
+    def __len__(self):
+        return len(self._dataset)
+
+    def __getitem__(self, idx):
+        return self._dataset[idx][1]
