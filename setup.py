@@ -29,6 +29,8 @@ PT_requires = ["torch",
         ]
 HF_requires = ["datasets"]
 
+DIST_requires = ["grpcio"]
+
 setup(
         name="flexible-fl",
         version="0.6.1-b.1",
@@ -53,6 +55,7 @@ setup(
                 "tensorflow": TF_requires,
                 "pytorch": PT_requires,
                 "hugginface": HF_requires,
+                "distributed": DIST_requires,
                 "develop": ["pytest",
                         "pytest-cov",
                         "pytest-xdist",
@@ -60,7 +63,9 @@ setup(
                         "jinja2",
                         *TF_requires,
                         *PT_requires,
-                        *HF_requires
+                        *HF_requires,
+                        *DIST_requires,
+                        "grpcio-tools",
                         ],
         },
         python_requires=">=3.8.10",
