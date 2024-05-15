@@ -196,22 +196,3 @@ class Server:
     def stop(self):
         if self._server is not None:
             self._server.stop(None)
-
-
-if __name__ == "__main__":
-    from time import sleep
-
-    server = Server()
-    server.run()
-    while len(server) == 0:
-        print("Waiting for clients...")
-        sleep(1)
-
-    ids = server.get_ids()
-    print(f"Ids={ids}")
-    server.send_weights(np.ones((1, 1)), node_ids=ids)
-    train_metrics = server.train(node_ids=ids)
-    print(f"Train metrics = {train_metrics}")
-    client_weights = server.collect_weights(node_ids=ids)
-    print(f"Weights collected = {client_weights}")
-    server.stop()
