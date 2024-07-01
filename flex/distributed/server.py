@@ -17,7 +17,7 @@ Copyright (C) 2024  Instituto Andaluz Interuniversitario en Ciencia de Datos e I
 from concurrent import futures
 from queue import Queue
 from threading import Thread
-from typing import Iterator, List, Optional
+from typing import Dict, Iterator, List, Optional
 
 import grpc
 import numpy as np
@@ -63,18 +63,17 @@ class ClientProxy:
 class ClientManager:
     def __init__(self, register_queue: Queue):
         self._register_queue = register_queue
-        self._clients: List[ClientProxy] = []
+        self._clients: Dict[str, ClientProxy] = {}
 
     def __len__(self):
         return len(self._clients)
 
     def get_ids(self) -> List[any]:
-        return [client.id for client in self._clients]
+        return list(self._clients.keys())
 
     def delete_client(self, client_id):
-        self._clients = [
-            client for client in self._clients if str(client.id) != str(client_id)
-        ]
+        if client_id in self._clients:
+            del self._clients[client_id]
 
     # blocking process
     def run_registration(self):
@@ -85,12 +84,10 @@ class ClientManager:
                 self.delete_client(message)
                 continue
 
-            self._clients.append(
-                ClientProxy(
-                    i,
-                    *message,
-                    register_queue=self._register_queue,
-                )
+            self._clients[str(i)] = ClientProxy(
+                i,
+                *message,
+                register_queue=self._register_queue,
             )
 
     def broadcast(self, message: ServerMessage, node_ids: Optional[List[any]] = None):
