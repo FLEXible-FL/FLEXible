@@ -201,10 +201,35 @@ class Server:
         assert all(m.WhichOneof("msg") == "eval_res" for m, _ in messages)
         return {id: m.eval_res.metrics for m, id in messages}
 
-    def run(self, address: str = "[::]:50051"):
+    def run(
+        self,
+        address: str = "[::]",
+        port: int = 50051,
+        ssl_private_key: str = None,
+        ssl_certificate_chain: str = None,
+        ssl_root_certificate: str = None,
+        require_client_auth: bool = False,
+    ):
+        address_port = f"{address}:{port}"
         self._server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
         add_FlexibleServicer_to_server(self._servicer, self._server)
-        self._server.add_insecure_port(address=address)
+
+        if ssl_private_key is not None and ssl_certificate_chain is not None:
+            if require_client_auth:
+                assert (
+                    ssl_root_certificate is not None
+                ), "Root certificate must be provided if client authentication is required"
+            self._server.add_secure_port(
+                address=address_port,
+                server_credentials=grpc.ssl_server_credentials(
+                    [(ssl_private_key, ssl_certificate_chain)],
+                    root_certificates=ssl_root_certificate,
+                    require_client_auth=require_client_auth,
+                ),
+            )
+        else:
+            self._server.add_insecure_port(address=address_port)
+
         self._server.start()
         Thread(target=self._manager.run_registration, daemon=True).start()
         Thread(target=self._server.wait_for_termination, daemon=True).start()

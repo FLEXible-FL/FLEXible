@@ -92,8 +92,15 @@ class Client(ABC):
     def eval(self, model: FlexModel, data: Dataset):
         pass
 
-    def run(self, address: str):
-        self._channel = grpc.insecure_channel(address)
+    def run(self, address: str, root_certificate: str = None):
+        if root_certificate is not None:
+            self._channel = grpc.secure_channel(
+                target=address,
+                credentials=grpc.ssl_channel_credentials(root_certificate),
+            )
+        else:
+            self._channel = grpc.insecure_channel(address)
+
         self._stub = FlexibleStub(self._channel)
         try:
             for response in self._stub.Send(self._iter_queue(self._q)):
