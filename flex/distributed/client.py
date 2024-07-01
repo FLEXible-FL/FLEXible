@@ -29,13 +29,14 @@ from flex.model import FlexModel
 
 
 class Client(ABC):
-    def __init__(self, dataset: Dataset, model: FlexModel):
+    def __init__(self, dataset: Dataset, model: FlexModel, eval_dataset: Dataset):
         self._channel = None
         self._stub = None
         self._q = Queue()
         self._q.put(ClientMessage(handshake_ins=ClientMessage.HandshakeIns(status=200)))
         self.dataset = dataset
         self.model = model
+        self.eval_dataset = eval_dataset
 
     @staticmethod
     def _iter_queue(q: Queue):
@@ -82,7 +83,7 @@ class Client(ABC):
         pass
 
     def _handle_eval_ins(self, response: ServerMessage.EvalIns):
-        metrics = self.eval(self.model, self.dataset)
+        metrics = self.eval(self.model, self.eval_dataset)
         if metrics is None or not isinstance(metrics, dict):
             metrics = {}
 
