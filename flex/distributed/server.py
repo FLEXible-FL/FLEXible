@@ -34,7 +34,7 @@ from flex.distributed.proto.transport_pb2_grpc import (
 class ClientProxy:
     def __init__(
         self,
-        id,
+        id: str,
         request_iterator: Iterator[ClientMessage],
         communication_queue: Queue,
         register_queue: Queue,
@@ -57,7 +57,7 @@ class ClientProxy:
                 raise StopIteration("Client disconnected")
             return response
         except StopIteration:
-            self.register_queue.put(str(self.id))
+            self.register_queue.put(self.id)
 
 
 class ClientManager:
@@ -85,25 +85,27 @@ class ClientManager:
                 continue
 
             self._clients[str(i)] = ClientProxy(
-                i,
+                str(i),
                 *message,
                 register_queue=self._register_queue,
             )
 
-    def broadcast(self, message: ServerMessage, node_ids: Optional[List[any]] = None):
-        for client in self._clients:
-            if node_ids is None or client.id in node_ids:
+    def broadcast(self, message: ServerMessage, node_ids: Optional[List[str]] = None):
+        for id, client in self._clients.items():
+            if node_ids is None or id in node_ids:
                 client.put_message(message)
 
-    def pool_clients(self, node_ids: Optional[List[any]] = None):
+    def pool_clients(self, node_ids: Optional[List[str]] = None):
         if node_ids:
             messages = [
-                (client.pool_messages(), client.id)
-                for client in self._clients
-                if client.id in node_ids
+                (client.pool_messages(), id)
+                for id, client in self._clients.items()
+                if id in node_ids
             ]
         else:
-            messages = [(client.pool_messages(), client.id) for client in self._clients]
+            messages = [
+                (client.pool_messages(), id) for id, client in self._clients.items()
+            ]
 
         messages = [(m, id) for m, id in messages if m is not None]
         return messages
