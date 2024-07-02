@@ -29,7 +29,7 @@ PT_requires = ["torch",
         ]
 HF_requires = ["datasets"]
 
-DIST_requires = ["grpcio"]
+DIST_requires = ["grpcio", "protobuf"]
 
 setup(
         name="flexible-fl",
