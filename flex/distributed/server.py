@@ -16,7 +16,7 @@ Copyright (C) 2024  Instituto Andaluz Interuniversitario en Ciencia de Datos e I
 """
 from concurrent import futures
 from queue import Queue
-from threading import Event, Thread
+from threading import Thread
 from typing import Dict, Iterator, List, Optional
 
 import grpc
@@ -57,7 +57,8 @@ class ClientProxy:
                 raise StopIteration("Client disconnected")
             return response
         except StopIteration:
-            self.register_queue.put(self.id)
+            self.communication_queue.put("Client disconnected")
+            pass
 
 
 class ClientManager:
@@ -80,10 +81,6 @@ class ClientManager:
         i = 0
         while True:
             message = self._register_queue.get()
-            if isinstance(message, str):
-                self.delete_client(message)
-                continue
-
             self._clients[str(i)] = ClientProxy(
                 str(i),
                 *message,
@@ -107,8 +104,11 @@ class ClientManager:
                 (client.pool_messages(), id) for id, client in self._clients.items()
             ]
 
-        messages = [(m, id) for m, id in messages if m is not None]
-        return messages
+        messages_not_none = [(m, id) for m, id in messages if m is not None]
+        for id in [id for m, id in messages if m is None]:
+            self.delete_client(id)
+
+        return messages_not_none
 
 
 class ServerServicer(FlexibleServicer):
@@ -134,7 +134,11 @@ class ServerServicer(FlexibleServicer):
 
         while True:
             try:
-                yield communication_queue.get()
+                value = communication_queue.get()
+                if value == "Client disconnected":
+                    context.cancel()
+                    break
+                yield value
             except Exception:
                 context.cancel()
                 break
