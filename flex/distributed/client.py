@@ -23,11 +23,11 @@ from typing import List
 
 import grpc
 import numpy as np
-from proto.transport_pb2 import ClientMessage, ServerMessage
-from proto.transport_pb2_grpc import FlexibleStub
 
 from flex.data import Dataset
 from flex.distributed.common import toNumpyArray, toTensorList
+from flex.distributed.proto.transport_pb2 import ClientMessage, ServerMessage
+from flex.distributed.proto.transport_pb2_grpc import FlexibleStub
 from flex.model import FlexModel
 
 logger = logging.getLogger(__name__)
@@ -103,7 +103,7 @@ class Client(ABC):
         logger.info("Evaluation completed")
 
     @abstractmethod
-    def eval(self, model: FlexModel, data: Dataset):
+    def eval(self, model: FlexModel, data: Dataset) -> dict:
         pass
 
     def run(self, address: str, root_certificate: str = None):
