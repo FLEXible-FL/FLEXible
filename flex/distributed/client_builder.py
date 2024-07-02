@@ -147,7 +147,7 @@ class ClientBuilder:
             def _collect_to_numpy_(model: FlexModel):
                 weights = collect_weights.__wrapped__(model)
                 set_tensorly_backend(weights)
-                return [tl.tensor(t).to_numpy() for t in weights]
+                return [tl.to_numpy(tl.tensor(t)) for t in weights]
 
             self._collect = _collect_to_numpy_
             return self

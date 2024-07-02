@@ -106,16 +106,22 @@ class Client(ABC):
     def eval(self, model: FlexModel, data: Dataset) -> dict:
         pass
 
-    def run(self, address: str, root_certificate: str = None):
-        if root_certificate is not None:
-            self._channel = grpc.secure_channel(
-                target=address,
-                credentials=grpc.ssl_channel_credentials(root_certificate),
-            )
+    def run(
+        self, address: str, root_certificate: str = None, _stub: FlexibleStub = None
+    ):
+        if _stub is not None:
+            self._stub = _stub
         else:
-            self._channel = grpc.insecure_channel(address)
+            if root_certificate is not None:
+                self._channel = grpc.secure_channel(
+                    target=address,
+                    credentials=grpc.ssl_channel_credentials(root_certificate),
+                )
+            else:
+                self._channel = grpc.insecure_channel(address)
 
-        self._stub = FlexibleStub(self._channel)
+            self._stub = FlexibleStub(self._channel)
+
         request_generator = self._stub.Send(self._iter_queue(self._q))
         self._set_exit_handler(request_generator)
         try:
