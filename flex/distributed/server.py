@@ -14,6 +14,7 @@ Copyright (C) 2024  Instituto Andaluz Interuniversitario en Ciencia de Datos e I
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+import logging
 from concurrent import futures
 from queue import Queue
 from threading import Thread
@@ -29,6 +30,8 @@ from flex.distributed.proto.transport_pb2_grpc import (
     FlexibleServicer,
     add_FlexibleServicer_to_server,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class ClientProxy:
@@ -48,15 +51,20 @@ class ClientProxy:
         return f"ClientProxy({self.id})"
 
     def put_message(self, message: ServerMessage):
+        logger.info(f"Sending message to {self.id}. Message: {message}")
         self.communication_queue.put(message)
 
     def pool_messages(self):
         try:
             response = next(self.request_iterator)
             if response.WhichOneof("msg") == "error":
+                logger.error(
+                    f"Client {self.id} sent an error message: {response.error}"
+                )
                 raise StopIteration("Client disconnected")
             return response
         except StopIteration:
+            logger.info(f"Client {self.id} disconnected due to no more messages")
             self.communication_queue.put("Client disconnected")
             pass
 
@@ -86,6 +94,7 @@ class ClientManager:
                 *message,
                 register_queue=self._register_queue,
             )
+            logger.info(f"Client {i} registered")
 
     def broadcast(self, message: ServerMessage, node_ids: Optional[List[str]] = None):
         for id, client in self._clients.items():
@@ -106,6 +115,7 @@ class ClientManager:
 
         messages_not_none = [(m, id) for m, id in messages if m is not None]
         for id in [id for m, id in messages if m is None]:
+            logger.info(f"Unregistering client {id}")
             self.delete_client(id)
 
         return messages_not_none
@@ -131,6 +141,7 @@ class ServerServicer(FlexibleServicer):
         self._handshake(first_request)
         communication_queue = Queue()
         self._q.put((request_iterator, communication_queue))
+        logger.info("Client connected")
 
         while True:
             try:
@@ -235,6 +246,7 @@ class Server:
             self._server.add_insecure_port(address=address_port)
 
         self._server.start()
+        logger.info(f"Server started at {address_port}")
         Thread(target=self._manager.run_registration, daemon=True).start()
         Thread(target=self._server.wait_for_termination, daemon=True).start()
 
