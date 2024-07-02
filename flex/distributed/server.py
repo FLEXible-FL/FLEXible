@@ -16,7 +16,7 @@ Copyright (C) 2024  Instituto Andaluz Interuniversitario en Ciencia de Datos e I
 """
 from concurrent import futures
 from queue import Queue
-from threading import Thread
+from threading import Event, Thread
 from typing import Dict, Iterator, List, Optional
 
 import grpc
@@ -136,6 +136,7 @@ class ServerServicer(FlexibleServicer):
             try:
                 yield communication_queue.get()
             except Exception:
+                context.cancel()
                 break
 
 

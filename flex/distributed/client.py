@@ -14,6 +14,8 @@ Copyright (C) 2024  Instituto Andaluz Interuniversitario en Ciencia de Datos e I
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+import signal
+import sys
 from abc import ABC, abstractmethod
 from queue import Queue
 from typing import List
@@ -103,8 +105,10 @@ class Client(ABC):
             self._channel = grpc.insecure_channel(address)
 
         self._stub = FlexibleStub(self._channel)
+        request_generator = self._stub.Send(self._iter_queue(self._q))
+        self._set_exit_handler(request_generator)
         try:
-            for response in self._stub.Send(self._iter_queue(self._q)):
+            for response in request_generator:
                 assert isinstance(response, ServerMessage)
                 msg = response.WhichOneof("msg")
                 if msg == "get_weights_ins":
@@ -118,6 +122,12 @@ class Client(ABC):
                 else:
                     raise Exception("Not implemented")
         except Exception as e:
-            print(f"Stopping client: {e}")
-            self._q.put(ClientMessage(error=Error(reason="disconected")))
-            self._channel.close()
+            request_generator.cancel()
+            raise e from None
+
+    def _set_exit_handler(self, request_generator):
+        def _handler_(signum, frame):
+            request_generator.cancel()
+            sys.exit(0)
+
+        signal.signal(signal.SIGINT, _handler_)
