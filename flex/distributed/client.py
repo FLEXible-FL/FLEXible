@@ -14,6 +14,7 @@ Copyright (C) 2024  Instituto Andaluz Interuniversitario en Ciencia de Datos e I
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+import logging
 import signal
 import sys
 from abc import ABC, abstractmethod
@@ -22,12 +23,14 @@ from typing import List
 
 import grpc
 import numpy as np
-from proto.transport_pb2 import ClientMessage, Error, ServerMessage
+from proto.transport_pb2 import ClientMessage, ServerMessage
 from proto.transport_pb2_grpc import FlexibleStub
 
 from flex.data import Dataset
 from flex.distributed.common import toNumpyArray, toTensorList
 from flex.model import FlexModel
+
+logger = logging.getLogger(__name__)
 
 
 class Client(ABC):
@@ -46,6 +49,7 @@ class Client(ABC):
             yield q.get()
 
     def _handle_get_weights_ins(self, response: ServerMessage.GetWeightsIns):
+        logger.info("Weights requested")
         weights = self.get_weights(self.model)
         for w in weights:
             w = np.array(w, dtype=np.float32)
@@ -57,13 +61,16 @@ class Client(ABC):
                 )
             )
         )
+        logger.info("Weights sent")
 
     def _handle_send_weights_ins(self, response: ServerMessage.SendWeightsIns):
+        logger.info("Weights received")
         weights = toNumpyArray(response.weights)
         self.set_weights(self.model, weights)
         self._q.put(
             ClientMessage(send_weights_res=ClientMessage.SendWeightsRes(status=200))
         )
+        logger.info("Weights set")
 
     @abstractmethod
     def set_weights(self, model: FlexModel, weights: List[np.ndarray]):
@@ -74,22 +81,26 @@ class Client(ABC):
         pass
 
     def _handle_train_ins(self, response: ServerMessage.TrainIns):
+        logger.info("Training requested")
         metrics = self.train(self.model, self.dataset)
         if metrics is None or not isinstance(metrics, dict):
             metrics = {}
 
         self._q.put(ClientMessage(train_res=ClientMessage.TrainRes(metrics=metrics)))
+        logger.info("Training completed")
 
     @abstractmethod
     def train(self, model: FlexModel, data: Dataset):
         pass
 
     def _handle_eval_ins(self, response: ServerMessage.EvalIns):
+        logger.info("Evaluation requested")
         metrics = self.eval(self.model, self.eval_dataset)
         if metrics is None or not isinstance(metrics, dict):
             metrics = {}
 
         self._q.put(ClientMessage(eval_res=ClientMessage.EvalRes(metrics=metrics)))
+        logger.info("Evaluation completed")
 
     @abstractmethod
     def eval(self, model: FlexModel, data: Dataset):
@@ -122,6 +133,7 @@ class Client(ABC):
                 else:
                     raise Exception("Not implemented")
         except Exception as e:
+            logger.error(f"Canceling process. Got error: {e}")
             request_generator.cancel()
             raise e from None
 
