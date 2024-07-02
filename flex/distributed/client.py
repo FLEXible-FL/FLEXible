@@ -39,14 +39,16 @@ class Client(ABC):
         self._stub = None
         self._q = Queue()
         self._q.put(ClientMessage(handshake_ins=ClientMessage.HandshakeIns(status=200)))
+        self._finished = False
         self.dataset = dataset
         self.model = model
         self.eval_dataset = eval_dataset
 
-    @staticmethod
-    def _iter_queue(q: Queue):
-        while True:
+    def _iter_queue(self, q: Queue):
+        # The iterator may still run if it has still messages to send
+        while not self._finished or not q.empty():
             yield q.get()
+        raise StopIteration
 
     def _handle_get_weights_ins(self, response: ServerMessage.GetWeightsIns):
         logger.info("Weights requested")
@@ -137,11 +139,15 @@ class Client(ABC):
                 elif msg == "eval_ins":
                     self._handle_eval_ins(response.eval_ins)
                 else:
+                    self._finished = True
                     raise Exception("Not implemented")
         except Exception as e:
             logger.error(f"Canceling process. Got error: {e}")
             request_generator.cancel()
+            self._finished = True
             raise e from None
+
+        self._finished = True
 
     def _set_exit_handler(self, request_generator):
         def _handler_(signum, frame):

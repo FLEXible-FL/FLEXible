@@ -101,26 +101,34 @@ class TestClientBuilder(unittest.TestCase):
         )
 
         client.run("localhost:50051", _stub=mock_stub)
+
+        # Obtain the generator passed to the stub where the client sends messages
+        mock_stub.Send.assert_called_once()
+        generator = mock_stub.Send.mock_calls[0].args[0]
+
         # Always start with handshake
-        response = client._q.get()
+        response = next(generator)
         self.assertEqual(response.handshake_ins.status, 200)
         # obtain initial weights
-        response = client._q.get()
+        response = next(generator)
         weights = toNumpyArray(response.get_weights_res.weights)
         self.assertEqual([w.tolist() for w in weights], [[1, 2, 3], [4, 5, 6]])
         # train
-        response = client._q.get()
+        response = next(generator)
         # eval
-        response = client._q.get()
+        response = next(generator)
         self.assertEqual(response.eval_res.metrics["accuracy"], 0.5)
         # see if weights changed
-        response = client._q.get()
+        response = next(generator)
         weights = toNumpyArray(response.get_weights_res.weights)
         self.assertEqual([w.tolist() for w in weights], [[7, 8, 9], [4, 5, 6]])
         # send weights
-        response = client._q.get()
+        response = next(generator)
         self.assertEqual(response.send_weights_res.status, 200)
         # get weights again
-        response = client._q.get()
+        response = next(generator)
         weights = toNumpyArray(response.get_weights_res.weights)
         self.assertEqual([w.tolist() for w in weights], [[1, 2], [3, 4]])
+
+        # The StopIteration in the generator raises a RuntimeError
+        self.assertRaises(RuntimeError, lambda: next(generator))
