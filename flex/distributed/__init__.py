@@ -14,3 +14,6 @@ Copyright (C) 2024  Instituto Andaluz Interuniversitario en Ciencia de Datos e I
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+from flex.distributed.client import Client
+from flex.distributed.server import Server
+from flex.distributed.client_builder import ClientBuilder
