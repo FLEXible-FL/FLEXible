@@ -17,6 +17,7 @@ Copyright (C) 2024  Instituto Andaluz Interuniversitario en Ciencia de Datos e I
 import unittest
 from unittest import mock
 
+import numpy as np
 import pytest
 
 from flex.data import Dataset
@@ -90,7 +91,7 @@ class TestClientBuilder(unittest.TestCase):
                     ),
                     ServerMessage(
                         send_weights_ins=ServerMessage.SendWeightsIns(
-                            weights=toTensorList([[1, 2], [3, 4]])
+                            weights=toTensorList(np.array([[1, 2], [3, 4]]))
                         )
                     ),
                     ServerMessage(
