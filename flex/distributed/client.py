@@ -53,13 +53,11 @@ class Client(ABC):
     def _handle_get_weights_ins(self, response: ServerMessage.GetWeightsIns):
         logger.info("Weights requested")
         weights = self.get_weights(self.model)
-        for w in weights:
-            w = np.array(w)
 
         self._q.put(
             ClientMessage(
                 get_weights_res=ClientMessage.GetWeightsRes(
-                    weights=toTensorList(weights)
+                    weights=toTensorList([np.array(w) for w in weights])
                 )
             )
         )

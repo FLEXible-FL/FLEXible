@@ -183,13 +183,10 @@ class Server:
         return rv
 
     def send_weights(self, weights: List[np.ndarray], node_ids: Optional[any] = None):
-        for w in weights:
-            w = np.array(w)
-
         self._manager.broadcast(
             ServerMessage(
                 send_weights_ins=ServerMessage.SendWeightsIns(
-                    weights=toTensorList(weights)
+                    weights=toTensorList([np.array(w) for w in weights])
                 )
             ),
             node_ids=node_ids,
