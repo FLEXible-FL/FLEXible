@@ -54,7 +54,7 @@ class Client(ABC):
         logger.info("Weights requested")
         weights = self.get_weights(self.model)
         for w in weights:
-            w = np.array(w, dtype=np.float32)
+            w = np.array(w)
 
         self._q.put(
             ClientMessage(
