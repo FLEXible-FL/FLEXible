@@ -21,9 +21,14 @@ import numpy as np
 import pytest
 
 from flex.data import Dataset
-from flex.distributed.client_builder import ClientBuilder
-from flex.distributed.common import toNumpyArray, toTensorList
-from flex.distributed.proto.transport_pb2 import ServerMessage
+from flex.distributed import ClientBuilder
+from flex.distributed.common import (  # required for internal testing
+    toNumpyArray,
+    toTensorList,
+)
+from flex.distributed.proto.transport_pb2 import (  # required for internal testing
+    ServerMessage,
+)
 from flex.model import FlexModel
 from flex.pool.decorators import collect_clients_weights, set_aggregated_weights
 

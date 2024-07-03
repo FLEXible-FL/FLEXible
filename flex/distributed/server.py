@@ -22,9 +22,9 @@ from typing import Dict, Iterator, List, Optional
 
 import grpc
 import numpy as np
-from common import toNumpyArray, toTensorList
 from grpc import RpcContext
 
+from flex.distributed.common import toNumpyArray, toTensorList
 from flex.distributed.proto.transport_pb2 import ClientMessage, ServerMessage
 from flex.distributed.proto.transport_pb2_grpc import (
     FlexibleServicer,
