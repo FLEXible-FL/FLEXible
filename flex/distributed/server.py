@@ -16,8 +16,8 @@ Copyright (C) 2024  Instituto Andaluz Interuniversitario en Ciencia de Datos e I
 """
 import logging
 from concurrent import futures
-from queue import Queue
-from threading import Thread
+from queue import Empty, Queue
+from threading import Event, Thread
 from typing import Dict, Iterator, List, Optional
 
 import grpc
@@ -35,26 +35,57 @@ logger = logging.getLogger(__name__)
 
 
 class ClientProxy:
+    """
+    Abstraction for working with a client connection.
+    Encapsulates the GRPC request iterator providing both methods for sending and pooling messages.
+
+    Args:
+    ----
+        id (str): The ID of the client.
+        request_iterator (Iterator[ClientMessage]): The iterator for receiving client messages.
+        communication_queue (Queue): The queue for sending messages to the client.
+        register_queue (Queue): The queue for registering the client.
+
+    Attributes:
+    ----------
+        id (str): The ID of the client.
+        request_iterator (Iterator[ClientMessage]): The iterator for receiving client messages.
+        communication_queue (Queue): The queue for sending messages to the client.
+        register_queue (Queue): The queue for registering the client.
+    """
+
     def __init__(
         self,
         id: str,
         request_iterator: Iterator[ClientMessage],
         communication_queue: Queue,
-        register_queue: Queue,
     ):
         self.id = id
         self.request_iterator = request_iterator
         self.communication_queue = communication_queue
-        self.register_queue = register_queue
 
     def __repr__(self):
         return f"ClientProxy({self.id})"
 
     def put_message(self, message: ServerMessage):
+        """
+        Sends a message to the client.
+
+        Args:
+        ----
+            message (ServerMessage): The message to be sent to the client.
+        """
         logger.info(f"Sending message to {self.id}. Message: {message}")
         self.communication_queue.put(message)
 
     def pool_messages(self):
+        """
+        Pools messages from the client.
+
+        Returns
+        -------
+            ClientMessage: The next message received from the client.
+        """
         try:
             response = next(self.request_iterator)
             if response.WhichOneof("msg") == "error":
@@ -70,9 +101,25 @@ class ClientProxy:
 
 
 class ClientManager:
-    def __init__(self, register_queue: Queue):
+    """
+    The ClientManager class manages the collection of ClientProxys for the connected clients.
+    It provides methods for registering clients, deleting clients, broadcasting messages to clients,
+    and pooling messages from clients.
+
+    When the server starts to run, it spawns two threads. One thread runs the registration method
+    of the ClientManager, which listens for new client registrations and adds them to the collection
+    of clients. The other thread waits for termination methods and listens for new connections.
+
+    Attributes
+    ----------
+        _register_queue (Queue): The queue used for registering new clients.
+        _clients (Dict[str, ClientProxy]): The collection of ClientProxys for the connected clients.
+    """
+
+    def __init__(self, register_queue: Queue, stop_event: Event):
         self._register_queue = register_queue
         self._clients: Dict[str, ClientProxy] = {}
+        self._stop_event = stop_event
 
     def __len__(self):
         return len(self._clients)
@@ -81,27 +128,61 @@ class ClientManager:
         return list(self._clients.keys())
 
     def delete_client(self, client_id):
+        """
+        Deletes a client from the collection of clients.
+
+        Args:
+        ----
+            client_id: The ID of the client to delete.
+        """
         if client_id in self._clients:
             del self._clients[client_id]
 
-    # blocking process
     def run_registration(self):
+        """
+        The registration method that runs in a separate thread.
+        Listens for new client registrations and adds them to the collection of clients.
+        """
         i = 0
-        while True:
-            message = self._register_queue.get()
-            self._clients[str(i)] = ClientProxy(
-                str(i),
-                *message,
-                register_queue=self._register_queue,
-            )
-            logger.info(f"Client {i} registered")
+        while self._stop_event.is_set() is False:
+            try:
+                message = self._register_queue.get(timeout=1)
+                self._clients[str(i)] = ClientProxy(
+                    str(i),
+                    *message,
+                )
+                logger.info(f"Client {i} registered")
+            except Empty:
+                pass
 
     def broadcast(self, message: ServerMessage, node_ids: Optional[List[str]] = None):
+        """
+        Broadcasts a message to all or a subset of clients.
+
+        Args:
+        ----
+            message (ServerMessage): The message to broadcast.
+            node_ids (Optional[List[str]]): The IDs of the clients to broadcast the message to.
+                If None, the message will be broadcasted to all clients.
+        """
         for id, client in self._clients.items():
             if node_ids is None or id in node_ids:
                 client.put_message(message)
 
     def pool_clients(self, node_ids: Optional[List[str]] = None):
+        """
+        Pools messages from all or a subset of clients.
+
+        Args:
+        ----
+            node_ids (Optional[List[str]]): The IDs of the clients to pool messages from.
+                If None, messages will be pooled from all clients.
+
+        Returns:
+        -------
+            List[Tuple[Optional[ClientMessage], str]]: A list of tuples containing the pooled messages
+            and their corresponding client IDs.
+        """
         if node_ids:
             messages = [
                 (client.pool_messages(), id)
@@ -124,7 +205,7 @@ class ClientManager:
 class ServerServicer(FlexibleServicer):
     def __init__(self, queue: Queue):
         super().__init__()
-        self._q = queue
+        self._registration_queue = queue
 
     @staticmethod
     def _handshake(message: ClientMessage):
@@ -140,7 +221,7 @@ class ServerServicer(FlexibleServicer):
         first_request = next(request_iterator)
         self._handshake(first_request)
         communication_queue = Queue()
-        self._q.put((request_iterator, communication_queue))
+        self._registration_queue.put((request_iterator, communication_queue))
         logger.info("Client connected")
 
         while True:
@@ -156,19 +237,55 @@ class ServerServicer(FlexibleServicer):
 
 
 class Server:
+    """
+    Server for distributed FLEXible environment.
+
+    This class represents a server in a distributed FLEXible environment. It provides methods for managing clients,
+    collecting weights, sending weights, training models, and evaluating models.
+    """
+
     def __init__(self):
-        self._q = Queue()
-        self._servicer = ServerServicer(queue=self._q)
-        self._manager = ClientManager(register_queue=self._q)
+        self._registration_queue = Queue()
+        self._stop_event = Event()
+        self._servicer = ServerServicer(queue=self._registration_queue)
+        self._manager = ClientManager(
+            register_queue=self._registration_queue, stop_event=self._stop_event
+        )
         self._server = None
 
     def __len__(self):
+        """
+        Returns the number of registered clients.
+
+        Returns
+        -------
+            int: The number of registered clients.
+        """
         return len(self._manager)
 
     def get_ids(self) -> List[any]:
+        """
+        Returns a list of client IDs.
+
+        Returns
+        -------
+            List[any]: A list of client IDs.
+        """
         return self._manager.get_ids()
 
     def collect_weights(self, node_ids: Optional[any] = None):
+        """
+        Collects weights from clients.
+
+        Args:
+        ----
+            node_ids (Optional[any]): Optional list of client IDs. If provided, only the specified clients will be
+                used for weight collection.
+
+        Returns:
+        -------
+            List[np.ndarray]: A list of collected weights.
+        """
         self._manager.broadcast(
             ServerMessage(get_weights_ins=ServerMessage.GetWeightsIns(status=200)),
             node_ids=node_ids,
@@ -183,6 +300,15 @@ class Server:
         return rv
 
     def send_weights(self, weights: List[np.ndarray], node_ids: Optional[any] = None):
+        """
+        Sends weights to clients.
+
+        Args:
+        ----
+            weights (List[np.ndarray]): A list of weights to send to clients.
+            node_ids (Optional[any]): Optional list of client IDs. If provided, only the specified clients will receive
+                the weights.
+        """
         self._manager.broadcast(
             ServerMessage(
                 send_weights_ins=ServerMessage.SendWeightsIns(
@@ -196,21 +322,45 @@ class Server:
         assert all(m.WhichOneof("msg") == "send_weights_res" for m, _ in messages)
 
     def train(self, node_ids: Optional[any] = None):
+        """
+        Trains models on clients.
+
+        Args:
+        ----
+            node_ids (Optional[any]): Optional list of client IDs. If provided, only the specified clients will be used
+                for training.
+
+        Returns:
+        -------
+            Dict[any, any]: A dictionary mapping client IDs to training metrics.
+        """
         self._manager.broadcast(
             ServerMessage(train_ins=ServerMessage.TrainIns(status=200)),
             node_ids=node_ids,
         )
         messages = self._manager.pool_clients(node_ids=node_ids)
-        assert all(m.WhichOneof("msg") == "train_res" for m, _ in messages)
+        assert all(m.WhichOneof("msg") == "train_res" for m in messages)
         return {id: m.train_res.metrics for m, id in messages}
 
     def eval(self, node_ids: Optional[any] = None):
+        """
+        Evaluates models on clients.
+
+        Args:
+        ----
+            node_ids (Optional[any]): Optional list of client IDs. If provided, only the specified clients will be used
+                for evaluation.
+
+        Returns:
+        -------
+            Dict[any, any]: A dictionary mapping client IDs to evaluation metrics.
+        """
         self._manager.broadcast(
             ServerMessage(eval_ins=ServerMessage.EvalIns(status=200)),
             node_ids=node_ids,
         )
         messages = self._manager.pool_clients(node_ids=node_ids)
-        assert all(m.WhichOneof("msg") == "eval_res" for m, _ in messages)
+        assert all(m.WhichOneof("msg") == "eval_res" for m in messages)
         return {id: m.eval_res.metrics for m, id in messages}
 
     def run(
@@ -222,6 +372,21 @@ class Server:
         ssl_root_certificate: str = None,
         require_client_auth: bool = False,
     ):
+        """
+        Starts the server. Does not block the main thread.
+
+        Args:
+        ----
+            address (str): The address to bind the server to. Defaults to "[::]".
+            port (int): The port to bind the server to. Defaults to 50051.
+            ssl_private_key (str): The path to the SSL private key file. If provided along with
+                `ssl_certificate_chain`, the server will use secure gRPC communication.
+            ssl_certificate_chain (str): The path to the SSL certificate chain file. If provided along with
+                `ssl_private_key`, the server will use secure gRPC communication.
+            ssl_root_certificate (str): The path to the SSL root certificate file. Required if `require_client_auth`
+                is set to True.
+            require_client_auth (bool): Whether to require client authentication. Defaults to False.
+        """
         address_port = f"{address}:{port}"
         self._server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
         add_FlexibleServicer_to_server(self._servicer, self._server)
@@ -248,5 +413,9 @@ class Server:
         Thread(target=self._server.wait_for_termination, daemon=True).start()
 
     def stop(self):
+        """
+        Stops the server.
+        """
+        self._stop_event.set()
         if self._server is not None:
             self._server.stop(None)

@@ -34,7 +34,22 @@ logger = logging.getLogger(__name__)
 
 
 class Client(ABC):
+    """
+    Allows the implementation for a client in a distributed `FLEXible` environment.
+    The abstract methods must be implemented since they teach the client how to retrieve and set weights,
+    run training and evaluation. The __init__ method must be called by the child class.
+    """
+
     def __init__(self, dataset: Dataset, model: FlexModel, eval_dataset: Dataset):
+        """
+        Initializes a Client object.
+
+        Args:
+        ----
+            dataset (Dataset): The dataset used for training.
+            model (FlexModel): The model used for training.
+            eval_dataset (Dataset): The dataset used for evaluation.
+        """
         self._channel = None
         self._stub = None
         self._q = Queue()
@@ -74,10 +89,29 @@ class Client(ABC):
 
     @abstractmethod
     def set_weights(self, model: FlexModel, weights: List[np.ndarray]):
+        """
+        Sets the weights of the given model.
+
+        Args:
+        ----
+            model (FlexModel): The model to set the weights for.
+            weights (List[np.ndarray]): The weights to set for the model.
+        """
         pass
 
     @abstractmethod
     def get_weights(self, model: FlexModel) -> List[np.ndarray]:
+        """
+        Retrieves the weights of a given FlexModel.
+
+        Args:
+        ----
+            model (FlexModel): The FlexModel object for which to retrieve the weights.
+
+        Returns:
+        -------
+            List[np.ndarray]: A list of NumPy arrays representing the weights of the model.
+        """
         pass
 
     def _handle_train_ins(self, response: ServerMessage.TrainIns):
@@ -90,7 +124,19 @@ class Client(ABC):
         logger.info("Training completed")
 
     @abstractmethod
-    def train(self, model: FlexModel, data: Dataset):
+    def train(self, model: FlexModel, data: Dataset) -> dict:
+        """
+        Trains the given model using the provided dataset.
+
+        Args:
+        ----
+            model (FlexModel): The model to be trained.
+            data (Dataset): The dataset used for training.
+
+        Returns:
+        -------
+            dict: A dictionary containing training metrics.
+        """
         pass
 
     def _handle_eval_ins(self, response: ServerMessage.EvalIns):
@@ -104,6 +150,18 @@ class Client(ABC):
 
     @abstractmethod
     def eval(self, model: FlexModel, data: Dataset) -> dict:
+        """
+        Evaluates the given model on the provided data.
+
+        Args:
+        ----
+            model (FlexModel): The model to evaluate.
+            data (Dataset): The data to evaluate the model on.
+
+        Returns:
+        -------
+            dict: A dictionary containing evaluation metrics.
+        """
         pass
 
     def run(
