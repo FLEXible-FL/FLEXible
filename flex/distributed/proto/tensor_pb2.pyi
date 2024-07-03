@@ -6,9 +6,11 @@ from typing import ClassVar as _ClassVar, Iterable as _Iterable, Optional as _Op
 DESCRIPTOR: _descriptor.FileDescriptor
 
 class Tensor(_message.Message):
-    __slots__ = ("shape", "data")
+    __slots__ = ("shape", "data", "dtype")
     SHAPE_FIELD_NUMBER: _ClassVar[int]
     DATA_FIELD_NUMBER: _ClassVar[int]
+    DTYPE_FIELD_NUMBER: _ClassVar[int]
     shape: _containers.RepeatedScalarFieldContainer[int]
     data: bytes
-    def __init__(self, shape: _Optional[_Iterable[int]] = ..., data: _Optional[bytes] = ...) -> None: ...
+    dtype: str
+    def __init__(self, shape: _Optional[_Iterable[int]] = ..., data: _Optional[bytes] = ..., dtype: _Optional[str] = ...) -> None: ...

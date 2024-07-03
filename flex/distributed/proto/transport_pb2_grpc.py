@@ -6,7 +6,7 @@ import grpc
 
 from . import transport_pb2 as transport__pb2
 
-GRPC_GENERATED_VERSION = "1.63.0"
+GRPC_GENERATED_VERSION = "1.64.1"
 GRPC_VERSION = grpc.__version__
 EXPECTED_ERROR_RELEASE = "1.65.0"
 SCHEDULED_RELEASE_DATE = "June 25, 2024"
@@ -73,6 +73,7 @@ def add_FlexibleServicer_to_server(servicer, server):
         "flexible.Flexible", rpc_method_handlers
     )
     server.add_generic_rpc_handlers((generic_handler,))
+    server.add_registered_method_handlers("flexible.Flexible", rpc_method_handlers)
 
 
 # This class is part of an EXPERIMENTAL API.

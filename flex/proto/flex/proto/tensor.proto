@@ -5,4 +5,5 @@ package flexible;
 message Tensor {
     repeated int32 shape = 1;
     bytes data = 2;
+    string dtype = 3;
 }
