@@ -451,4 +451,7 @@ class Server:
             event.wait()
         self._termination.join()
         self._registration.join()
-        self._executor.shutdown(cancel_futures=True, wait=False)
+        self._executor.shutdown(cancel_futures=True, wait=True)
+
+    def __del__(self):
+        self.stop()

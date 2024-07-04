@@ -57,7 +57,6 @@ class TestServer(unittest.TestCase):
         server.run(addr, port)
         with self.assertRaises(RuntimeError):
             server.run(addr, port)
-        server.stop()
 
     def test_server_integration_test(self):
         server = Server()
