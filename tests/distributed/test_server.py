@@ -2,7 +2,7 @@ import threading
 import unittest
 from time import sleep
 
-import pytest
+import numpy as np
 
 from flex.data.dataset import Dataset
 from flex.distributed import ClientBuilder, Server
@@ -24,13 +24,15 @@ def set_weights(model, weights):
 
 
 def train(model, data):
-    model["model"]["weights1"] = [7, 8, 9]
+    model["model"]["weights2"] = [7, 8, 9]
+    return {"loss": 0.1}
 
 
 def eval(model, data):
     return {"accuracy": 0.5}
 
 
+# This file only contains HUGE integration test
 class TestServer(unittest.TestCase):
     @staticmethod
     def run_client():
@@ -51,19 +53,63 @@ class TestServer(unittest.TestCase):
         )
         client.run(f"{addr}:{port}")
 
-    def test_server_can_run_collect_ids(self):
+    def test_server_can_collect_weights(self):
         server = Server()
         server.run(addr, port)
 
         client = threading.Thread(target=self.run_client)
         client.start()
-
-        while len(server) == 0:
-            sleep(1)
+        sleep(1)
 
         ids = server.get_ids()
-        self.assertEqual(len(ids), 1)
+        self.assertEqual(ids, ["0"], "Client ID is not correct")
+        # Collect weights from the client
+        weights = server.collect_weights(node_ids=ids)
+        self.assertTrue(
+            all(
+                [
+                    np.array_equal(w, x)
+                    for w, x in zip(
+                        weights[0], [np.array([1, 2, 3]), np.array([4, 5, 6])]
+                    )
+                ]
+            )
+        )
+
+        # set weights
+        new_weights = [np.array([10, 11, 12]), np.array([13, 14, 15])]
+        server.send_weights(weights=new_weights, node_ids=ids)
+        weights = server.collect_weights(node_ids=ids)
+        self.assertTrue(
+            all([np.array_equal(w, x) for w, x in zip(weights[0], new_weights)])
+        )
+
+        # train
+        metrics = server.train(node_ids=ids)
+        self.assertIsInstance(metrics, dict)
+        self.assertTrue("0" in metrics)
+        self.assertTrue("loss" in metrics["0"])
+        self.assertAlmostEqual(metrics["0"]["loss"], 0.1)
+        # Check that train has changed weights
+        weights = server.collect_weights(node_ids=ids)
+        self.assertTrue(
+            all(
+                [
+                    np.array_equal(w, x)
+                    for w, x in zip(
+                        weights[0], [np.array([10, 11, 12]), np.array([7, 8, 9])]
+                    )
+                ]
+            ),
+            f"weights: {weights}, expected: {[np.array([10, 11, 12]), np.array([7, 8, 9])]}",
+        )
+
+        # Eval
+        metrics = server.eval(node_ids=ids)
+        self.assertIsInstance(metrics, dict)
+        self.assertTrue("0" in metrics)
+        self.assertTrue("accuracy" in metrics["0"])
+        self.assertAlmostEqual(metrics["0"]["accuracy"], 0.5)
+
         server.stop()
         client.join()
-
-        self.assertTrue(len(ids) > 0)
