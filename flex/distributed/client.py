@@ -17,8 +17,9 @@ Copyright (C) 2024  Instituto Andaluz Interuniversitario en Ciencia de Datos e I
 import logging
 import signal
 import sys
+import threading
 from abc import ABC, abstractmethod
-from queue import Queue
+from queue import Empty, Queue
 from typing import List
 
 import grpc
@@ -54,15 +55,20 @@ class Client(ABC):
         self._stub = None
         self._q = Queue()
         self._q.put(ClientMessage(handshake_ins=ClientMessage.HandshakeIns(status=200)))
-        self._finished = False
+        self._finished = threading.Event()
         self.dataset = dataset
         self.model = model
         self.eval_dataset = eval_dataset
 
     def _iter_queue(self, q: Queue):
         # The iterator may still run if it has still messages to send
-        while not self._finished or not q.empty():
-            yield q.get()
+        while not self._finished.is_set() or not q.empty():
+            try:
+                value = q.get(timeout=0.1)
+                yield value
+            except Empty:
+                # This condition is done in order to check finished
+                continue
         raise StopIteration
 
     def _handle_get_weights_ins(self, response: ServerMessage.GetWeightsIns):
@@ -195,7 +201,6 @@ class Client(ABC):
                 elif msg == "eval_ins":
                     self._handle_eval_ins(response.eval_ins)
                 else:
-                    self._finished = True
                     raise Exception("Not implemented")
         except Exception as e:
             cancelled = False
@@ -206,16 +211,18 @@ class Client(ABC):
             else:
                 logger.error(f"Canceling process. Got error: {e}")
             self._request_generator.cancel()
-            self._finished = True
-
-        self._finished = True
+        finally:
+            self._finished.set()
 
     def _set_exit_handler(self, request_generator):
         def _handler_(signum, frame):
             request_generator.cancel()
             sys.exit(0)
 
-        signal.signal(signal.SIGINT, _handler_)
+        # Only set the signal handler if the current thread is the main thread, avoids exceptions on running tests where
+        # this code executes in another thread
+        if threading.current_thread().__class__.__name__ == "_MainThread":
+            signal.signal(signal.SIGINT, _handler_)
 
     def __del__(self):
         if self._channel is not None:

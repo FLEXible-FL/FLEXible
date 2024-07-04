@@ -44,7 +44,7 @@ class FlexibleClient(Client):
         super().__init__(dataset=dataset, model=flex_model, eval_dataset=eval_dataset)
 
     def train(self, model: FlexModel, data: Dataset):
-        self._train(model, data)
+        return self._train(model, data)
 
     def eval(self, model: FlexModel, data: Dataset):
         return self._eval(model, data)

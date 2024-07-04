@@ -154,7 +154,7 @@ class ClientManager:
         i = 0
         while not self._register_stop_event.is_set():
             try:
-                message = self._register_queue.get(timeout=1)
+                message = self._register_queue.get(timeout=0.1)
                 request_iterator, communication_queue, finishing_event = message
                 self._clients[str(i)] = ClientProxy(
                     str(i), request_iterator, communication_queue, finishing_event
@@ -240,7 +240,7 @@ class ServerServicer(FlexibleServicer):
 
         while finishing_event.is_set() is False:
             try:
-                value = communication_queue.get(timeout=1)
+                value = communication_queue.get(timeout=0.1)
                 if value == "Client disconnected":
                     context.cancel()
                     break
@@ -356,7 +356,7 @@ class Server:
             node_ids=node_ids,
         )
         messages = self._manager.pool_clients(node_ids=node_ids)
-        assert all(m.WhichOneof("msg") == "train_res" for m in messages)
+        assert all(m.WhichOneof("msg") == "train_res" for m, _ in messages)
         return {id: m.train_res.metrics for m, id in messages}
 
     def eval(self, node_ids: Optional[any] = None):
@@ -377,7 +377,7 @@ class Server:
             node_ids=node_ids,
         )
         messages = self._manager.pool_clients(node_ids=node_ids)
-        assert all(m.WhichOneof("msg") == "eval_res" for m in messages)
+        assert all(m.WhichOneof("msg") == "eval_res" for m, _ in messages)
         return {id: m.eval_res.metrics for m, id in messages}
 
     def run(
