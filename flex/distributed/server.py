@@ -59,10 +59,12 @@ class ClientProxy:
         id: str,
         request_iterator: Iterator[ClientMessage],
         communication_queue: Queue,
+        disconnected_event: Event,
     ):
         self.id = id
         self.request_iterator = request_iterator
         self.communication_queue = communication_queue
+        self.disconnected_event = disconnected_event
 
     def __repr__(self):
         return f"ClientProxy({self.id})"
@@ -99,6 +101,12 @@ class ClientProxy:
             self.communication_queue.put("Client disconnected")
             pass
 
+    def disconnect(self):
+        self.disconnected_event.set()
+
+    def __del__(self):
+        self.disconnected_event.set()
+
 
 class ClientManager:
     """
@@ -116,10 +124,10 @@ class ClientManager:
         _clients (Dict[str, ClientProxy]): The collection of ClientProxys for the connected clients.
     """
 
-    def __init__(self, register_queue: Queue, stop_event: Event):
+    def __init__(self, register_queue: Queue, register_stop_event: Event):
         self._register_queue = register_queue
         self._clients: Dict[str, ClientProxy] = {}
-        self._stop_event = stop_event
+        self._register_stop_event = register_stop_event
 
     def __len__(self):
         return len(self._clients)
@@ -144,16 +152,19 @@ class ClientManager:
         Listens for new client registrations and adds them to the collection of clients.
         """
         i = 0
-        while self._stop_event.is_set() is False:
+        while not self._register_stop_event.is_set():
             try:
                 message = self._register_queue.get(timeout=1)
+                request_iterator, communication_queue, finishing_event = message
                 self._clients[str(i)] = ClientProxy(
-                    str(i),
-                    *message,
+                    str(i), request_iterator, communication_queue, finishing_event
                 )
                 logger.info(f"Client {i} registered")
             except Empty:
                 pass
+
+        for client in self._clients.values():
+            client.disconnect()
 
     def broadcast(self, message: ServerMessage, node_ids: Optional[List[str]] = None):
         """
@@ -221,16 +232,21 @@ class ServerServicer(FlexibleServicer):
         first_request = next(request_iterator)
         self._handshake(first_request)
         communication_queue = Queue()
-        self._registration_queue.put((request_iterator, communication_queue))
+        finishing_event = Event()
+        self._registration_queue.put(
+            (request_iterator, communication_queue, finishing_event)
+        )
         logger.info("Client connected")
 
-        while True:
+        while finishing_event.is_set() is False:
             try:
-                value = communication_queue.get()
+                value = communication_queue.get(timeout=1)
                 if value == "Client disconnected":
                     context.cancel()
                     break
                 yield value
+            except Empty:
+                continue
             except Exception:
                 context.cancel()
                 break
@@ -249,7 +265,8 @@ class Server:
         self._stop_event = Event()
         self._servicer = ServerServicer(queue=self._registration_queue)
         self._manager = ClientManager(
-            register_queue=self._registration_queue, stop_event=self._stop_event
+            register_queue=self._registration_queue,
+            register_stop_event=self._stop_event,
         )
         self._server = None
 
@@ -388,7 +405,8 @@ class Server:
             require_client_auth (bool): Whether to require client authentication. Defaults to False.
         """
         address_port = f"{address}:{port}"
-        self._server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+        self._executor = futures.ThreadPoolExecutor(max_workers=10)
+        self._server = grpc.server(self._executor)
         add_FlexibleServicer_to_server(self._servicer, self._server)
 
         if ssl_private_key is not None and ssl_certificate_chain is not None:
@@ -409,8 +427,13 @@ class Server:
 
         self._server.start()
         logger.info(f"Server started at {address_port}")
-        Thread(target=self._manager.run_registration, daemon=True).start()
-        Thread(target=self._server.wait_for_termination, daemon=True).start()
+        self._registration = Thread(target=self._manager.run_registration, daemon=True)
+        self._termination = Thread(
+            target=self._server.wait_for_termination, daemon=True
+        )
+        # Start the registration and termination threads
+        self._registration.start()
+        self._termination.start()
 
     def stop(self):
         """
@@ -418,4 +441,8 @@ class Server:
         """
         self._stop_event.set()
         if self._server is not None:
-            self._server.stop(None)
+            event = self._server.stop(None)
+            event.wait()
+        self._termination.join()
+        self._registration.join()
+        self._executor.shutdown(cancel_futures=True, wait=False)

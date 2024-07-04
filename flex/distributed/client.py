@@ -180,10 +180,10 @@ class Client(ABC):
 
             self._stub = FlexibleStub(self._channel)
 
-        request_generator = self._stub.Send(self._iter_queue(self._q))
-        self._set_exit_handler(request_generator)
+        self._request_generator = self._stub.Send(self._iter_queue(self._q))
+        self._set_exit_handler(self._request_generator)
         try:
-            for response in request_generator:
+            for response in self._request_generator:
                 assert isinstance(response, ServerMessage)
                 msg = response.WhichOneof("msg")
                 if msg == "get_weights_ins":
@@ -198,10 +198,15 @@ class Client(ABC):
                     self._finished = True
                     raise Exception("Not implemented")
         except Exception as e:
-            logger.error(f"Canceling process. Got error: {e}")
-            request_generator.cancel()
+            cancelled = False
+            if hasattr(e, "details") and callable(e.details):
+                cancelled = "Cancelling all calls" in e.details()
+            if cancelled:
+                logger.info("Disconnected from server")
+            else:
+                logger.error(f"Canceling process. Got error: {e}")
+            self._request_generator.cancel()
             self._finished = True
-            raise e from None
 
         self._finished = True
 
@@ -211,3 +216,7 @@ class Client(ABC):
             sys.exit(0)
 
         signal.signal(signal.SIGINT, _handler_)
+
+    def __del__(self):
+        if self._channel is not None:
+            self._channel.close()
