@@ -392,6 +392,8 @@ class Server:
         """
         Starts the server. Does not block the main thread.
 
+        Note: This method may be called only once.
+
         Args:
         ----
             address (str): The address to bind the server to. Defaults to "[::]".
@@ -404,6 +406,9 @@ class Server:
                 is set to True.
             require_client_auth (bool): Whether to require client authentication. Defaults to False.
         """
+        if self._server is not None:
+            raise RuntimeError("Server is already running")
+
         address_port = f"{address}:{port}"
         self._executor = futures.ThreadPoolExecutor(max_workers=10)
         self._server = grpc.server(self._executor)
@@ -442,6 +447,7 @@ class Server:
         self._stop_event.set()
         if self._server is not None:
             event = self._server.stop(None)
+            self._server = None
             event.wait()
         self._termination.join()
         self._registration.join()

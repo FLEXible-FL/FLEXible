@@ -32,7 +32,6 @@ def eval(model, data):
     return {"accuracy": 0.5}
 
 
-# This file only contains HUGE integration test
 class TestServer(unittest.TestCase):
     @staticmethod
     def run_client():
@@ -53,7 +52,14 @@ class TestServer(unittest.TestCase):
         )
         client.run(f"{addr}:{port}")
 
-    def test_server_can_collect_weights(self):
+    def test_server_run_called_twice(self):
+        server = Server()
+        server.run(addr, port)
+        with self.assertRaises(RuntimeError):
+            server.run(addr, port)
+        server.stop()
+
+    def test_server_integration_test(self):
         server = Server()
         server.run(addr, port)
 
