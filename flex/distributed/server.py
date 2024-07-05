@@ -176,6 +176,10 @@ class ClientManager:
             node_ids (Optional[List[str]]): The IDs of the clients to broadcast the message to.
                 If None, the message will be broadcasted to all clients.
         """
+        if node_ids:
+            if not set(node_ids).issubset(self._clients):
+                logger.warning("Some node IDs are not registered")
+
         for id, client in self._clients.items():
             if node_ids is None or id in node_ids:
                 client.put_message(message)
