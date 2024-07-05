@@ -132,7 +132,14 @@ class ClientManager:
     def __len__(self):
         return len(self._clients)
 
-    def get_ids(self) -> List[any]:
+    def get_ids(self) -> List[str]:
+        """
+        Returns a list of client IDs currently connected to the server.
+
+        Returns
+        -------
+            List[str]: A list of client IDs.
+        """
         return list(self._clients.keys())
 
     def delete_client(self, client_id):
@@ -284,23 +291,23 @@ class Server:
         """
         return len(self._manager)
 
-    def get_ids(self) -> List[any]:
+    def get_ids(self) -> List[str]:
         """
         Returns a list of client IDs.
 
         Returns
         -------
-            List[any]: A list of client IDs.
+            List[str]: A list of client IDs.
         """
         return self._manager.get_ids()
 
-    def collect_weights(self, node_ids: Optional[any] = None):
+    def collect_weights(self, node_ids: Optional[List[str]] = None):
         """
         Collects weights from clients.
 
         Args:
         ----
-            node_ids (Optional[any]): Optional list of client IDs. If provided, only the specified clients will be
+            node_ids (Optional[List[str]]): Optional list of client IDs. If provided, only the specified clients will be
                 used for weight collection.
 
         Returns:
@@ -320,14 +327,16 @@ class Server:
 
         return rv
 
-    def send_weights(self, weights: List[np.ndarray], node_ids: Optional[any] = None):
+    def send_weights(
+        self, weights: List[np.ndarray], node_ids: Optional[List[str]] = None
+    ):
         """
         Sends weights to clients.
 
         Args:
         ----
             weights (List[np.ndarray]): A list of weights to send to clients.
-            node_ids (Optional[any]): Optional list of client IDs. If provided, only the specified clients will receive
+            node_ids (Optional[List[str]]): Optional list of client IDs. If provided, only the specified clients will receive
                 the weights.
         """
         self._manager.broadcast(
@@ -342,18 +351,20 @@ class Server:
         messages = self._manager.pool_clients(node_ids=node_ids)
         assert all(m.WhichOneof("msg") == "send_weights_res" for m, _ in messages)
 
-    def train(self, node_ids: Optional[any] = None):
+    def train(
+        self, node_ids: Optional[List[str]] = None
+    ) -> Dict[str, Dict[str, float]]:
         """
         Trains models on clients.
 
         Args:
         ----
-            node_ids (Optional[any]): Optional list of client IDs. If provided, only the specified clients will be used
+            node_ids (Optional[List[str]]): Optional list of client IDs. If provided, only the specified clients will be used
                 for training.
 
         Returns:
         -------
-            Dict[any, any]: A dictionary mapping client IDs to training metrics.
+            Dict[str, Dict[str, float]]: A dictionary mapping client IDs to training metrics.
         """
         self._manager.broadcast(
             ServerMessage(train_ins=ServerMessage.TrainIns(status=200)),
@@ -363,18 +374,18 @@ class Server:
         assert all(m.WhichOneof("msg") == "train_res" for m, _ in messages)
         return {id: m.train_res.metrics for m, id in messages}
 
-    def eval(self, node_ids: Optional[any] = None):
+    def eval(self, node_ids: Optional[List[str]] = None) -> Dict[str, Dict[str, float]]:
         """
         Evaluates models on clients.
 
         Args:
         ----
-            node_ids (Optional[any]): Optional list of client IDs. If provided, only the specified clients will be used
+            node_ids (Optional[List[str]]): Optional list of client IDs. If provided, only the specified clients will be used
                 for evaluation.
 
         Returns:
         -------
-            Dict[any, any]: A dictionary mapping client IDs to evaluation metrics.
+            Dict[str, Dict[str, float]]: A dictionary mapping client IDs to evaluation metrics.
         """
         self._manager.broadcast(
             ServerMessage(eval_ins=ServerMessage.EvalIns(status=200)),
