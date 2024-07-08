@@ -17,7 +17,7 @@ Copyright (C) 2024  Instituto Andaluz Interuniversitario en Ciencia de Datos e I
 import logging
 from concurrent import futures
 from queue import Empty, Queue
-from threading import Event, Thread
+from threading import Event
 from typing import Dict, Iterator, List, Optional
 
 import grpc
@@ -447,13 +447,9 @@ class Server:
 
         self._server.start()
         logger.info(f"Server started at {address_port}")
-        self._registration = Thread(target=self._manager.run_registration, daemon=True)
-        self._termination = Thread(
-            target=self._server.wait_for_termination, daemon=True
-        )
         # Start the registration and termination threads
-        self._registration.start()
-        self._termination.start()
+        self._registration = self._executor.submit(self._manager.run_registration)
+        self._termination = self._executor.submit(self._server.wait_for_termination)
 
     def stop(self):
         """
@@ -464,8 +460,8 @@ class Server:
             event = self._server.stop(None)
             self._server = None
             event.wait()
-        self._termination.join()
-        self._registration.join()
+        self._termination.cancel()
+        self._registration.cancel()
         self._executor.shutdown(cancel_futures=True, wait=True)
 
     def __del__(self):
