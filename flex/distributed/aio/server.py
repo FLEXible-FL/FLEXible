@@ -383,6 +383,17 @@ class Server:
         assert all(m.WhichOneof("msg") == "eval_res" for m, _ in messages)
         return {id: m.eval_res.metrics for m, id in messages}
 
+    async def wait_for_clients(self, num_clients: int):
+        """
+        Waits for a specific number of clients to connect.
+
+        Args:
+        ----
+            num_clients (int): The number of clients to wait for.
+        """
+        while len(self) < num_clients:
+            await asyncio.sleep(1)
+
     async def run(
         self,
         address: str = "[::]",

@@ -1,4 +1,3 @@
-import asyncio
 import threading
 import unittest
 
@@ -61,8 +60,7 @@ class TestServer(unittest.IsolatedAsyncioTestCase):
 
         client = threading.Thread(target=self.run_client)
         client.start()
-        # Wait for the client to connect, maybe I need to change it but this allow the registration to run
-        await asyncio.sleep(1)
+        await server.wait_for_clients(1)
 
         ids = server.get_ids()
         self.assertEqual(ids, ["0"], "Client ID is not correct")
