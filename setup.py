@@ -57,6 +57,7 @@ setup(
                 "hugginface": HF_requires,
                 "distributed": DIST_requires,
                 "develop": ["pytest",
+                        "pytest-asyncio",
                         "pytest-cov",
                         "pytest-xdist",
                         "coverage",
