@@ -1,3 +1,4 @@
+import asyncio
 import threading
 import unittest
 
@@ -33,34 +34,34 @@ def eval(model, data):
     return {"accuracy": 0.5}
 
 
-class TestServer(unittest.IsolatedAsyncioTestCase):
-    @staticmethod
-    def run_client():
-        model = FlexModel()
-        model["model"] = {"weights1": [1, 2, 3], "weights2": [4, 5, 6]}
+def run_client():
+    model = FlexModel()
+    model["model"] = {"weights1": [1, 2, 3], "weights2": [4, 5, 6]}
 
-        dataset = Dataset.from_array([[1, 2], [3, 4]], [0, 1])
+    dataset = Dataset.from_array([[1, 2], [3, 4]], [0, 1])
 
-        client = (
-            ClientBuilder()
-            .collect_weights(collect_weights)
-            .model(model)
-            .set_weights(set_weights)
-            .train(train)
-            .eval(eval, dataset)
-            .dataset(dataset)
-            .build()
-        )
-        client.run(f"{addr}:{port}")
+    client = (
+        ClientBuilder()
+        .collect_weights(collect_weights)
+        .model(model)
+        .set_weights(set_weights)
+        .train(train)
+        .eval(eval, dataset)
+        .dataset(dataset)
+        .build()
+    )
+    client.run(f"{addr}:{port}")
 
+
+class TestAsyncServer(unittest.IsolatedAsyncioTestCase):
     @pytest.mark.asyncio
     async def test_server_integration_test(self):
         server = Server()
         await server.run(addr, port)
 
-        client = threading.Thread(target=self.run_client)
+        client = threading.Thread(target=run_client)
         client.start()
-        await server.wait_for_clients(1)
+        await asyncio.wait_for(server.wait_for_clients(1), timeout=5)
 
         ids = server.get_ids()
         self.assertEqual(ids, ["0"], "Client ID is not correct")
