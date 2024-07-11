@@ -65,6 +65,9 @@ class TestAsyncServer(unittest.IsolatedAsyncioTestCase):
 
         ids = server.get_ids()
         self.assertEqual(ids, ["0"], "Client ID is not correct")
+        # Ping
+        await asyncio.wait_for(server.ping(node_ids=ids), timeout=5)
+
         # Collect weights from the client
         weights = await server.collect_weights(node_ids=ids)
         self.assertTrue(

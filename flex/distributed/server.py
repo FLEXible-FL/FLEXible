@@ -301,6 +301,25 @@ class Server:
         """
         return self._manager.get_ids()
 
+    def ping(self, node_ids: Optional[List[str]] = None):
+        """
+        Sends a ping message to the specified nodes and retrieves their health status.
+
+        Args:
+        ----
+            node_ids (Optional[List[str]]): A list of node IDs to send the ping message to. If None, the ping message will be sent to all nodes.
+
+        Returns:
+        -------
+            None
+        """
+        self._manager.broadcast(
+            ServerMessage(health_ins=ServerMessage.HealthPing(status=200)),
+            node_ids=node_ids,
+        )
+        messages = self._manager.pool_clients(node_ids=node_ids)
+        assert all(m.WhichOneof("msg") == "health_ins" for m, _ in messages)
+
     def collect_weights(self, node_ids: Optional[List[str]] = None):
         """
         Collects weights from clients.

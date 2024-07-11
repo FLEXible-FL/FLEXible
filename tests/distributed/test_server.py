@@ -69,6 +69,7 @@ class TestServer(unittest.TestCase):
         ids = server.get_ids()
         self.assertEqual(ids, ["0"], "Client ID is not correct")
         # Collect weights from the client
+        server.ping()
         weights = server.collect_weights(node_ids=ids)
         self.assertTrue(
             all(

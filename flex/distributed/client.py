@@ -20,7 +20,7 @@ import sys
 import threading
 from abc import ABC, abstractmethod
 from queue import Empty, Queue
-from typing import List
+from typing import List, Optional
 
 import grpc
 import numpy as np
@@ -92,6 +92,10 @@ class Client(ABC):
             ClientMessage(send_weights_res=ClientMessage.SendWeightsRes(status=200))
         )
         logger.info("Weights set")
+
+    def _handle_health_ping(self, response: ServerMessage.HealthPing):
+        logger.info("Health ping from server")
+        self._q.put(ClientMessage(health_ins=ClientMessage.HealthPing(status=200)))
 
     @abstractmethod
     def set_weights(self, model: FlexModel, weights: List[np.ndarray]):
@@ -171,7 +175,10 @@ class Client(ABC):
         pass
 
     def run(
-        self, address: str, root_certificate: str = None, _stub: FlexibleStub = None
+        self,
+        address: str,
+        root_certificate: str = None,
+        _stub: Optional[FlexibleStub] = None,
     ):
         if _stub is not None:
             self._stub = _stub
@@ -200,6 +207,8 @@ class Client(ABC):
                     self._handle_train_ins(response.train_ins)
                 elif msg == "eval_ins":
                     self._handle_eval_ins(response.eval_ins)
+                elif msg == "health_ins":
+                    self._handle_health_ping(response.health_ins)
                 else:
                     raise Exception("Not implemented")
         except Exception as e:
