@@ -30,7 +30,18 @@ from flex.distributed.proto.transport_pb2 import (  # required for internal test
     ServerMessage,
 )
 from flex.model import FlexModel
-from flex.pool.decorators import collect_clients_weights, set_aggregated_weights
+from flex.pool.decorators import (
+    collect_clients_weights,
+    init_server_model,
+    set_aggregated_weights,
+)
+
+
+@init_server_model
+def build_server_model():
+    model = FlexModel()
+    model["model"] = {"weights1": [1, 2, 3], "weights2": [4, 5, 6]}
+    return model
 
 
 @collect_clients_weights
@@ -54,11 +65,6 @@ def eval(model, data):
 
 class TestClientBuilder(unittest.TestCase):
     @pytest.fixture(autouse=True)
-    def _fixture_flex_model(self):
-        self.model = FlexModel()
-        self.model["model"] = {"weights1": [1, 2, 3], "weights2": [4, 5, 6]}
-
-    @pytest.fixture(autouse=True)
     def _fixture_dataset(self):
         self.dataset = Dataset.from_array([[1, 2], [3, 4]], [0, 1])
 
@@ -72,7 +78,7 @@ class TestClientBuilder(unittest.TestCase):
         client = (
             ClientBuilder()
             .collect_weights(collect_weights)
-            .model(self.model)
+            .build_model(build_server_model)
             .set_weights(set_weights)
             .train(train)
             .eval(eval, self.dataset)

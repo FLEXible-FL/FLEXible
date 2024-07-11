@@ -214,6 +214,21 @@ class ClientBuilder:
         self._flex_model = flex_model
         return self
 
+    def build_model(self, build_server_model: Callable) -> "ClientBuilder":
+        """
+        Builds the client model by calling the provided `build_server_model` function.
+
+        Args:
+        ----
+            build_server_model (Callable): A function that builds the server model.
+
+        Returns:
+        -------
+            ClientBuilder: The instance of the ClientBuilder class.
+
+        """
+        return self.model(build_server_model.__wrapped__())
+
     def build(self) -> Client:
         """
         Build and return the client object.
