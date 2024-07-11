@@ -13,8 +13,8 @@ class Error(_message.Message):
     def __init__(self, reason: _Optional[str] = ...) -> None: ...
 
 class ClientMessage(_message.Message):
-    __slots__ = ("handshake_ins", "get_weights_res", "send_weights_res", "train_res", "error", "eval_res")
-    class HandshakeIns(_message.Message):
+    __slots__ = ("handshake_res", "get_weights_res", "send_weights_res", "train_res", "error", "eval_res", "health_ins")
+    class HandshakeRes(_message.Message):
         __slots__ = ("status",)
         STATUS_FIELD_NUMBER: _ClassVar[int]
         status: int
@@ -53,22 +53,29 @@ class ClientMessage(_message.Message):
         METRICS_FIELD_NUMBER: _ClassVar[int]
         metrics: _containers.ScalarMap[str, float]
         def __init__(self, metrics: _Optional[_Mapping[str, float]] = ...) -> None: ...
-    HANDSHAKE_INS_FIELD_NUMBER: _ClassVar[int]
+    class HealthPing(_message.Message):
+        __slots__ = ("status",)
+        STATUS_FIELD_NUMBER: _ClassVar[int]
+        status: int
+        def __init__(self, status: _Optional[int] = ...) -> None: ...
+    HANDSHAKE_RES_FIELD_NUMBER: _ClassVar[int]
     GET_WEIGHTS_RES_FIELD_NUMBER: _ClassVar[int]
     SEND_WEIGHTS_RES_FIELD_NUMBER: _ClassVar[int]
     TRAIN_RES_FIELD_NUMBER: _ClassVar[int]
     ERROR_FIELD_NUMBER: _ClassVar[int]
     EVAL_RES_FIELD_NUMBER: _ClassVar[int]
-    handshake_ins: ClientMessage.HandshakeIns
+    HEALTH_INS_FIELD_NUMBER: _ClassVar[int]
+    handshake_res: ClientMessage.HandshakeRes
     get_weights_res: ClientMessage.GetWeightsRes
     send_weights_res: ClientMessage.SendWeightsRes
     train_res: ClientMessage.TrainRes
     error: Error
     eval_res: ClientMessage.EvalRes
-    def __init__(self, handshake_ins: _Optional[_Union[ClientMessage.HandshakeIns, _Mapping]] = ..., get_weights_res: _Optional[_Union[ClientMessage.GetWeightsRes, _Mapping]] = ..., send_weights_res: _Optional[_Union[ClientMessage.SendWeightsRes, _Mapping]] = ..., train_res: _Optional[_Union[ClientMessage.TrainRes, _Mapping]] = ..., error: _Optional[_Union[Error, _Mapping]] = ..., eval_res: _Optional[_Union[ClientMessage.EvalRes, _Mapping]] = ...) -> None: ...
+    health_ins: ClientMessage.HealthPing
+    def __init__(self, handshake_res: _Optional[_Union[ClientMessage.HandshakeRes, _Mapping]] = ..., get_weights_res: _Optional[_Union[ClientMessage.GetWeightsRes, _Mapping]] = ..., send_weights_res: _Optional[_Union[ClientMessage.SendWeightsRes, _Mapping]] = ..., train_res: _Optional[_Union[ClientMessage.TrainRes, _Mapping]] = ..., error: _Optional[_Union[Error, _Mapping]] = ..., eval_res: _Optional[_Union[ClientMessage.EvalRes, _Mapping]] = ..., health_ins: _Optional[_Union[ClientMessage.HealthPing, _Mapping]] = ...) -> None: ...
 
 class ServerMessage(_message.Message):
-    __slots__ = ("get_weights_ins", "send_weights_ins", "train_ins", "error", "eval_ins")
+    __slots__ = ("get_weights_ins", "send_weights_ins", "train_ins", "error", "eval_ins", "health_ins")
     class GetWeightsIns(_message.Message):
         __slots__ = ("status",)
         STATUS_FIELD_NUMBER: _ClassVar[int]
@@ -89,14 +96,21 @@ class ServerMessage(_message.Message):
         STATUS_FIELD_NUMBER: _ClassVar[int]
         status: int
         def __init__(self, status: _Optional[int] = ...) -> None: ...
+    class HealthPing(_message.Message):
+        __slots__ = ("status",)
+        STATUS_FIELD_NUMBER: _ClassVar[int]
+        status: int
+        def __init__(self, status: _Optional[int] = ...) -> None: ...
     GET_WEIGHTS_INS_FIELD_NUMBER: _ClassVar[int]
     SEND_WEIGHTS_INS_FIELD_NUMBER: _ClassVar[int]
     TRAIN_INS_FIELD_NUMBER: _ClassVar[int]
     ERROR_FIELD_NUMBER: _ClassVar[int]
     EVAL_INS_FIELD_NUMBER: _ClassVar[int]
+    HEALTH_INS_FIELD_NUMBER: _ClassVar[int]
     get_weights_ins: ServerMessage.GetWeightsIns
     send_weights_ins: ServerMessage.SendWeightsIns
     train_ins: ServerMessage.TrainIns
     error: Error
     eval_ins: ServerMessage.EvalIns
-    def __init__(self, get_weights_ins: _Optional[_Union[ServerMessage.GetWeightsIns, _Mapping]] = ..., send_weights_ins: _Optional[_Union[ServerMessage.SendWeightsIns, _Mapping]] = ..., train_ins: _Optional[_Union[ServerMessage.TrainIns, _Mapping]] = ..., error: _Optional[_Union[Error, _Mapping]] = ..., eval_ins: _Optional[_Union[ServerMessage.EvalIns, _Mapping]] = ...) -> None: ...
+    health_ins: ServerMessage.HealthPing
+    def __init__(self, get_weights_ins: _Optional[_Union[ServerMessage.GetWeightsIns, _Mapping]] = ..., send_weights_ins: _Optional[_Union[ServerMessage.SendWeightsIns, _Mapping]] = ..., train_ins: _Optional[_Union[ServerMessage.TrainIns, _Mapping]] = ..., error: _Optional[_Union[Error, _Mapping]] = ..., eval_ins: _Optional[_Union[ServerMessage.EvalIns, _Mapping]] = ..., health_ins: _Optional[_Union[ServerMessage.HealthPing, _Mapping]] = ...) -> None: ...

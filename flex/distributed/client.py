@@ -54,7 +54,7 @@ class Client(ABC):
         self._channel = None
         self._stub = None
         self._q = Queue()
-        self._q.put(ClientMessage(handshake_ins=ClientMessage.HandshakeIns(status=200)))
+        self._q.put(ClientMessage(handshake_res=ClientMessage.HandshakeRes(status=200)))
         self._finished = threading.Event()
         self.dataset = dataset
         self.model = model

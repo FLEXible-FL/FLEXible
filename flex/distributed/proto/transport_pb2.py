@@ -16,7 +16,7 @@ _sym_db = _symbol_database.Default()
 from . import tensor_pb2 as tensor__pb2
 
 DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(
-    b'\n\x0ftransport.proto\x12\x08\x66lexible\x1a\x0ctensor.proto"\x17\n\x05\x45rror\x12\x0e\n\x06reason\x18\x01 \x01(\t"\xd5\x05\n\rClientMessage\x12=\n\rhandshake_ins\x18\x01 \x01(\x0b\x32$.flexible.ClientMessage.HandshakeInsH\x00\x12@\n\x0fget_weights_res\x18\x02 \x01(\x0b\x32%.flexible.ClientMessage.GetWeightsResH\x00\x12\x42\n\x10send_weights_res\x18\x03 \x01(\x0b\x32&.flexible.ClientMessage.SendWeightsResH\x00\x12\x35\n\ttrain_res\x18\x04 \x01(\x0b\x32 .flexible.ClientMessage.TrainResH\x00\x12 \n\x05\x65rror\x18\x05 \x01(\x0b\x32\x0f.flexible.ErrorH\x00\x12\x33\n\x08\x65val_res\x18\x06 \x01(\x0b\x32\x1f.flexible.ClientMessage.EvalResH\x00\x1a\x1e\n\x0cHandshakeIns\x12\x0e\n\x06status\x18\x01 \x01(\x05\x1a\x32\n\rGetWeightsRes\x12!\n\x07weights\x18\x01 \x03(\x0b\x32\x10.flexible.Tensor\x1a \n\x0eSendWeightsRes\x12\x0e\n\x06status\x18\x01 \x01(\x05\x1az\n\x08TrainRes\x12>\n\x07metrics\x18\x01 \x03(\x0b\x32-.flexible.ClientMessage.TrainRes.MetricsEntry\x1a.\n\x0cMetricsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x02:\x02\x38\x01\x1ax\n\x07\x45valRes\x12=\n\x07metrics\x18\x01 \x03(\x0b\x32,.flexible.ClientMessage.EvalRes.MetricsEntry\x1a.\n\x0cMetricsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x02:\x02\x38\x01\x42\x05\n\x03msg"\xb7\x03\n\rServerMessage\x12@\n\x0fget_weights_ins\x18\x01 \x01(\x0b\x32%.flexible.ServerMessage.GetWeightsInsH\x00\x12\x42\n\x10send_weights_ins\x18\x02 \x01(\x0b\x32&.flexible.ServerMessage.SendWeightsInsH\x00\x12\x35\n\ttrain_ins\x18\x03 \x01(\x0b\x32 .flexible.ServerMessage.TrainInsH\x00\x12 \n\x05\x65rror\x18\x04 \x01(\x0b\x32\x0f.flexible.ErrorH\x00\x12\x33\n\x08\x65val_ins\x18\x05 \x01(\x0b\x32\x1f.flexible.ServerMessage.EvalInsH\x00\x1a\x1f\n\rGetWeightsIns\x12\x0e\n\x06status\x18\x01 \x01(\x05\x1a\x33\n\x0eSendWeightsIns\x12!\n\x07weights\x18\x01 \x03(\x0b\x32\x10.flexible.Tensor\x1a\x1a\n\x08TrainIns\x12\x0e\n\x06status\x18\x01 \x01(\x05\x1a\x19\n\x07\x45valIns\x12\x0e\n\x06status\x18\x01 \x01(\x05\x42\x05\n\x03msg2H\n\x08\x46lexible\x12<\n\x04Send\x12\x17.flexible.ClientMessage\x1a\x17.flexible.ServerMessage(\x01\x30\x01\x62\x06proto3'
+    b'\n\x0ftransport.proto\x12\x08\x66lexible\x1a\x0ctensor.proto"\x17\n\x05\x45rror\x12\x0e\n\x06reason\x18\x01 \x01(\t"\xad\x06\n\rClientMessage\x12=\n\rhandshake_res\x18\x01 \x01(\x0b\x32$.flexible.ClientMessage.HandshakeResH\x00\x12@\n\x0fget_weights_res\x18\x02 \x01(\x0b\x32%.flexible.ClientMessage.GetWeightsResH\x00\x12\x42\n\x10send_weights_res\x18\x03 \x01(\x0b\x32&.flexible.ClientMessage.SendWeightsResH\x00\x12\x35\n\ttrain_res\x18\x04 \x01(\x0b\x32 .flexible.ClientMessage.TrainResH\x00\x12 \n\x05\x65rror\x18\x05 \x01(\x0b\x32\x0f.flexible.ErrorH\x00\x12\x33\n\x08\x65val_res\x18\x06 \x01(\x0b\x32\x1f.flexible.ClientMessage.EvalResH\x00\x12\x38\n\nhealth_ins\x18\x07 \x01(\x0b\x32".flexible.ClientMessage.HealthPingH\x00\x1a\x1e\n\x0cHandshakeRes\x12\x0e\n\x06status\x18\x01 \x01(\x05\x1a\x32\n\rGetWeightsRes\x12!\n\x07weights\x18\x01 \x03(\x0b\x32\x10.flexible.Tensor\x1a \n\x0eSendWeightsRes\x12\x0e\n\x06status\x18\x01 \x01(\x05\x1az\n\x08TrainRes\x12>\n\x07metrics\x18\x01 \x03(\x0b\x32-.flexible.ClientMessage.TrainRes.MetricsEntry\x1a.\n\x0cMetricsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x02:\x02\x38\x01\x1ax\n\x07\x45valRes\x12=\n\x07metrics\x18\x01 \x03(\x0b\x32,.flexible.ClientMessage.EvalRes.MetricsEntry\x1a.\n\x0cMetricsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x02:\x02\x38\x01\x1a\x1c\n\nHealthPing\x12\x0e\n\x06status\x18\x01 \x01(\x05\x42\x05\n\x03msg"\x8f\x04\n\rServerMessage\x12@\n\x0fget_weights_ins\x18\x01 \x01(\x0b\x32%.flexible.ServerMessage.GetWeightsInsH\x00\x12\x42\n\x10send_weights_ins\x18\x02 \x01(\x0b\x32&.flexible.ServerMessage.SendWeightsInsH\x00\x12\x35\n\ttrain_ins\x18\x03 \x01(\x0b\x32 .flexible.ServerMessage.TrainInsH\x00\x12 \n\x05\x65rror\x18\x04 \x01(\x0b\x32\x0f.flexible.ErrorH\x00\x12\x33\n\x08\x65val_ins\x18\x05 \x01(\x0b\x32\x1f.flexible.ServerMessage.EvalInsH\x00\x12\x38\n\nhealth_ins\x18\x06 \x01(\x0b\x32".flexible.ServerMessage.HealthPingH\x00\x1a\x1f\n\rGetWeightsIns\x12\x0e\n\x06status\x18\x01 \x01(\x05\x1a\x33\n\x0eSendWeightsIns\x12!\n\x07weights\x18\x01 \x03(\x0b\x32\x10.flexible.Tensor\x1a\x1a\n\x08TrainIns\x12\x0e\n\x06status\x18\x01 \x01(\x05\x1a\x19\n\x07\x45valIns\x12\x0e\n\x06status\x18\x01 \x01(\x05\x1a\x1c\n\nHealthPing\x12\x0e\n\x06status\x18\x01 \x01(\x05\x42\x05\n\x03msg2H\n\x08\x46lexible\x12<\n\x04Send\x12\x17.flexible.ClientMessage\x1a\x17.flexible.ServerMessage(\x01\x30\x01\x62\x06proto3'
 )
 
 _globals = globals()
@@ -31,31 +31,35 @@ if not _descriptor._USE_C_DESCRIPTORS:
     _globals["_ERROR"]._serialized_start = 43
     _globals["_ERROR"]._serialized_end = 66
     _globals["_CLIENTMESSAGE"]._serialized_start = 69
-    _globals["_CLIENTMESSAGE"]._serialized_end = 794
-    _globals["_CLIENTMESSAGE_HANDSHAKEINS"]._serialized_start = 425
-    _globals["_CLIENTMESSAGE_HANDSHAKEINS"]._serialized_end = 455
-    _globals["_CLIENTMESSAGE_GETWEIGHTSRES"]._serialized_start = 457
-    _globals["_CLIENTMESSAGE_GETWEIGHTSRES"]._serialized_end = 507
-    _globals["_CLIENTMESSAGE_SENDWEIGHTSRES"]._serialized_start = 509
-    _globals["_CLIENTMESSAGE_SENDWEIGHTSRES"]._serialized_end = 541
-    _globals["_CLIENTMESSAGE_TRAINRES"]._serialized_start = 543
-    _globals["_CLIENTMESSAGE_TRAINRES"]._serialized_end = 665
-    _globals["_CLIENTMESSAGE_TRAINRES_METRICSENTRY"]._serialized_start = 619
-    _globals["_CLIENTMESSAGE_TRAINRES_METRICSENTRY"]._serialized_end = 665
-    _globals["_CLIENTMESSAGE_EVALRES"]._serialized_start = 667
-    _globals["_CLIENTMESSAGE_EVALRES"]._serialized_end = 787
-    _globals["_CLIENTMESSAGE_EVALRES_METRICSENTRY"]._serialized_start = 619
-    _globals["_CLIENTMESSAGE_EVALRES_METRICSENTRY"]._serialized_end = 665
-    _globals["_SERVERMESSAGE"]._serialized_start = 797
-    _globals["_SERVERMESSAGE"]._serialized_end = 1236
-    _globals["_SERVERMESSAGE_GETWEIGHTSINS"]._serialized_start = 1090
-    _globals["_SERVERMESSAGE_GETWEIGHTSINS"]._serialized_end = 1121
-    _globals["_SERVERMESSAGE_SENDWEIGHTSINS"]._serialized_start = 1123
-    _globals["_SERVERMESSAGE_SENDWEIGHTSINS"]._serialized_end = 1174
-    _globals["_SERVERMESSAGE_TRAININS"]._serialized_start = 1176
-    _globals["_SERVERMESSAGE_TRAININS"]._serialized_end = 1202
-    _globals["_SERVERMESSAGE_EVALINS"]._serialized_start = 1204
-    _globals["_SERVERMESSAGE_EVALINS"]._serialized_end = 1229
-    _globals["_FLEXIBLE"]._serialized_start = 1238
-    _globals["_FLEXIBLE"]._serialized_end = 1310
+    _globals["_CLIENTMESSAGE"]._serialized_end = 882
+    _globals["_CLIENTMESSAGE_HANDSHAKERES"]._serialized_start = 483
+    _globals["_CLIENTMESSAGE_HANDSHAKERES"]._serialized_end = 513
+    _globals["_CLIENTMESSAGE_GETWEIGHTSRES"]._serialized_start = 515
+    _globals["_CLIENTMESSAGE_GETWEIGHTSRES"]._serialized_end = 565
+    _globals["_CLIENTMESSAGE_SENDWEIGHTSRES"]._serialized_start = 567
+    _globals["_CLIENTMESSAGE_SENDWEIGHTSRES"]._serialized_end = 599
+    _globals["_CLIENTMESSAGE_TRAINRES"]._serialized_start = 601
+    _globals["_CLIENTMESSAGE_TRAINRES"]._serialized_end = 723
+    _globals["_CLIENTMESSAGE_TRAINRES_METRICSENTRY"]._serialized_start = 677
+    _globals["_CLIENTMESSAGE_TRAINRES_METRICSENTRY"]._serialized_end = 723
+    _globals["_CLIENTMESSAGE_EVALRES"]._serialized_start = 725
+    _globals["_CLIENTMESSAGE_EVALRES"]._serialized_end = 845
+    _globals["_CLIENTMESSAGE_EVALRES_METRICSENTRY"]._serialized_start = 677
+    _globals["_CLIENTMESSAGE_EVALRES_METRICSENTRY"]._serialized_end = 723
+    _globals["_CLIENTMESSAGE_HEALTHPING"]._serialized_start = 847
+    _globals["_CLIENTMESSAGE_HEALTHPING"]._serialized_end = 875
+    _globals["_SERVERMESSAGE"]._serialized_start = 885
+    _globals["_SERVERMESSAGE"]._serialized_end = 1412
+    _globals["_SERVERMESSAGE_GETWEIGHTSINS"]._serialized_start = 1236
+    _globals["_SERVERMESSAGE_GETWEIGHTSINS"]._serialized_end = 1267
+    _globals["_SERVERMESSAGE_SENDWEIGHTSINS"]._serialized_start = 1269
+    _globals["_SERVERMESSAGE_SENDWEIGHTSINS"]._serialized_end = 1320
+    _globals["_SERVERMESSAGE_TRAININS"]._serialized_start = 1322
+    _globals["_SERVERMESSAGE_TRAININS"]._serialized_end = 1348
+    _globals["_SERVERMESSAGE_EVALINS"]._serialized_start = 1350
+    _globals["_SERVERMESSAGE_EVALINS"]._serialized_end = 1375
+    _globals["_SERVERMESSAGE_HEALTHPING"]._serialized_start = 847
+    _globals["_SERVERMESSAGE_HEALTHPING"]._serialized_end = 875
+    _globals["_FLEXIBLE"]._serialized_start = 1414
+    _globals["_FLEXIBLE"]._serialized_end = 1486
 # @@protoc_insertion_point(module_scope)

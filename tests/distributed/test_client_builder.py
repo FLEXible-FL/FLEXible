@@ -120,7 +120,7 @@ class TestClientBuilder(unittest.TestCase):
 
         # Always start with handshake
         response = next(generator)
-        self.assertEqual(response.handshake_ins.status, 200)
+        self.assertEqual(response.handshake_res.status, 200)
         # obtain initial weights
         response = next(generator)
         weights = toNumpyArray(response.get_weights_res.weights)

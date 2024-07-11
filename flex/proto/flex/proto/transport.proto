@@ -13,7 +13,7 @@ message Error {
 }
 
 message ClientMessage {
-    message HandshakeIns {
+    message HandshakeRes {
         int32 status = 1;
     }
     message GetWeightsRes {
@@ -32,13 +32,18 @@ message ClientMessage {
         map<string, float> metrics = 1;
     }
 
+    message HealthPing {
+        int32 status = 1;
+    }
+
     oneof msg {
-        HandshakeIns handshake_ins = 1;
+        HandshakeRes handshake_res = 1;
         GetWeightsRes get_weights_res = 2;
         SendWeightsRes send_weights_res = 3;
         TrainRes train_res = 4;
         Error error = 5;
         EvalRes eval_res = 6;
+        HealthPing health_ins = 7;
     }
 }
 
@@ -59,11 +64,16 @@ message ServerMessage {
         int32 status = 1;
     }
 
+    message HealthPing {
+        int32 status = 1;
+    }
+
     oneof msg {
         GetWeightsIns get_weights_ins = 1;
         SendWeightsIns send_weights_ins = 2;
         TrainIns train_ins = 3;
         Error error = 4;
         EvalIns eval_ins = 5;
+        HealthPing health_ins = 6;
     }
 }

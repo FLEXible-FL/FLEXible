@@ -232,8 +232,8 @@ class ServerServicer(FlexibleServicer):
     @staticmethod
     def _handshake(message: ClientMessage):
         if (
-            message.WhichOneof("msg") != "handshake_ins"
-            or message.handshake_ins.status != 200
+            message.WhichOneof("msg") != "handshake_res"
+            or message.handshake_res.status != 200
         ):
             raise grpc.RpcError("No handshake message")
 
