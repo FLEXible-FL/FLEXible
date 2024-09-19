@@ -20,6 +20,7 @@ lint:
   ignore:   
     - linters: [ALL]
       paths:
+      - flex/**/proto/**
       - flex/**/__init__.py
       - test/**/__init__.py
       - setup.py
