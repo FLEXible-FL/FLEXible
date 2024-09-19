@@ -1,0 +1,79 @@
+syntax = "proto3";
+
+package flexible;
+
+import "tensor.proto";
+
+service Flexible {
+    rpc Send(stream ClientMessage) returns (stream ServerMessage);
+}
+
+message Error {
+    string reason = 1;
+}
+
+message ClientMessage {
+    message HandshakeRes {
+        int32 status = 1;
+    }
+    message GetWeightsRes {
+        repeated Tensor weights = 1;
+    }
+
+    message SendWeightsRes {
+        int32 status = 1;
+    }
+
+    message TrainRes {
+        map<string, float> metrics = 1;
+    }
+
+    message EvalRes {
+        map<string, float> metrics = 1;
+    }
+
+    message HealthPing {
+        int32 status = 1;
+    }
+
+    oneof msg {
+        HandshakeRes handshake_res = 1;
+        GetWeightsRes get_weights_res = 2;
+        SendWeightsRes send_weights_res = 3;
+        TrainRes train_res = 4;
+        Error error = 5;
+        EvalRes eval_res = 6;
+        HealthPing health_ins = 7;
+    }
+}
+
+message ServerMessage {
+    message GetWeightsIns {
+        int32 status = 1;
+    }
+
+    message SendWeightsIns {
+        repeated Tensor weights = 1;
+    }
+
+    message TrainIns {
+        int32 status = 1;
+    }
+
+    message EvalIns {
+        int32 status = 1;
+    }
+
+    message HealthPing {
+        int32 status = 1;
+    }
+
+    oneof msg {
+        GetWeightsIns get_weights_ins = 1;
+        SendWeightsIns send_weights_ins = 2;
+        TrainIns train_ins = 3;
+        Error error = 4;
+        EvalIns eval_ins = 5;
+        HealthPing health_ins = 6;
+    }
+}
