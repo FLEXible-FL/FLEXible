@@ -33,7 +33,7 @@ DIST_requires = ["grpcio", "protobuf"]
 
 setup(
         name="flexible-fl",
-        version="0.6.1-b.1",
+        version="0.6.2",
         author="Jimenez-Lopez Daniel, Argente-Garrido Alberto",
         author_email="xehartnort@gmail.com, albertoargentedcgarrido@gmail.com",
         long_description=open("README.md", "r", encoding="utf-8").read(),
