@@ -96,7 +96,19 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 If you use this package, please cite the following paper:
 
-``` TODO: Add citation ```
+```
+@article{flexible,
+    title = {FLEX: Flexible Federated Learning Framework},
+    journal = {Information Fusion},
+    volume = {117},
+    pages = {102792},
+    year = {2025},
+    issn = {1566-2535},
+    doi = {https://doi.org/10.1016/j.inffus.2024.102792},
+    url = {https://www.sciencedirect.com/science/article/pii/S1566253524005700},
+    author = {F. Herrera and D. Jiménez-López and A. Argente-Garrido and N. Rodríguez-Barroso and C. Zuheros and I. Aguilera-Martos and B. Bello and M. García-Márquez and M.V. Luzón},
+}
+```
 
 ### Others
 **Authors order**: The order of the authors was chosen by asking ChatGPT to make a program to do it.
