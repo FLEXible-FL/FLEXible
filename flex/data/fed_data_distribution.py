@@ -14,6 +14,7 @@ Copyright (C) 2024  Instituto Andaluz Interuniversitario en Ciencia de Datos e I
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+
 import copy
 from collections import defaultdict
 from math import floor
@@ -196,7 +197,16 @@ class FedDataDistribution(object):
 
         labels = None
         if centralized_data.y_data is not None:
-            labels = centralized_data.y_data.to_numpy()
+            if config_.group_by_label_index is not None:
+                # This case will likely mess due to not homogeneous part in y_data
+                labels = np.array(
+                    [
+                        y[(config_.group_by_label_index + 1) % 2]
+                        for y in centralized_data.y_data
+                    ]
+                )
+            else:
+                labels = centralized_data.y_data.to_numpy()
 
         # Normalize weights when no replacement
         if (
@@ -274,17 +284,20 @@ class FedDataDistribution(object):
             y = list(y)  # TODO: enforce that y is only a list or a tuple
             str_label = str(y.pop(label_index))  # Use str to make every label hashable
             if str_label not in label_to_node_id:
-                label_to_node_id[
-                    str_label
-                ] = i  # Name each node using the first index where the label appears
+                label_to_node_id[str_label] = (
+                    i  # Name each node using the first index where the label appears
+                )
             x_data_indexes[label_to_node_id[str_label]].append(i)
             if len(y) == 1:
                 y = y[0]
             y_data[label_to_node_id[str_label]].append(y)
         for node_id in y_data:
-            yield node_id, Dataset(
-                X_data=centralized_data.X_data[x_data_indexes[node_id]],
-                y_data=LazyIndexable(y_data[node_id], len(y_data[node_id])),
+            yield (
+                node_id,
+                Dataset(
+                    X_data=centralized_data.X_data[x_data_indexes[node_id]],
+                    y_data=LazyIndexable(y_data[node_id], len(y_data[node_id])),
+                ),
             )
 
     @classmethod
@@ -306,9 +319,14 @@ class FedDataDistribution(object):
         for idx, name, keep in zip(
             config.indexes_per_node, config.node_ids, config.keep_labels
         ):
-            yield name, Dataset(
-                X_data=data.X_data[idx],
-                y_data=data.y_data[idx] if data.y_data is not None and keep else None,
+            yield (
+                name,
+                Dataset(
+                    X_data=data.X_data[idx],
+                    y_data=data.y_data[idx]
+                    if data.y_data is not None and keep
+                    else None,
+                ),
             )
 
     @classmethod
