@@ -14,6 +14,7 @@ Copyright (C) 2024  Instituto Andaluz Interuniversitario en Ciencia de Datos e I
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+
 import contextlib
 import warnings
 from dataclasses import dataclass, field
@@ -270,7 +271,7 @@ class Dataset:
         try:
             name_checker = ""
             if isinstance(hf_dataset, str):
-                from datasets import load_dataset
+                from datasets.load import load_dataset
 
                 hf_dataset = hf_dataset.split(";")
                 if len(hf_dataset) == 2:
