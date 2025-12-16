@@ -197,15 +197,10 @@ class FedDataDistribution(object):
 
         labels = None
         if centralized_data.y_data is not None:
-            if config_.group_by_label_index is not None:
-                # This case will likely mess due to not homogeneous part in y_data
-                labels = np.array(
-                    [
-                        y[(config_.group_by_label_index + 1) % 2]
-                        for y in centralized_data.y_data
-                    ]
-                )
-            else:
+            if config_.group_by_label_index is None:
+                # It seems that to_numpy yields an error when group_by_label_index is used,
+                # However, since labels are not used in that case, we can skip this step
+                # A prominent example of this is the federated dataset celeba
                 labels = centralized_data.y_data.to_numpy()
 
         # Normalize weights when no replacement
@@ -323,9 +318,9 @@ class FedDataDistribution(object):
                 name,
                 Dataset(
                     X_data=data.X_data[idx],
-                    y_data=data.y_data[idx]
-                    if data.y_data is not None and keep
-                    else None,
+                    y_data=(
+                        data.y_data[idx] if data.y_data is not None and keep else None
+                    ),
                 ),
             )
 
