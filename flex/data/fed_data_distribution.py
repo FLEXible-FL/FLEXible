@@ -14,6 +14,7 @@ Copyright (C) 2024  Instituto Andaluz Interuniversitario en Ciencia de Datos e I
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+
 import copy
 from collections import defaultdict
 from math import floor
@@ -196,7 +197,11 @@ class FedDataDistribution(object):
 
         labels = None
         if centralized_data.y_data is not None:
-            labels = centralized_data.y_data.to_numpy()
+            if config_.group_by_label_index is None:
+                # It seems that to_numpy yields an error when group_by_label_index is used,
+                # However, since labels are not used in that case, we can skip this step
+                # A prominent example of this is the federated dataset celeba
+                labels = centralized_data.y_data.to_numpy()
 
         # Normalize weights when no replacement
         if (
@@ -282,9 +287,12 @@ class FedDataDistribution(object):
                 y = y[0]
             y_data[label_to_node_id[str_label]].append(y)
         for node_id in y_data:
-            yield node_id, Dataset(
-                X_data=centralized_data.X_data[x_data_indexes[node_id]],
-                y_data=LazyIndexable(y_data[node_id], len(y_data[node_id])),
+            yield (
+                node_id,
+                Dataset(
+                    X_data=centralized_data.X_data[x_data_indexes[node_id]],
+                    y_data=LazyIndexable(y_data[node_id], len(y_data[node_id])),
+                ),
             )
 
     @classmethod
@@ -306,9 +314,14 @@ class FedDataDistribution(object):
         for idx, name, keep in zip(
             config.indexes_per_node, config.node_ids, config.keep_labels
         ):
-            yield name, Dataset(
-                X_data=data.X_data[idx],
-                y_data=data.y_data[idx] if data.y_data is not None and keep else None,
+            yield (
+                name,
+                Dataset(
+                    X_data=data.X_data[idx],
+                    y_data=(
+                        data.y_data[idx] if data.y_data is not None and keep else None
+                    ),
+                ),
             )
 
     @classmethod
