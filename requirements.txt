@@ -28,7 +28,7 @@ numpy==2.0.2
     #   tensorly
 pysocks==1.7.1
     # via requests
-requests==2.32.3
+requests==2.32.4
     # via gdown
 scikit-learn==1.6.1
     # via flexible-fl (setup.py)

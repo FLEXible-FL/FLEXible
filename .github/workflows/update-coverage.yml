@@ -6,8 +6,8 @@ on:
     branches: [ 'main' ]
 
 permissions:
-  contents: read
-  pull-requests: write
+  contents: read        # For checkout and comparing commits
+  pull-requests: write  # For creating/updating PR comments
 
 jobs:
   build:
