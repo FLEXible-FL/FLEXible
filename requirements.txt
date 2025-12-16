@@ -51,5 +51,5 @@ tqdm==4.67.1
     #   gdown
 typing-extensions==4.13.2
     # via beautifulsoup4
-urllib3==2.4.0
+urllib3==2.6.0
     # via requests
