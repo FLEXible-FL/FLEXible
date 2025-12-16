@@ -284,9 +284,9 @@ class FedDataDistribution(object):
             y = list(y)  # TODO: enforce that y is only a list or a tuple
             str_label = str(y.pop(label_index))  # Use str to make every label hashable
             if str_label not in label_to_node_id:
-                label_to_node_id[str_label] = (
-                    i  # Name each node using the first index where the label appears
-                )
+                label_to_node_id[
+                    str_label
+                ] = i  # Name each node using the first index where the label appears
             x_data_indexes[label_to_node_id[str_label]].append(i)
             if len(y) == 1:
                 y = y[0]
