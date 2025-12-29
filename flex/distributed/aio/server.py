@@ -449,9 +449,9 @@ class Server:
 
         if ssl_private_key is not None and ssl_certificate_chain is not None:
             if require_client_auth:
-                assert ssl_root_certificate is not None, (
-                    "Root certificate must be provided if client authentication is required"
-                )
+                assert (
+                    ssl_root_certificate is not None
+                ), "Root certificate must be provided if client authentication is required"
             self._server.add_secure_port(
                 address=address_port,
                 server_credentials=grpc.ssl_server_credentials(

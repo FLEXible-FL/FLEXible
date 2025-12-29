@@ -1,7 +1,9 @@
 import threading
 import unittest
 from time import sleep
+
 import numpy as np
+
 from flex.data.dataset import Dataset
 from flex.distributed import ClientBuilder, Server
 from flex.model.model import FlexModel

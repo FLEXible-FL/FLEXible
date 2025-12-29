@@ -1,6 +1,8 @@
 import asyncio
 import unittest
+
 import numpy as np
+
 from flex.data.dataset import Dataset
 from flex.distributed import ClientBuilder
 from flex.distributed.aio import Server
@@ -37,7 +39,7 @@ class TestAioGracefulShutdown(unittest.IsolatedAsyncioTestCase):
             try:
                 await self.server.stop()
             except Exception:
-                pass  # Server may already be stopped
+                pass
 
     async def run_client(self, results):
         try:
@@ -70,22 +72,21 @@ class TestAioGracefulShutdown(unittest.IsolatedAsyncioTestCase):
             results = {"success": False}
             client_task = asyncio.create_task(self.run_client(results))
 
-        await asyncio.sleep(2)
-        self.assertEqual(len(self.server), 1)
+            await asyncio.sleep(2)
+            self.assertEqual(len(self.server), 1)
 
-        # Stop the server. This should send StopIns and the client should exit gracefully.
-        await self.server.stop()
+            await self.server.stop()
 
             await asyncio.wait_for(client_task, timeout=10)
             self.assertTrue(
-                results.get("success"), f"Client failed with error: {results.get('error')}"
+                results.get("success"),
+                f"Client failed with error: {results.get('error')}",
             )
         finally:
-            # Ensure server is stopped even if test fails
             try:
-                await server.stop()
+                await self.server.stop()
             except Exception:
-                pass  # Server may already be stopped
+                pass
 
 
 if __name__ == "__main__":

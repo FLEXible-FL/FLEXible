@@ -451,9 +451,9 @@ class Server:
 
         if ssl_private_key is not None and ssl_certificate_chain is not None:
             if require_client_auth:
-                assert ssl_root_certificate is not None, (
-                    "Root certificate must be provided if client authentication is required"
-                )
+                assert (
+                    ssl_root_certificate is not None
+                ), "Root certificate must be provided if client authentication is required"
             self._server.add_secure_port(
                 address=address_port,
                 server_credentials=grpc.ssl_server_credentials(
@@ -480,7 +480,9 @@ class Server:
                 ServerMessage(stop_ins=ServerMessage.StopIns(status=200))
             )
         except Exception as exc:
-            logger.exception("Failed to broadcast stop_ins during server shutdown: %s", exc)
+            logger.exception(
+                "Failed to broadcast stop_ins during server shutdown: %s", exc
+            )
         self._stop_event.set()
         if self._server is not None:
             # Use a small grace period to allow in-flight RPCs (including stop_ins broadcasts)
