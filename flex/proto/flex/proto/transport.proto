@@ -68,6 +68,10 @@ message ServerMessage {
         int32 status = 1;
     }
 
+    message StopIns {
+        int32 status = 1;
+    }
+
     oneof msg {
         GetWeightsIns get_weights_ins = 1;
         SendWeightsIns send_weights_ins = 2;
@@ -75,5 +79,6 @@ message ServerMessage {
         Error error = 4;
         EvalIns eval_ins = 5;
         HealthPing health_ins = 6;
+        StopIns stop_ins = 7;
     }
 }
