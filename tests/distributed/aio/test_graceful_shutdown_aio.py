@@ -56,19 +56,26 @@ class TestAioGracefulShutdown(unittest.IsolatedAsyncioTestCase):
         server = Server()
         await server.run(addr, port)
 
-        results = {"success": False}
-        client_task = asyncio.create_task(self.run_client(results))
+        try:
+            results = {"success": False}
+            client_task = asyncio.create_task(self.run_client(results))
 
-        await asyncio.sleep(2)
-        self.assertEqual(len(server), 1)
+            await asyncio.sleep(2)
+            self.assertEqual(len(server), 1)
 
-        # Stop the server. This should send StopIns and the client should exit gracefully.
-        await server.stop()
+            # Stop the server. This should send StopIns and the client should exit gracefully.
+            await server.stop()
 
-        await asyncio.wait_for(client_task, timeout=10)
-        self.assertTrue(
-            results.get("success"), f"Client failed with error: {results.get('error')}"
-        )
+            await asyncio.wait_for(client_task, timeout=10)
+            self.assertTrue(
+                results.get("success"), f"Client failed with error: {results.get('error')}"
+            )
+        finally:
+            # Ensure server is stopped even if test fails
+            try:
+                await server.stop()
+            except Exception:
+                pass  # Server may already be stopped
 
 
 if __name__ == "__main__":
