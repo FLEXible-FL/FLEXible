@@ -480,7 +480,9 @@ class Server:
         )
         self._stop_event.set()
         if self._server is not None:
-            event = self._server.stop(None)
+            # Use a small grace period to allow in-flight RPCs (including stop_ins broadcasts)
+            # to complete before shutting down the gRPC server.
+            event = self._server.stop(1.0)
             self._server = None
             event.wait()
         self._termination.cancel()
