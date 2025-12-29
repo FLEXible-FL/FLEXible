@@ -29,6 +29,16 @@ def eval_fn(model, data):
 
 
 class TestGracefulShutdown(unittest.TestCase):
+    def setUp(self):
+        self.server = None
+
+    def tearDown(self):
+        if self.server is not None:
+            try:
+                self.server.stop()
+            except Exception:
+                pass  # Server may already be stopped
+
     def run_client(self, results):
         try:
             model = FlexModel()
@@ -52,18 +62,18 @@ class TestGracefulShutdown(unittest.TestCase):
             results["success"] = False
 
     def test_graceful_shutdown(self):
-        server = Server()
-        server.run(addr, port)
+        self.server = Server()
+        self.server.run(addr, port)
 
         results = {"success": False}
         client_thread = threading.Thread(target=self.run_client, args=(results,))
         client_thread.start()
 
         sleep(2)
-        self.assertEqual(len(server), 1)
+        self.assertEqual(len(self.server), 1)
 
         # Stop the server. This should send StopIns and the client should exit gracefully.
-        server.stop()
+        self.server.stop()
 
         client_thread.join(timeout=10)
         self.assertFalse(client_thread.is_alive(), "Client thread did not exit")
