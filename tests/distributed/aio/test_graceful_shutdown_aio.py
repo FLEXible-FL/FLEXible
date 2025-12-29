@@ -29,6 +29,16 @@ def eval_fn(model, data):
 
 
 class TestAioGracefulShutdown(unittest.IsolatedAsyncioTestCase):
+    async def asyncSetUp(self):
+        self.server = None
+
+    async def asyncTearDown(self):
+        if self.server is not None:
+            try:
+                await self.server.stop()
+            except Exception:
+                pass  # Server may already be stopped
+
     async def run_client(self, results):
         try:
             model = FlexModel()
@@ -53,17 +63,17 @@ class TestAioGracefulShutdown(unittest.IsolatedAsyncioTestCase):
             results["success"] = False
 
     async def test_aio_graceful_shutdown(self):
-        server = Server()
-        await server.run(addr, port)
+        self.server = Server()
+        await self.server.run(addr, port)
 
         results = {"success": False}
         client_task = asyncio.create_task(self.run_client(results))
 
         await asyncio.sleep(2)
-        self.assertEqual(len(server), 1)
+        self.assertEqual(len(self.server), 1)
 
         # Stop the server. This should send StopIns and the client should exit gracefully.
-        await server.stop()
+        await self.server.stop()
 
         await asyncio.wait_for(client_task, timeout=10)
         self.assertTrue(
