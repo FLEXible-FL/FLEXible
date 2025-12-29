@@ -14,6 +14,7 @@ Copyright (C) 2024  Instituto Andaluz Interuniversitario en Ciencia de Datos e I
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+
 import logging
 from concurrent import futures
 from queue import Empty, Queue
@@ -450,9 +451,9 @@ class Server:
 
         if ssl_private_key is not None and ssl_certificate_chain is not None:
             if require_client_auth:
-                assert (
-                    ssl_root_certificate is not None
-                ), "Root certificate must be provided if client authentication is required"
+                assert ssl_root_certificate is not None, (
+                    "Root certificate must be provided if client authentication is required"
+                )
             self._server.add_secure_port(
                 address=address_port,
                 server_credentials=grpc.ssl_server_credentials(
@@ -474,6 +475,9 @@ class Server:
         """
         Stops the server.
         """
+        self._manager.broadcast(
+            ServerMessage(stop_ins=ServerMessage.StopIns(status=200))
+        )
         self._stop_event.set()
         if self._server is not None:
             event = self._server.stop(None)
