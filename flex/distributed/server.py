@@ -475,9 +475,12 @@ class Server:
         """
         Stops the server.
         """
-        self._manager.broadcast(
-            ServerMessage(stop_ins=ServerMessage.StopIns(status=200))
-        )
+        try:
+            self._manager.broadcast(
+                ServerMessage(stop_ins=ServerMessage.StopIns(status=200))
+            )
+        except Exception as exc:
+            logger.exception("Failed to broadcast stop_ins during server shutdown: %s", exc)
         self._stop_event.set()
         if self._server is not None:
             # Use a small grace period to allow in-flight RPCs (including stop_ins broadcasts)
