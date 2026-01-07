@@ -14,6 +14,7 @@ Copyright (C) 2024  Instituto Andaluz Interuniversitario en Ciencia de Datos e I
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+
 import logging
 import signal
 import sys
@@ -209,6 +210,9 @@ class Client(ABC):
                     self._handle_eval_ins(response.eval_ins)
                 elif msg == "health_ins":
                     self._handle_health_ping(response.health_ins)
+                elif msg == "stop_ins":
+                    logger.info("Server requested to stop. Disconnecting...")
+                    break
                 else:
                     raise Exception("Not implemented")
         except Exception as e:

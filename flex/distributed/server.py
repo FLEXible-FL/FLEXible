@@ -14,6 +14,7 @@ Copyright (C) 2024  Instituto Andaluz Interuniversitario en Ciencia de Datos e I
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+
 import logging
 from concurrent import futures
 from queue import Empty, Queue
@@ -474,9 +475,19 @@ class Server:
         """
         Stops the server.
         """
+        try:
+            self._manager.broadcast(
+                ServerMessage(stop_ins=ServerMessage.StopIns(status=200))
+            )
+        except Exception as exc:
+            logger.exception(
+                "Failed to broadcast stop_ins during server shutdown: %s", exc
+            )
         self._stop_event.set()
         if self._server is not None:
-            event = self._server.stop(None)
+            # Use a small grace period to allow in-flight RPCs (including stop_ins broadcasts)
+            # to complete before shutting down the gRPC server.
+            event = self._server.stop(1.0)
             self._server = None
             event.wait()
         self._termination.cancel()

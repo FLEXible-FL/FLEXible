@@ -14,6 +14,7 @@ Copyright (C) 2024  Instituto Andaluz Interuniversitario en Ciencia de Datos e I
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+
 import asyncio
 import logging
 from typing import Dict, Iterator, List, Optional
@@ -472,6 +473,9 @@ class Server:
         """
         Stops the server.
         """
+        await self._manager.broadcast(
+            ServerMessage(stop_ins=ServerMessage.StopIns(status=200))
+        )
         if self._server is not None:
             await self._server.stop(grace=None)
             self._server = None

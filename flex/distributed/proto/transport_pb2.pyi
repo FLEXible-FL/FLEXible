@@ -1,8 +1,9 @@
-import tensor_pb2 as _tensor_pb2
+from . import tensor_pb2 as _tensor_pb2
 from google.protobuf.internal import containers as _containers
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
-from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Mapping, Optional as _Optional, Union as _Union
+from collections.abc import Iterable as _Iterable, Mapping as _Mapping
+from typing import ClassVar as _ClassVar, Optional as _Optional, Union as _Union
 
 DESCRIPTOR: _descriptor.FileDescriptor
 
@@ -75,7 +76,7 @@ class ClientMessage(_message.Message):
     def __init__(self, handshake_res: _Optional[_Union[ClientMessage.HandshakeRes, _Mapping]] = ..., get_weights_res: _Optional[_Union[ClientMessage.GetWeightsRes, _Mapping]] = ..., send_weights_res: _Optional[_Union[ClientMessage.SendWeightsRes, _Mapping]] = ..., train_res: _Optional[_Union[ClientMessage.TrainRes, _Mapping]] = ..., error: _Optional[_Union[Error, _Mapping]] = ..., eval_res: _Optional[_Union[ClientMessage.EvalRes, _Mapping]] = ..., health_ins: _Optional[_Union[ClientMessage.HealthPing, _Mapping]] = ...) -> None: ...
 
 class ServerMessage(_message.Message):
-    __slots__ = ("get_weights_ins", "send_weights_ins", "train_ins", "error", "eval_ins", "health_ins")
+    __slots__ = ("get_weights_ins", "send_weights_ins", "train_ins", "error", "eval_ins", "health_ins", "stop_ins")
     class GetWeightsIns(_message.Message):
         __slots__ = ("status",)
         STATUS_FIELD_NUMBER: _ClassVar[int]
@@ -101,16 +102,23 @@ class ServerMessage(_message.Message):
         STATUS_FIELD_NUMBER: _ClassVar[int]
         status: int
         def __init__(self, status: _Optional[int] = ...) -> None: ...
+    class StopIns(_message.Message):
+        __slots__ = ("status",)
+        STATUS_FIELD_NUMBER: _ClassVar[int]
+        status: int
+        def __init__(self, status: _Optional[int] = ...) -> None: ...
     GET_WEIGHTS_INS_FIELD_NUMBER: _ClassVar[int]
     SEND_WEIGHTS_INS_FIELD_NUMBER: _ClassVar[int]
     TRAIN_INS_FIELD_NUMBER: _ClassVar[int]
     ERROR_FIELD_NUMBER: _ClassVar[int]
     EVAL_INS_FIELD_NUMBER: _ClassVar[int]
     HEALTH_INS_FIELD_NUMBER: _ClassVar[int]
+    STOP_INS_FIELD_NUMBER: _ClassVar[int]
     get_weights_ins: ServerMessage.GetWeightsIns
     send_weights_ins: ServerMessage.SendWeightsIns
     train_ins: ServerMessage.TrainIns
     error: Error
     eval_ins: ServerMessage.EvalIns
     health_ins: ServerMessage.HealthPing
-    def __init__(self, get_weights_ins: _Optional[_Union[ServerMessage.GetWeightsIns, _Mapping]] = ..., send_weights_ins: _Optional[_Union[ServerMessage.SendWeightsIns, _Mapping]] = ..., train_ins: _Optional[_Union[ServerMessage.TrainIns, _Mapping]] = ..., error: _Optional[_Union[Error, _Mapping]] = ..., eval_ins: _Optional[_Union[ServerMessage.EvalIns, _Mapping]] = ..., health_ins: _Optional[_Union[ServerMessage.HealthPing, _Mapping]] = ...) -> None: ...
+    stop_ins: ServerMessage.StopIns
+    def __init__(self, get_weights_ins: _Optional[_Union[ServerMessage.GetWeightsIns, _Mapping]] = ..., send_weights_ins: _Optional[_Union[ServerMessage.SendWeightsIns, _Mapping]] = ..., train_ins: _Optional[_Union[ServerMessage.TrainIns, _Mapping]] = ..., error: _Optional[_Union[Error, _Mapping]] = ..., eval_ins: _Optional[_Union[ServerMessage.EvalIns, _Mapping]] = ..., health_ins: _Optional[_Union[ServerMessage.HealthPing, _Mapping]] = ..., stop_ins: _Optional[_Union[ServerMessage.StopIns, _Mapping]] = ...) -> None: ...
